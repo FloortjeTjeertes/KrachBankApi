@@ -108,4 +108,11 @@
     <version>0.12.6</version>
     <scope>runtime</scope>
 </dependency>
+
+<!-- iban4j -->
+<dependency>
+    <groupId>org.iban4j</groupId>
+    <artifactId>iban4j</artifactId>
+  <version>3.2.11-RELEASE</version>
+</dependency>
 </project>
