@@ -8,7 +8,8 @@ public class TestController {
 
     @GetMapping("/test")
     public String test() {
-        return "Test successful!";
+        System.out.println("ping");
+        return "pong!";
     }
 
 
