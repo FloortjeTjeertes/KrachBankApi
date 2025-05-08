@@ -1,3 +1,4 @@
+[![Java CI with Maven that uses unit test](https://github.com/FloortjeTjeertes/KrachBankApi/actions/workflows/java%20unit%20test.yml/badge.svg)](https://github.com/FloortjeTjeertes/KrachBankApi/actions/workflows/java%20unit%20test.yml)
 # KrachBank API
 
 description
