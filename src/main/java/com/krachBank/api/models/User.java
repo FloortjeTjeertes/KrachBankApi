@@ -32,6 +32,7 @@ public class User implements Model{
     private String phoneNumber;
 
     private int bsn;
+
     public DTO ToDTO() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'ToDTO'");

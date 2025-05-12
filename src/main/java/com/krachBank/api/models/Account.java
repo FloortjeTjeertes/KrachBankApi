@@ -16,8 +16,8 @@ public class Account implements Model {
     private Double Balance;
     private Double AbsoluteLimit;
     private LocalDateTime CreatedAt;
-    private User user;
-    private User VerifiedBy;
+     
+ 
     
     @Override
     public DTO ToDTO() {
