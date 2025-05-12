@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.krachbank.api.models.User;
 
 @Repository
-public interface UserRepositoy extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
 
 }
