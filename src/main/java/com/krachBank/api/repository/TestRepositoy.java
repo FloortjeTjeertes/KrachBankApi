@@ -3,10 +3,10 @@ package com.krachbank.api.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.krachbank.api.models.FooTestObject;
+import com.krachbank.api.models.User;
 
 @Repository
-public interface TestRepositoy extends JpaRepository<FooTestObject, Long> {
+public interface TestRepositoy extends JpaRepository<User, Long> {
 
 
 }
