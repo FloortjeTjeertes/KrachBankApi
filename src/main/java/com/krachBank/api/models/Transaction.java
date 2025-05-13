@@ -7,6 +7,7 @@ import com.krachbank.api.dto.DTO;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class Transaction implements Model{
@@ -16,7 +17,7 @@ public class Transaction implements Model{
     private Double amount;
     private LocalDateTime date;
 
-    @ManyToOne
+    @OneToOne
     private User initiator;
 
     @ManyToOne
