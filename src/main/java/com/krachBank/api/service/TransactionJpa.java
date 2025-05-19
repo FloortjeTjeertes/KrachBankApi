@@ -1,9 +1,12 @@
 package com.krachbank.api.service;
 
+import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import jakarta.persistence.criteria.Predicate;
 
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Transaction;
@@ -20,21 +23,28 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public Transaction createTransaction(Transaction transaction) {
+    public Optional<Transaction> createTransaction(Transaction transaction) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'createTransaction'");
     }
 
     @Override
-    public Transaction getTransactionById(Long id) {
+    public Optional<Transaction> getTransactionById(Long id) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getTransactionById'");
     }
 
     @Override
-    public Transaction getTransactionByFilter(TransactionFilter filter) {
+    public List<Transaction> getTransactionsByFilter(TransactionFilter filter) {
+
+        return transactionRepository.findAll(MakeTransactionsSpecification(filter));
+
+    }
+
+    @Override
+    public Optional<Transaction> getTransactionByFilter(TransactionFilter filter) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getTransactionByFilter'");
+        return transactionRepository.findOne(MakeTransactionsSpecification(filter));
     }
 
     @Override
@@ -44,9 +54,38 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public Transaction updateTransaction(Long id, Transaction transaction) {
+    public Optional<Transaction> updateTransaction(Long id, Transaction transaction) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updateTransaction'");
     }
+
+    public static Specification<Transaction> MakeTransactionsSpecification(TransactionFilter filter) {
+    return  (root,query,cb)->{
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (filter.getSenderId() != null) {
+            cb.and(cb.equal(root.get("fromAccount").get("id"), filter.getSenderId()));
+        }
+        if (filter.getReceiverId() != null) {
+            cb.and(cb.equal(root.get("toAccount").get("id"), filter.getReceiverId()));
+       }
+        if (filter.getMinAmount() != null) {
+            predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), filter.getMinAmount()));
+        }
+        if (filter.getMaxAmount() != null) {
+            predicates.add(cb.lessThanOrEqualTo(root.get("amount"), filter.getMaxAmount()));
+        }
+
+        if (filter.getBeforeDate() != null) {
+            predicates.add(cb.lessThan(root.get("date"), filter.getBeforeDate()));
+        }
+        if (filter.getAfterDate() != null) {
+            predicates.add(cb.greaterThan(root.get("date"), filter.getAfterDate()));
+        }
+        return cb.and(predicates.toArray(new Predicate[0]));
+    };
+}
+
+
 
 }
