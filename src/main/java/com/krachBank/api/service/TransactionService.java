@@ -1,13 +1,13 @@
 package com.krachbank.api.service;
 
-import java.lang.foreign.Linker.Option;
 import java.util.List;
 import java.util.Optional;
 
+import com.krachbank.api.dto.TransactionDTO;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Transaction;
 
-public interface TransactionService {
+public interface TransactionService extends Service<TransactionDTO, Transaction> {
 
     public Optional<Transaction> createTransaction(Transaction transaction);
     public Optional<Transaction> getTransactionById(Long id); 

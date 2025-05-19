@@ -5,7 +5,7 @@ import java.util.List;
 import com.krachbank.api.dto.AccountDTO;
 import com.krachbank.api.models.Account;
 
-public interface AccountService {
+public interface AccountService extends Service<AccountDTO, Account> {
     public List<AccountDTO> getAccounts();
 
     public AccountDTO getAccountById(Long id);

@@ -77,5 +77,26 @@ public class UserServiceJpa implements UserService {
         throw new UnsupportedOperationException("Unimplemented method 'removeUser'");
     }
 
+    @Override
+    public User toModel(UserDTO dto) {
+        User user = new User();
+        user.setId(dto.getId());
+        user.setDailyLimit(dto.getTransferLimit());
+        user.setCreatedAt(dto.getCreatedAt());
+        user.setVerified(dto.isVerified());
+        user.setActive(dto.isActive());
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setBsn(dto.getBSN());
+        return user;
+    }
 
+    @Override
+    public UserDTO toDTO(User model) {
+        return model.toDTO();
+    }
+
+   
 }

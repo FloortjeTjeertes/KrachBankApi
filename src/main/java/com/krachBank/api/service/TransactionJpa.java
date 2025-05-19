@@ -1,5 +1,6 @@
 package com.krachbank.api.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -7,9 +8,15 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.criteria.Predicate;
 
+import com.krachbank.api.dto.DTO;
+import com.krachbank.api.dto.TransactionDTO;
 import com.krachbank.api.filters.TransactionFilter;
+import com.krachbank.api.models.Account;
 import com.krachbank.api.models.Transaction;
+import com.krachbank.api.models.User;
 import com.krachbank.api.repository.TransactionRepository;
+
+import ch.qos.logback.core.model.Model;
 
 @Service
 public class TransactionJpa implements TransactionService {
@@ -85,8 +92,42 @@ public class TransactionJpa implements TransactionService {
         }
         return cb.and(predicates.toArray(new Predicate[0]));
     };
+
+
+
+    
 }
 
 
+    @Override
+    public Transaction toModel(TransactionDTO dto) {
 
+        User initUser = new User();
+       initUser.setId(dto.getInitiator());
+
+        Account fromAccount = new Account();
+
+        Account receivingAccount = new Account();
+
+
+        Transaction transaction = new Transaction();
+        transaction.setAmount(dto.getAmount());
+        transaction.setFromAccount(fromAccount);
+        transaction.setToAccount(receivingAccount);
+        transaction.setInitiator(initUser);
+        transaction.setCreatedAt(LocalDateTime.parse(dto.getCreatedAt()));
+        transaction.setDescription(dto.getDescription());
+        return transaction;
+
+    }
+
+    @Override
+    public TransactionDTO toDTO(Transaction model) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toDTO'");
+    }
+
+  
+
+   
 }

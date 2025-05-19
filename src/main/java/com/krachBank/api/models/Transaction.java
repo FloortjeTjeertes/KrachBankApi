@@ -18,7 +18,9 @@ public class Transaction implements Model{
     @Id
     private Long id;
     private Double amount;
-    private LocalDateTime date;
+
+
+    private LocalDateTime createdAt;
 
     @OneToOne
     private User initiator;
@@ -28,6 +30,10 @@ public class Transaction implements Model{
 
     @ManyToOne
     private Account toAccount;
+    
+     
+
+    private String description;
 
     @Override
     public DTO toDTO() {

@@ -45,14 +45,14 @@ public class TransactionRepositoryTest {
         Transaction transaction1 = new Transaction();
         transaction1.setId(1L);
         transaction1.setAmount(100.0);
-        transaction1.setDate(LocalDateTime.of(2025,01, 01,01,01));
+        transaction1.setCreatedAt(LocalDateTime.of(2025,01, 01,01,01));
         transaction1.setFromAccount(fromAccount);
         transaction1.setToAccount(toAccount);
 
         Transaction transaction2 = new Transaction();
         transaction2.setId(2L);
         transaction2.setAmount(200.0);
-        transaction2.setDate(LocalDateTime.of(2025,01, 02,01,01));
+        transaction2.setCreatedAt(LocalDateTime.of(2025,01, 02,01,01));
         transaction2.setFromAccount(fromAccount);
         transaction2.setToAccount(toAccount);
 

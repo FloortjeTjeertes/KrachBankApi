@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.AccountDTO;
+import com.krachbank.api.dto.DTO;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.repository.AccountRepository;
+
 
 @Service
 public class AccountServiceJpa implements AccountService {
@@ -82,7 +84,20 @@ public class AccountServiceJpa implements AccountService {
         throw new UnsupportedOperationException("Unimplemented method 'removeAccount'");
     }
 
-   
+    @Override
+    public Account toModel(AccountDTO dto) {
+
+        return new Account();
+    }
+
+    @Override
+    public AccountDTO toDTO(Account model) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toDTO'");
+    }
+
+
+
 
 
 }
