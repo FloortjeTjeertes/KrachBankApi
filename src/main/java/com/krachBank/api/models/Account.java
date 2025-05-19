@@ -6,14 +6,16 @@ import java.util.stream.Stream;
 
 import org.iban4j.Iban;
 
+import com.krachbank.api.converters.IbanConverter;
 import com.krachbank.api.dto.AccountDTO;
-import com.krachbank.api.dto.DTO;
 
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 
 @Entity
@@ -23,7 +25,7 @@ public class Account implements Model {
     @Id
     @GeneratedValue
     private Long id;
-
+    @Convert(converter = IbanConverter.class)
     private Iban IBAN;
     private Double Balance;
     private Double AbsoluteLimit;
@@ -55,58 +57,11 @@ public class Account implements Model {
         accountDTO.setId(this.id);
         accountDTO.setIBAN(this.IBAN);
         accountDTO.setAccountType(this.accountType);
-        accountDTO.setBalance(this.balance);
-        accountDTO.setAbsoluteLimit(this.absoluteLimit);
+        accountDTO.setBalance(this.Balance);
+        accountDTO.setAbsoluteLimit(this.AbsoluteLimit);
         accountDTO.setUserId(this.user.getId().toString());
         return accountDTO;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Iban getIBAN() {
-        return IBAN;
-    }
-
-    public void setIBAN(Iban iBAN) {
-        IBAN = iBAN;
-    }
-
-    public Double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(Double balance) {
-        this.balance = balance;
-    }
-
-    public Double getAbsoluteLimit() {
-        return absoluteLimit;
-    }
-
-    public void setAbsoluteLimit(Double absoluteLimit) {
-        this.absoluteLimit = absoluteLimit;
-    }
-
-    public AccountType getAccountType() {
-        return accountType;
-    }
-
-    public void setAccountType(AccountType accountType) {
-        this.accountType = accountType;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
 
 }

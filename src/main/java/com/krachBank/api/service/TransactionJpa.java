@@ -3,7 +3,6 @@ package com.krachbank.api.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.criteria.Predicate;
@@ -17,7 +16,6 @@ public class TransactionJpa implements TransactionService {
 
     private final TransactionRepository transactionRepository;
 
-    @Autowired
     public TransactionJpa(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
     }

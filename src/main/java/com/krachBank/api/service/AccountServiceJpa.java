@@ -2,11 +2,10 @@ package com.krachbank.api.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.krachbank.api.filters.AccountFilter;
-import com.krachbank.api.models.Transaction;
+import com.krachbank.api.dto.AccountDTO;
+import com.krachbank.api.models.Account;
 import com.krachbank.api.repository.AccountRepository;
 
 @Service
@@ -73,7 +72,6 @@ public class AccountServiceJpa implements AccountService {
 
     @Override
     public AccountDTO updateAccount(Long id, Account account) {
-
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updateAccount'");
     }
@@ -83,6 +81,8 @@ public class AccountServiceJpa implements AccountService {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'removeAccount'");
     }
+
+   
 
 
 }

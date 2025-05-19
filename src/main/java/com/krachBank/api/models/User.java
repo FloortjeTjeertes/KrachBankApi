@@ -1,7 +1,6 @@
 package com.krachbank.api.models;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;

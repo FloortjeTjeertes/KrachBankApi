@@ -8,6 +8,7 @@
 		"java.configuration.updateBuildConfiguration": "automatic",
 		"java.dependency.packagePresentation": "hierarchical",
 		"cSpell.words": [
+			"IBAN",
 			"krachbank"
 		],
 		"java.compile.nullAnalysis.mode": "automatic"
