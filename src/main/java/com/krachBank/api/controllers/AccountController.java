@@ -17,7 +17,8 @@ import com.krachbank.api.service.AccountService;
 public class AccountController {
     private final AccountService accountService;
 
-    public AccountController(AccountService accountService, IBANGenerator ibanGenerator) {
+
+    public AccountController(AccountService accountService) {
         this.accountService = accountService;
     }
 

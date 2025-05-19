@@ -8,12 +8,12 @@ import com.krachbank.api.dto.UserDTO;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.Table;
+import lombok.Data;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
+@Data
+@Table(name = "users")
 public class User implements Model {
 
 
