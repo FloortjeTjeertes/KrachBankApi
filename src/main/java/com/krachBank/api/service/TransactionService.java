@@ -9,10 +9,10 @@ import com.krachbank.api.models.Transaction;
 
 public interface TransactionService extends Service<TransactionDTO, Transaction> {
 
-    public Optional<Transaction> createTransaction(Transaction transaction);
+    public Optional<Transaction> createTransaction(TransactionDTO transaction);
     public Optional<Transaction> getTransactionById(Long id); 
     public Optional<Transaction> getTransactionByFilter(TransactionFilter filter);
     public List<Transaction> getTransactionsByFilter(TransactionFilter filter);
     public List<Transaction> getAllTransactions();
-    public Optional<Transaction> updateTransaction(Long id, Transaction transaction);
+    public Optional<Transaction> updateTransaction(Long id, TransactionDTO transaction);
 }

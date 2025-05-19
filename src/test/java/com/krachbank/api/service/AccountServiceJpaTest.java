@@ -1,7 +1,6 @@
 package com.krachbank.api.service;
 
 import com.krachbank.api.configuration.IBANGenerator;
-import com.krachbank.api.dto.AccountDTO;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.AccountType;
 import com.krachbank.api.models.User;

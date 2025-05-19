@@ -1,5 +1,6 @@
 package com.krachbank.api.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -92,9 +93,19 @@ public class AccountServiceJpa implements AccountService {
 
     @Override
     public AccountDTO toDTO(Account model) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'toDTO'");
+      
+        return model.toDTO();
     }
+
+    @Override
+    public List<AccountDTO> toDTO(List<Account> accounts) {
+        List<AccountDTO> accountDTOs = new ArrayList<>();
+       for (Account accountDTO : accounts) {
+            accountDTOs.add((AccountDTO) toDTO(accountDTO));
+        }
+        return accountDTOs;
+    }
+    
 
 
 

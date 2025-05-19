@@ -1,5 +1,6 @@
 package com.krachbank.api.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,7 +15,6 @@ import com.krachbank.api.repository.UserRepository;
 @Service
 public class UserServiceJpa implements UserService {
     private final UserRepository userRepository;
-
 
     public UserServiceJpa(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -98,5 +98,14 @@ public class UserServiceJpa implements UserService {
         return model.toDTO();
     }
 
-   
+    @Override
+    public List<UserDTO> toDTO(List<User> users) {
+
+        List<UserDTO> userDTOs = new ArrayList<>();
+        for (User user : users) {
+            userDTOs.add(toDTO(user));
+        }
+        return userDTOs;
+    }
+
 }

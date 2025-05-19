@@ -2,7 +2,7 @@ package com.krachbank.api.models;
 
 import java.time.LocalDateTime;
 
-import com.krachbank.api.dto.DTO;
+import com.krachbank.api.dto.TransactionDTO;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -36,7 +36,7 @@ public class Transaction implements Model{
     private String description;
 
     @Override
-    public DTO toDTO() {
+    public TransactionDTO toDTO() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'ToDTO'");
     }

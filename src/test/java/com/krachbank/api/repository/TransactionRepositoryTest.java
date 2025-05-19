@@ -147,8 +147,8 @@ public class TransactionRepositoryTest {
         );
         assertNotNull(results);
         results.forEach(transaction -> {
-            assertNotNull(transaction.getDate());
-            assertEquals(filter.getBeforeDate(), transaction.getDate());
+            assertNotNull(transaction.getCreatedAt());
+            assertEquals(filter.getBeforeDate(), transaction.getCreatedAt());
         });
     }
 
@@ -164,8 +164,8 @@ public class TransactionRepositoryTest {
 
         assertNotNull(results);
         results.forEach(transaction -> {
-            assertNotNull(transaction.getDate());
-            assertEquals(filter.getAfterDate(), transaction.getDate());
+            assertNotNull(transaction.getCreatedAt());
+            assertEquals(filter.getAfterDate(), transaction.getCreatedAt());
         });
     }
 

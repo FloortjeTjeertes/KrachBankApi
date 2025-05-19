@@ -28,12 +28,38 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public Optional<Transaction> createTransaction(Transaction transaction) {
-        if (transaction.getId() != null) {
-            return Optional.empty();
+    public Optional<Transaction> createTransaction(TransactionDTO transactionDto) {
+        Transaction transaction = toModel(transactionDto);
+
+        try {
+            isValidTransaction(transaction);
+            transactionRepository.findById(transaction.getId()).ifPresent(existingTransaction -> {
+                throw new IllegalArgumentException("Transaction already exists");
+            });
+            //check if the transaction is to the same account
+
+            //check if the transaction is from 2 different accounts of the same user
+                //check if the sending account is not a saving account
+
+            //check if the receiving account is  an saving account
+                //if it is a saving account, check if the saving account is from the same user as the sending account
+                
+
+            //calculate the resulting balance of the sending account
+                // if the calculated resulting balance is  more then the absolute limit ( more then the -absolutelimit amount)
+                //check if the amount is not more then the daily limit
+                //check if the amount is not more then the transaction limit (amount of money that can be transferred per transaction)
+
+
+
+            Transaction savedTransaction = transactionRepository.save(transaction);
+            return Optional.of(savedTransaction);
+        } catch (Exception e) {
+            // TODO: handle exception
         }
-        Transaction savedTransaction = transactionRepository.save(transaction);
-        return Optional.of(savedTransaction);
+        return null;
+    
+     
 
     }
 
@@ -62,7 +88,7 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public Optional<Transaction> updateTransaction(Long id, Transaction transaction) {
+    public Optional<Transaction> updateTransaction(Long id, TransactionDTO transaction) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updateTransaction'");
     }
@@ -98,6 +124,18 @@ public class TransactionJpa implements TransactionService {
     
 }
 
+    public boolean isValidTransaction(Transaction transaction) {
+        if (transaction.getAmount() <= 0) {
+            throw new IllegalArgumentException("Invalid transaction amount");
+        }
+        if (transaction.getFromAccount() == null || transaction.getToAccount() == null) {
+            throw new IllegalArgumentException("Invalid transaction accounts");
+        }
+        if (transaction.getFromAccount().equals(transaction.getToAccount())) {
+            throw new IllegalArgumentException("Transaction accounts must be different");
+        }
+        return true;
+    }
 
     @Override
     public Transaction toModel(TransactionDTO dto) {
@@ -124,7 +162,16 @@ public class TransactionJpa implements TransactionService {
     @Override
     public TransactionDTO toDTO(Transaction model) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'toDTO'");
+       return model.toDTO();
+    }
+
+    @Override
+    public List<TransactionDTO> toDTO(List<Transaction> transactions) {
+        List<TransactionDTO> transactionDTOs = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            transactionDTOs.add(transaction.toDTO());
+        }
+        return transactionDTOs;
     }
 
   
