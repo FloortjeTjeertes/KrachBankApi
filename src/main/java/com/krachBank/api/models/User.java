@@ -3,14 +3,21 @@ package com.krachbank.api.models;
 import java.time.LocalDateTime;
 
 import com.krachbank.api.dto.DTO;
+import com.krachbank.api.dto.UserDTO;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@Entity(name = "users")
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class User implements Model {
 
     @Id
+    @GeneratedValue
     private Long id;
 
     private String name;
@@ -22,6 +29,7 @@ public class User implements Model {
     private LocalDateTime createdAt;
 
     private boolean verified;
+
     private boolean active;
 
     private String firstName;
@@ -35,12 +43,16 @@ public class User implements Model {
     private int bsn;
 
     public DTO ToDTO() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'ToDTO'");
+        return new UserDTO(id, dailyLimit, createdAt, verified, active, firstName, lastName,
+                email, phoneNumber, bsn);
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {

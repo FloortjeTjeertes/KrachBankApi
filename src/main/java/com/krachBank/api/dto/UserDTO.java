@@ -1,13 +1,22 @@
 package com.krachbank.api.dto;
 
+import java.time.LocalDateTime;
+
+import com.krachbank.api.models.Model;
+import com.krachbank.api.models.User;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class UserDTO {
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserDTO implements DTO {
 
     private Long id;
     private String transferLimit;
-    private String createdAt;
+    private LocalDateTime createdAt;
     private boolean isVerified;
     private boolean isActive;
     private String firstName;
@@ -16,22 +25,20 @@ public class UserDTO {
     private String phoneNumber;
     private int BSN;
 
-    public UserDTO() {
-        // Default constructor
-    }
-
-    public UserDTO(Long id, String transferLimit, String createdAt, boolean isVerified,
-            boolean isActive, String firstName, String lastName, String email, String phoneNumber, int BSN) {
-        this.id = id;
-        this.transferLimit = transferLimit;
-        this.createdAt = createdAt;
-        this.isVerified = isVerified;
-        this.isActive = isActive;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.BSN = BSN;
+    @Override
+    public User ToModel() {
+        User user = new User();
+        user.setId(this.id);
+        user.setDailyLimit(this.transferLimit);
+        user.setCreatedAt(this.createdAt);
+        user.setVerified(this.isVerified);
+        user.setActive(this.isActive);
+        user.setFirstName(this.firstName);
+        user.setLastName(this.lastName);
+        user.setEmail(this.email);
+        user.setPhoneNumber(this.phoneNumber);
+        user.setBsn(this.BSN);
+        return user;
     }
 
 }

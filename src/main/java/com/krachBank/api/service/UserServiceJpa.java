@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
@@ -23,7 +24,7 @@ public class UserServiceJpa implements UserService {
                 .map(user -> new UserDTO(
                         user.getId(),
                         String.valueOf(user.getDailyLimit()),
-                        user.getCreatedAt().toString(),
+                        user.getCreatedAt(),
                         user.isVerified(),
                         user.isActive(),
                         user.getFirstName(),
@@ -41,9 +42,24 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
-    public UserDTO createUser(User userDTO) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createUser'");
+    public DTO verifyUser(User user) {
+        // Basic validation example, adjust as needed for your User fields
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (user.getFirstName() == null || user.getFirstName().isEmpty()) {
+            throw new IllegalArgumentException("First name is required");
+        }
+        if (user.getLastName() == null || user.getLastName().isEmpty()) {
+            throw new IllegalArgumentException("Last name is required");
+        }
+        if (user.getBsn() <= 0) {
+            throw new IllegalArgumentException("BSN must be a positive number");
+        }
+        return userRepository.save(user).ToDTO();
     }
 
     @Override

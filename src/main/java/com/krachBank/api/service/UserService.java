@@ -2,7 +2,9 @@ package com.krachbank.api.service;
 
 import java.util.List;
 
+import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
+
 import com.krachbank.api.models.User;
 
 public interface UserService {
@@ -10,7 +12,7 @@ public interface UserService {
 
     public UserDTO getUserById(Long id);
 
-    public UserDTO createUser(User userDTO);
+    public DTO verifyUser(User user);
 
     public UserDTO updateUser(Long id, User userDTO);
 
