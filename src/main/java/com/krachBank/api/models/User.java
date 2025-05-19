@@ -1,6 +1,7 @@
 package com.krachbank.api.models;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
@@ -15,6 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User implements Model {
+
 
     @Id
     @GeneratedValue
@@ -141,6 +143,7 @@ public class User implements Model {
 
     public void setBsn(int bsn) {
         this.bsn = bsn;
+
     }
 
 }

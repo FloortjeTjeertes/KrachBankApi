@@ -7,12 +7,14 @@ import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
+
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
 
 @Service
 public class UserServiceJpa implements UserService {
     private final UserRepository userRepository;
+
 
     public UserServiceJpa(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -64,6 +66,7 @@ public class UserServiceJpa implements UserService {
 
     @Override
     public UserDTO updateUser(Long id, User userDTO) {
+
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updateUser'");
     }
@@ -73,5 +76,6 @@ public class UserServiceJpa implements UserService {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'removeUser'");
     }
+
 
 }

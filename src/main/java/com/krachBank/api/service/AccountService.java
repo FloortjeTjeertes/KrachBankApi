@@ -18,3 +18,4 @@ public interface AccountService {
 
     public void removeAccount(Account account);
 }
+

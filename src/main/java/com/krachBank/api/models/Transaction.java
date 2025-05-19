@@ -7,16 +7,21 @@ import com.krachbank.api.dto.DTO;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import lombok.Data;
+import lombok.Getter;
 
 @Entity
-public class Transaction implements Model {
+
+@Data
+public class Transaction implements Model{
 
     @Id
     private Long id;
     private Double amount;
     private LocalDateTime date;
 
-    @ManyToOne
+    @OneToOne
     private User initiator;
 
     @ManyToOne

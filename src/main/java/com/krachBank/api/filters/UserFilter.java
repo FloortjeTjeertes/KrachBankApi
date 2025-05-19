@@ -74,4 +74,5 @@ public class UserFilter {
     public void setOffset(Integer offset) {
         this.offset = offset;
     }
+
 }
