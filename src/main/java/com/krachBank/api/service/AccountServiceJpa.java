@@ -14,39 +14,74 @@ public class AccountServiceJpa implements AccountService {
 
     private final AccountRepository accountRepository;
 
-    @Autowired
+
+
     public AccountServiceJpa(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
 
     @Override
-    public Transaction createAccount(Transaction transaction) {
+    public List<AccountDTO> getAccounts() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createAccount'");
+        throw new UnsupportedOperationException("Unimplemented method 'getAccounts'");
     }
 
     @Override
-    public Transaction getAccountById(Long id) {
+    public AccountDTO getAccountById(Long id) {
+
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getAccountById'");
     }
 
     @Override
-    public Transaction getAccountByFilter(AccountFilter filter) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAccountByFilter'");
+  public List<Account> createAccounts(List<Account> accounts) {
+        // Validate accounts
+        for (Account account : accounts) {
+            if (account == null) {
+                throw new IllegalArgumentException("Account cannot be null");
+            }
+            if (account.getIBAN() == null) {
+                throw new IllegalArgumentException("Account number is required");
+            }
+            if (account.getBalance() == null) {
+                throw new IllegalArgumentException("Account balance is required");
+            }
+            if (account.getUser() == null) {
+                throw new IllegalArgumentException("Account owner is required");
+            }
+        }
+        return accountRepository.saveAll(accounts);
     }
 
     @Override
-    public List<Transaction> getAllAccount() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllAccount'");
+    public Account createAccount(Account account) {
+        if (account == null) {
+            throw new IllegalArgumentException("Account cannot be null");
+        }
+        if (account.getIBAN() == null) {
+            throw new IllegalArgumentException("Account number is required");
+        }
+        if (account.getBalance() == null) {
+            throw new IllegalArgumentException("Account balance is required");
+        }
+        if (account.getUser() == null) {
+            throw new IllegalArgumentException("Account owner is required");
+        }
+
+        return accountRepository.save(account);
     }
 
     @Override
-    public Transaction updateAccount(Long id, Transaction transaction) {
+    public AccountDTO updateAccount(Long id, Account account) {
+
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updateAccount'");
+    }
+
+    @Override
+    public void removeAccount(Account account) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'removeAccount'");
     }
 
 

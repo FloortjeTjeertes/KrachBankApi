@@ -1,12 +1,13 @@
 package com.krachbank.api.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.krachbank.api.filters.UserFilter;
-import com.krachbank.api.models.Transaction;
+import com.krachbank.api.dto.DTO;
+import com.krachbank.api.dto.UserDTO;
+
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
 
@@ -14,40 +15,67 @@ import com.krachbank.api.repository.UserRepository;
 public class UserServiceJpa implements UserService {
     private final UserRepository userRepository;
 
-    @Autowired
+
     public UserServiceJpa(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
     @Override
-    public Transaction getTransactionById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getTransactionById'");
+    public List<UserDTO> getUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> new UserDTO(
+                        user.getId(),
+                        String.valueOf(user.getDailyLimit()),
+                        user.getCreatedAt(),
+                        user.isVerified(),
+                        user.isActive(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getEmail(),
+                        user.getPhoneNumber(),
+                        user.getBsn()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Transaction getTransactionByFilter(UserFilter filter) {
+    public UserDTO getUserById(Long id) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getTransactionByFilter'");
+        throw new UnsupportedOperationException("Unimplemented method 'getUserById'");
     }
 
     @Override
-    public List<Transaction> getAllUsers() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllUsers'");
+    public DTO verifyUser(User user) {
+        // Basic validation example, adjust as needed for your User fields
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (user.getFirstName() == null || user.getFirstName().isEmpty()) {
+            throw new IllegalArgumentException("First name is required");
+        }
+        if (user.getLastName() == null || user.getLastName().isEmpty()) {
+            throw new IllegalArgumentException("Last name is required");
+        }
+        if (user.getBsn() <= 0) {
+            throw new IllegalArgumentException("BSN must be a positive number");
+        }
+        return userRepository.save(user).toDTO();
     }
 
     @Override
-    public Transaction updateUser(Long id, Transaction transaction) {
+    public UserDTO updateUser(Long id, User userDTO) {
+
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updateUser'");
     }
 
     @Override
-    public Transaction createUser(User transaction) {
+    public void removeUser(Long id) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createUser'");
+        throw new UnsupportedOperationException("Unimplemented method 'removeUser'");
     }
-   
+
 
 }

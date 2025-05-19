@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.Getter;
 
 @Entity
+
 @Data
 public class Transaction implements Model{
 
@@ -28,10 +29,9 @@ public class Transaction implements Model{
 
     @ManyToOne
     private Account toAccount;
-    
 
     @Override
-    public DTO ToDTO() {
+    public DTO toDTO() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'ToDTO'");
     }
