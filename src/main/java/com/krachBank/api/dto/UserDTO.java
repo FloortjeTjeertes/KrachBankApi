@@ -1,0 +1,44 @@
+package com.krachbank.api.dto;
+
+import java.time.LocalDateTime;
+
+import com.krachbank.api.models.Model;
+import com.krachbank.api.models.User;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserDTO implements DTO {
+
+    private Long id;
+    private String transferLimit;
+    private LocalDateTime createdAt;
+    private boolean isVerified;
+    private boolean isActive;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String phoneNumber;
+    private int BSN;
+
+    @Override
+    public User ToModel() {
+        User user = new User();
+        user.setId(this.id);
+        user.setDailyLimit(this.transferLimit);
+        user.setCreatedAt(this.createdAt);
+        user.setVerified(this.isVerified);
+        user.setActive(this.isActive);
+        user.setFirstName(this.firstName);
+        user.setLastName(this.lastName);
+        user.setEmail(this.email);
+        user.setPhoneNumber(this.phoneNumber);
+        user.setBsn(this.BSN);
+        return user;
+    }
+
+}

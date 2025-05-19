@@ -9,7 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class Transaction implements Model{
+public class Transaction implements Model {
 
     @Id
     private Long id;
@@ -24,10 +24,9 @@ public class Transaction implements Model{
 
     @ManyToOne
     private Account toAccount;
-    
 
     @Override
-    public DTO ToDTO() {
+    public DTO toDTO() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'ToDTO'");
     }
