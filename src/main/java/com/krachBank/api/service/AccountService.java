@@ -10,9 +10,9 @@ public interface AccountService {
 
     public AccountDTO getAccountById(Long id);
 
-    public AccountDTO createAccount(Account account);
+    public Account createAccount(Account account);
 
-    public List<AccountDTO> createAccounts(List<Account> accounts);
+    public List<Account> createAccounts(List<Account> accounts);
 
     public AccountDTO updateAccount(Long id, Account account);
 

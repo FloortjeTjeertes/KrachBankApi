@@ -42,7 +42,7 @@ public class User implements Model {
 
     private int bsn;
 
-    public DTO ToDTO() {
+    public DTO toDTO() {
         return new UserDTO(id, dailyLimit, createdAt, verified, active, firstName, lastName,
                 email, phoneNumber, bsn);
     }

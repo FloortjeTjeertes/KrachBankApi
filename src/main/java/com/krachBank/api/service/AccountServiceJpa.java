@@ -28,16 +28,27 @@ public class AccountServiceJpa implements AccountService {
     }
 
     @Override
-    public List<AccountDTO> createAccounts(List<Account> accounts) {
-        List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
+    public List<Account> createAccounts(List<Account> accounts) {
+        // Validate accounts
         for (Account account : accounts) {
-            accountDTOs.add(createAccount(account));
+            if (account == null) {
+                throw new IllegalArgumentException("Account cannot be null");
+            }
+            if (account.getIBAN() == null) {
+                throw new IllegalArgumentException("Account number is required");
+            }
+            if (account.getBalance() == null) {
+                throw new IllegalArgumentException("Account balance is required");
+            }
+            if (account.getUser() == null) {
+                throw new IllegalArgumentException("Account owner is required");
+            }
         }
-        return accountDTOs;
+        return accountRepository.saveAll(accounts);
     }
 
     @Override
-    public AccountDTO createAccount(Account account) {
+    public Account createAccount(Account account) {
         if (account == null) {
             throw new IllegalArgumentException("Account cannot be null");
         }
@@ -51,7 +62,7 @@ public class AccountServiceJpa implements AccountService {
             throw new IllegalArgumentException("Account owner is required");
         }
 
-        return accountRepository.save(account).ToDTO();
+        return accountRepository.save(account);
     }
 
     @Override

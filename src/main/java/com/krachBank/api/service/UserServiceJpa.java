@@ -59,7 +59,7 @@ public class UserServiceJpa implements UserService {
         if (user.getBsn() <= 0) {
             throw new IllegalArgumentException("BSN must be a positive number");
         }
-        return userRepository.save(user).ToDTO();
+        return userRepository.save(user).toDTO();
     }
 
     @Override

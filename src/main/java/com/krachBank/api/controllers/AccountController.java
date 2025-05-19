@@ -1,5 +1,6 @@
 package com.krachbank.api.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +30,12 @@ public class AccountController {
             for (Account account : accounts) {
                 account.setIBAN(ibanGenerator.generateIBAN());
             }
-            return accountService.createAccounts(accounts);
+            List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
+            List<Account> returnAccounts = accountService.createAccounts(accounts);
+            for (Account account : returnAccounts) {
+                accountDTOs.add(account.toDTO());
+            }
+            return accountDTOs;
         } catch (IllegalArgumentException e) {
             // Handle the exception as needed, e.g., log it or return an error response
             System.out.println("Error creating accounts: " + e.getMessage());

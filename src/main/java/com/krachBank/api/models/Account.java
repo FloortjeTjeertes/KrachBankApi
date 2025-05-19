@@ -11,12 +11,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
+@Data
 public class Account implements Model {
 
     @Id
@@ -31,7 +29,7 @@ public class Account implements Model {
     private User user;
 
     @Override
-    public AccountDTO ToDTO() {
+    public AccountDTO toDTO() {
         AccountDTO accountDTO = new AccountDTO();
         accountDTO.setId(this.id);
         accountDTO.setIBAN(this.IBAN);
