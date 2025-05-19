@@ -1,6 +1,5 @@
 package com.krachbank.api.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.krachbank.api.dto.AccountDTO;
