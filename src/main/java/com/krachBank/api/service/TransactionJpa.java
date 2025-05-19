@@ -24,14 +24,18 @@ public class TransactionJpa implements TransactionService {
 
     @Override
     public Optional<Transaction> createTransaction(Transaction transaction) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createTransaction'");
+        if (transaction.getId() != null) {
+            return Optional.empty();
+        }
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        return Optional.of(savedTransaction);
+
     }
 
     @Override
     public Optional<Transaction> getTransactionById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getTransactionById'");
+
+        return transactionRepository.findById(id);
     }
 
     @Override
@@ -43,7 +47,6 @@ public class TransactionJpa implements TransactionService {
 
     @Override
     public Optional<Transaction> getTransactionByFilter(TransactionFilter filter) {
-        // TODO Auto-generated method stub
         return transactionRepository.findOne(MakeTransactionsSpecification(filter));
     }
 
@@ -64,10 +67,10 @@ public class TransactionJpa implements TransactionService {
         List<Predicate> predicates = new ArrayList<>();
 
         if (filter.getSenderId() != null) {
-            cb.and(cb.equal(root.get("fromAccount").get("id"), filter.getSenderId()));
+            predicates.add(cb.equal(root.get("fromAccount").get("id"), filter.getSenderId()));
         }
         if (filter.getReceiverId() != null) {
-            cb.and(cb.equal(root.get("toAccount").get("id"), filter.getReceiverId()));
+            predicates.add(cb.equal(root.get("toAccount").get("id"), filter.getReceiverId()));
        }
         if (filter.getMinAmount() != null) {
             predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), filter.getMinAmount()));
