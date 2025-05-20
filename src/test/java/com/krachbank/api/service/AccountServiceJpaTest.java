@@ -10,6 +10,7 @@ import org.iban4j.Iban;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,16 +46,16 @@ public class AccountServiceJpaTest {
         account1 = new Account();
         account1.setId(1L);
         account1.setIBAN(iban1);
-        account1.setBalance(1000.0);
-        account1.setAbsoluteLimit(100.0);
+        account1.setBalance(BigDecimal.valueOf(1000.0));
+        account1.setAbsoluteLimit(BigDecimal.valueOf(100.0));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
 
         account2 = new Account();
         account2.setId(2L);
         account2.setIBAN(iban2);
-        account2.setBalance(1500.0);
-        account2.setAbsoluteLimit(200.0);
+        account2.setBalance(BigDecimal.valueOf( 1500.0));
+        account2.setAbsoluteLimit(BigDecimal.valueOf( 200.0));
         account2.setAccountType(AccountType.CHECKING);
         account2.setUser(user2);
     }
@@ -62,8 +63,8 @@ public class AccountServiceJpaTest {
     @Test
     void testCreateAccount() {
         // Change values for this test
-        account1.setBalance(1000.0);
-        account1.setAbsoluteLimit(100.0);
+        account1.setBalance(BigDecimal.valueOf(1000.0));
+        account1.setAbsoluteLimit(BigDecimal.valueOf(100.0));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
         account1.setIBAN(iban1);
@@ -85,14 +86,14 @@ public class AccountServiceJpaTest {
     @Test
     void testCreateAccounts() {
         // Change values for this test
-        account1.setBalance(500.0);
-        account1.setAbsoluteLimit(50.0);
+        account1.setBalance(BigDecimal.valueOf(500.0));
+        account1.setAbsoluteLimit(BigDecimal.valueOf(50.0));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
         account1.setIBAN(iban1);
 
-        account2.setBalance(1500.0);
-        account2.setAbsoluteLimit(200.0);
+        account2.setBalance(BigDecimal.valueOf(1500.0));
+        account2.setAbsoluteLimit(BigDecimal.valueOf(200.0));
         account2.setAccountType(AccountType.CHECKING);
         account2.setUser(user2);
         account2.setIBAN(iban2);

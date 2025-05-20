@@ -1,5 +1,7 @@
 package com.krachbank.api.dto;
 
+import java.math.BigDecimal;
+
 import org.iban4j.Iban;
 
 import com.krachbank.api.models.AccountType;
@@ -16,8 +18,8 @@ public class AccountDTO implements DTO {
     private Long id;
     private Iban IBAN;
     private AccountType accountType;
-    private double balance;
-    private double absoluteLimit;
+    private BigDecimal balance;
+    private BigDecimal absoluteLimit;
     private String userId;
 
    

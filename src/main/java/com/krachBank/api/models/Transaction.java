@@ -1,5 +1,6 @@
 package com.krachbank.api.models;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.krachbank.api.dto.TransactionDTO;
@@ -17,7 +18,7 @@ public class Transaction implements Model{
 
     @Id
     private Long id;
-    private Double amount;
+    private BigDecimal amount;
 
 
     private LocalDateTime createdAt;

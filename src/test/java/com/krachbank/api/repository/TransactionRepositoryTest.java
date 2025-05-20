@@ -3,6 +3,7 @@ package com.krachbank.api.repository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -44,14 +45,14 @@ public class TransactionRepositoryTest {
 
         Transaction transaction1 = new Transaction();
         transaction1.setId(1L);
-        transaction1.setAmount(100.0);
+        transaction1.setAmount(BigDecimal.valueOf(100.0));
         transaction1.setCreatedAt(LocalDateTime.of(2025,01, 01,01,01));
         transaction1.setFromAccount(fromAccount);
         transaction1.setToAccount(toAccount);
 
         Transaction transaction2 = new Transaction();
         transaction2.setId(2L);
-        transaction2.setAmount(200.0);
+        transaction2.setAmount(BigDecimal.valueOf(200.0));
         transaction2.setCreatedAt(LocalDateTime.of(2025,01, 02,01,01));
         transaction2.setFromAccount(fromAccount);
         transaction2.setToAccount(toAccount);
@@ -110,7 +111,7 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_ByMinAmount() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setMinAmount(200.0);
+        filter.setMinAmount(BigDecimal.valueOf( 200.0));
         List<Transaction> results = transactionRepository.findAll(
             TransactionJpa.MakeTransactionsSpecification(filter)
         );
@@ -125,7 +126,7 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_ByMaxAmount() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setMaxAmount(100.0);
+        filter.setMaxAmount(BigDecimal.valueOf(100.0));
         List<Transaction> results = transactionRepository.findAll(
             TransactionJpa.MakeTransactionsSpecification(filter)
         );

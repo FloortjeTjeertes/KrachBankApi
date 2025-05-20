@@ -1,5 +1,6 @@
 package com.krachbank.api.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import jakarta.persistence.criteria.Predicate;
 import com.krachbank.api.dto.TransactionDTO;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
+import com.krachbank.api.models.AccountType;
 import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.TransactionRepository;
@@ -29,24 +31,38 @@ public class TransactionJpa implements TransactionService {
     public Optional<Transaction> createTransaction(TransactionDTO transactionDto) {
         Transaction transaction = toModel(transactionDto);
 
+
+
         try {
             isValidTransaction(transaction);
             transactionRepository.findById(transaction.getId()).ifPresent(existingTransaction -> {
                 throw new IllegalArgumentException("Transaction already exists");
             });
+
+            Account  sendingAccount =  transaction.getFromAccount();
+            Account  receivingAccount = transaction.getToAccount();
+
             //check if the transaction is to the same account
+            if(sendingAccount.getIBAN().equals(receivingAccount.getIBAN())){
+                throw new IllegalArgumentException("cant transfer to the same account");
 
-            //check if the transaction is from 2 different accounts of the same user
-                //check if the sending account is not a saving account
+            }
 
-            //check if the receiving account is  an saving account
-                //if it is a saving account, check if the saving account is from the same user as the sending account
+            if(!receivingAccount.getUser().equals(sendingAccount.getUser())   ){
+                if(receivingAccount.getAccountType()==AccountType.SAVINGS || sendingAccount.getAccountType()==AccountType.SAVINGS ){
+                    throw new IllegalArgumentException("cant transfer money to or from another persons saving account");
+                }
+
+               
+            }
+
+            canSpendTransactionAmount(sendingAccount, transaction.getAmount());
+            
+
+    
                 
 
-            //calculate the resulting balance of the sending account
-                // if the calculated resulting balance is  more then the absolute limit ( more then the -absolutelimit amount)
-                //check if the amount is not more then the daily limit
-                //check if the amount is not more then the transaction limit (amount of money that can be transferred per transaction)
+            
 
 
 
@@ -56,10 +72,53 @@ public class TransactionJpa implements TransactionService {
             // TODO: handle exception
         }
         return null;
-    
-     
 
     }
+
+    Boolean canSpendTransactionAmount(Account account,BigDecimal amount) throws Exception{
+
+        //calculate the resulting balance of the sending account
+                // if the calculated resulting balance is  more then the absolute limit ( more then the -absolutelimit amount)
+                //check if the amount is not more then the daily limit
+                //check if the amount is not more then the transaction limit (amount of money that can be transferred per transaction)
+
+        BigDecimal resultingAmount = account.getBalance().subtract(amount);
+
+        if(resultingAmount.compareTo(account.getAbsoluteLimit()) < 0) {
+                throw new Exception("cant spend more then the absolute limit. in other words: you broke");
+            
+        }
+
+        return true;
+
+    }
+
+    Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount){
+        return null;
+     
+        
+
+    }
+
+    Boolean reachedDailyTransferLimit(User  user, BigDecimal amount){
+        BigDecimal totalSpendBeforeToday = null; //total amount of money spend today
+        BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
+        BigDecimal dailyLimit  = user.getDailyLimit(); //users daily limit
+
+
+        if(totalSpendToday.equals(dailyLimit) || totalSpendToday.compareTo(dailyLimit) < 0){
+            throw new Exception("")
+
+        }
+
+        return true;
+    }
+
+
+
+
+
+    
 
     @Override
     public Optional<Transaction> getTransactionById(Long id) {
@@ -123,7 +182,7 @@ public class TransactionJpa implements TransactionService {
 }
 
     public boolean isValidTransaction(Transaction transaction) {
-        if (transaction.getAmount() <= 0) {
+        if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Invalid transaction amount");
         }
         if (transaction.getFromAccount() == null || transaction.getToAccount() == null) {

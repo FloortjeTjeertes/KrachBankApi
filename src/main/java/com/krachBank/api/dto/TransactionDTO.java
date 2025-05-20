@@ -1,5 +1,7 @@
 package com.krachbank.api.dto;
 
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDTO  implements DTO {
-    private double amount;
+    private BigDecimal amount;
     private String receiver;
     private String sender;
     private String description;

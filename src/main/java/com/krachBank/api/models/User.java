@@ -1,5 +1,6 @@
 package com.krachbank.api.models;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.krachbank.api.dto.UserDTO;
@@ -22,7 +23,7 @@ public class User implements Model {
 
     private String name;
 
-    private String dailyLimit;
+    private BigDecimal dailyLimit;
 
     private String password;
 
@@ -42,11 +43,6 @@ public class User implements Model {
 
     private int bsn;
 
-    public UserDTO toDTO() {
-        return new UserDTO(id, dailyLimit, createdAt, verified, active, firstName, lastName,
-                email, phoneNumber, bsn);
-    }
-
     public Long getId() {
         return id;
     }
@@ -63,7 +59,7 @@ public class User implements Model {
         this.name = name;
     }
 
-    public String getDailyLimit() {
+    public BigDecimal getDailyLimit() {
         return dailyLimit;
     }
 

@@ -1,12 +1,13 @@
 package com.krachbank.api.filters;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class TransactionFilter extends baseFilter {
     private Long senderId;
     private Long receiverId;
-    private Double minAmount;
-    private Double maxAmount;
+    private BigDecimal minAmount;
+    private BigDecimal maxAmount;
     private LocalDateTime beforeDate;
     private LocalDateTime afterDate;
 
@@ -27,19 +28,19 @@ public class TransactionFilter extends baseFilter {
         this.receiverId = receiverId;
     }
 
-    public Double getMinAmount() {
+    public BigDecimal getMinAmount() {
         return minAmount;
     }
 
-    public void setMinAmount(Double minAmount) {
+    public void setMinAmount(BigDecimal minAmount) {
         this.minAmount = minAmount;
     }
 
-    public Double getMaxAmount() {
+    public BigDecimal getMaxAmount() {
         return maxAmount;
     }
 
-    public void setMaxAmount(Double maxAmount) {
+    public void setMaxAmount(BigDecimal maxAmount) {
         this.maxAmount = maxAmount;
     }
 

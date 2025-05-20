@@ -1,5 +1,6 @@
 package com.krachbank.api.models;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
@@ -27,8 +28,8 @@ public class Account implements Model {
     private Long id;
     @Convert(converter = IbanConverter.class)
     private Iban IBAN;
-    private Double Balance;
-    private Double AbsoluteLimit;
+    private BigDecimal Balance;
+    private BigDecimal AbsoluteLimit;
     private AccountType accountType;
     private LocalDateTime createdAt;
 
