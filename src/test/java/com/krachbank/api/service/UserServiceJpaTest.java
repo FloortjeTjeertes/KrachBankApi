@@ -6,6 +6,7 @@ import com.krachbank.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +28,7 @@ public class UserServiceJpaTest {
 
         user1 = new User();
         user1.setId(1L);
-        user1.setDailyLimit("1000");
+        user1.setDailyLimit(BigDecimal.valueOf(1000));
         user1.setCreatedAt(LocalDateTime.now());
         user1.setVerified(true);
         user1.setActive(true);
@@ -39,7 +40,7 @@ public class UserServiceJpaTest {
 
         user2 = new User();
         user2.setId(2L);
-        user2.setDailyLimit("2000");
+        user2.setDailyLimit(BigDecimal.valueOf( 2000));
         user2.setCreatedAt(LocalDateTime.now());
         user2.setVerified(false);
         user2.setActive(false);

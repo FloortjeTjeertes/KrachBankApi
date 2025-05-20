@@ -47,7 +47,7 @@ public class Account implements Model {
 
     public List<Transaction>  getTransactions(){
         List<Transaction> transactions = Stream.concat(this.transactionsFrom.stream(), this.transactionsTo.stream())
-                .toList();
+                .collect(java.util.stream.Collectors.toList());
         return transactions;
     }
 

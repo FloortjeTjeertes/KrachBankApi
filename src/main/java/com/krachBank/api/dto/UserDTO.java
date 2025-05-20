@@ -1,5 +1,6 @@
 package com.krachbank.api.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class UserDTO implements DTO {
 
     private Long id;
-    private String transferLimit;
+    private BigDecimal transferLimit;
     private LocalDateTime createdAt;
     private boolean isVerified;
     private boolean isActive;

@@ -3,6 +3,7 @@ package com.krachbank.api.models;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
 
 import jakarta.persistence.Entity;
@@ -63,7 +64,7 @@ public class User implements Model {
         return dailyLimit;
     }
 
-    public void setDailyLimit(String dailyLimit) {
+    public void setDailyLimit(BigDecimal dailyLimit) {
         this.dailyLimit = dailyLimit;
     }
 
@@ -138,6 +139,12 @@ public class User implements Model {
     public void setBsn(int bsn) {
         this.bsn = bsn;
 
+    }
+
+    @Override
+    public UserDTO toDTO() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toDTO'");
     }
 
 }

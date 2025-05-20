@@ -25,7 +25,7 @@ public class UserServiceJpa implements UserService {
         return userRepository.findAll().stream()
                 .map(user -> new UserDTO(
                         user.getId(),
-                        String.valueOf(user.getDailyLimit()),
+                        user.getDailyLimit(),
                         user.getCreatedAt(),
                         user.isVerified(),
                         user.isActive(),

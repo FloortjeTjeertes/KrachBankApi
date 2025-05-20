@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException.NotImplemented;
+
 import jakarta.persistence.criteria.Predicate;
 
 import com.krachbank.api.dto.TransactionDTO;
@@ -80,8 +82,8 @@ public class TransactionJpa implements TransactionService {
 
    
 
-    Boolean reachedAbsoluteLimit(Account account, BigDecimal amount) throws Exception{
-        BigDecimal resultingAmount = account.getBalance().subtract(amount);
+    public Boolean reachedAbsoluteLimit(Account account, BigDecimal amount) throws Exception{
+    BigDecimal resultingAmount = account.getBalance().subtract(amount);
 
         if(resultingAmount.compareTo(account.getAbsoluteLimit()) < 0) {
                 throw new Exception("cant spend more then the absolute limit. in other words: you broke");
@@ -91,8 +93,9 @@ public class TransactionJpa implements TransactionService {
         return true;
     }
 
+    public Boolean reachedDailyTransferLimit(User  user, BigDecimal amount) throws Exception{
 
-    Boolean reachedDailyTransferLimit(User  user, BigDecimal amount) throws Exception{
+
         BigDecimal totalSpendBeforeToday = null; //total amount of money spend today
         BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
         BigDecimal dailyLimit  = user.getDailyLimit(); //users daily limit
@@ -106,12 +109,22 @@ public class TransactionJpa implements TransactionService {
         return true;
     }
 
-    Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount){
-        return null;
+    public Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount) throws Exception{
+        throw new Exception();
      
     }
 
+    public BigDecimal getUserTotalAmountSpendAtDate(User user , LocalDateTime date){
+        List<Transaction> transactionsForUser = transactionRepository.findByInitiatorIdOrderByCreatedAtAsc(user.getId()); //change this to a service method if we ever get one that retrieves all transactions for a single user
+        List<Transaction> filteredTransactions = transactionsForUser.stream()
+            .filter(t -> t.getCreatedAt().toLocalDate().equals(date))
+            .toList();
+            
+        return filteredTransactions.stream()
+        .map(Transaction::getAmount)
+        .reduce(BigDecimal.ZERO,BigDecimal::add);
 
+    }
 
     
 
