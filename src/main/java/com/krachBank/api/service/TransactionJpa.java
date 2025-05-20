@@ -8,7 +8,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.criteria.Predicate;
 
-import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.TransactionDTO;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
@@ -16,7 +15,6 @@ import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.TransactionRepository;
 
-import ch.qos.logback.core.model.Model;
 
 @Service
 public class TransactionJpa implements TransactionService {
@@ -173,8 +171,7 @@ public class TransactionJpa implements TransactionService {
         }
         return transactionDTOs;
     }
-
   
 
-   
+
 }

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.krachbank.api.dto.ErrorDTO;
 import com.krachbank.api.dto.TransactionDTO;
 import com.krachbank.api.filters.TransactionFilter;
-import com.krachbank.api.filters.baseFilter;
 import com.krachbank.api.models.Transaction;
 import com.krachbank.api.service.TransactionService;
 
