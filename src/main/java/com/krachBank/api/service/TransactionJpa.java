@@ -56,10 +56,13 @@ public class TransactionJpa implements TransactionService {
                
             }
 
-            canSpendTransactionAmount(sendingAccount, transaction.getAmount());
             
-
-    
+            //calculate the resulting balance of the sending account
+            // if the calculated resulting balance is  more then the absolute limit ( more then the -absolutelimit amount)
+            //check if the amount is not more then the daily limit
+            //check if the amount is not more then the transaction limit (amount of money that can be transferred per transaction)
+            reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
+            reachedDailyTransferLimit(sendingAccount.getUser() ,transaction.getAmount());
                 
 
             
@@ -75,13 +78,9 @@ public class TransactionJpa implements TransactionService {
 
     }
 
-    Boolean canSpendTransactionAmount(Account account,BigDecimal amount) throws Exception{
+   
 
-        //calculate the resulting balance of the sending account
-                // if the calculated resulting balance is  more then the absolute limit ( more then the -absolutelimit amount)
-                //check if the amount is not more then the daily limit
-                //check if the amount is not more then the transaction limit (amount of money that can be transferred per transaction)
-
+    Boolean reachedAbsoluteLimit(Account account, BigDecimal amount) throws Exception{
         BigDecimal resultingAmount = account.getBalance().subtract(amount);
 
         if(resultingAmount.compareTo(account.getAbsoluteLimit()) < 0) {
@@ -90,31 +89,27 @@ public class TransactionJpa implements TransactionService {
         }
 
         return true;
-
     }
 
-    Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount){
-        return null;
-     
-        
 
-    }
-
-    Boolean reachedDailyTransferLimit(User  user, BigDecimal amount){
+    Boolean reachedDailyTransferLimit(User  user, BigDecimal amount) throws Exception{
         BigDecimal totalSpendBeforeToday = null; //total amount of money spend today
         BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
         BigDecimal dailyLimit  = user.getDailyLimit(); //users daily limit
 
 
         if(totalSpendToday.equals(dailyLimit) || totalSpendToday.compareTo(dailyLimit) < 0){
-            throw new Exception("")
+            throw new Exception("dailylimit reached"); //
 
         }
 
         return true;
     }
 
-
+    Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount){
+        return null;
+     
+    }
 
 
 
