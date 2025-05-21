@@ -1,21 +1,22 @@
 package com.krachbank.api.service;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import com.krachbank.api.dto.UserDTO;
+import com.krachbank.api.models.User;
+import com.krachbank.api.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
-import com.krachbank.api.dto.UserDTO;
-import com.krachbank.api.models.User;
-import com.krachbank.api.repository.UserRepository;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.modelmapper.ModelMapper;
-import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 
@@ -101,29 +102,44 @@ public class UserServiceJpaTest {
 
     @Test
     void testDeactivateUser() {
-        when(userRepository.findById(Long.valueOf(1L))).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        // Prepare a mutable User with isActive == true
+        User user = new User();
+        user.setIsActive(true);
+
+        UserDTO userDTO = new UserDTO();
+        // mock modelMapper result as needed
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(modelMapper.map(any(User.class), eq(UserDTO.class))).thenReturn(userDTO);
 
-        UserDTO deactivated = userService.deactivateUser(Long.valueOf(1L));
+        UserDTO deactivated = userService.deactivateUser(1L);
 
         assertThat(deactivated).isNotNull();
-        verify(userRepository).findById(Long.valueOf(1L));
-        verify(userRepository).save(user);
+
+        // This now should pass
         assertThat(user.isActive()).isFalse();
+
+        verify(userRepository).findById(1L);
+        verify(userRepository).save(user);
     }
     @Test
     void testVerifyUser() {
-        when(userRepository.findById(Long.valueOf(1L))).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        // Simulate mapper returning the updated state
+        userDTO.setIsVerified(true);
         when(modelMapper.map(any(User.class), eq(UserDTO.class))).thenReturn(userDTO);
 
-        UserDTO verified = userService.verifyUser(Long.valueOf(1L));
+        UserDTO verified = userService.verifyUser(1L);
 
         assertThat(verified).isNotNull();
-        verify(userRepository).findById(Long.valueOf(1L));
+        assertThat(verified.getIsVerified()).isTrue(); // <- check DTO
+        assertThat(user.isVerified()).isTrue();        // <- check entity
+
+        verify(userRepository).findById(1L);
         verify(userRepository).save(user);
-        assertThat(user.isVerified()).isTrue();
     }
     @Test
     void testUpdateUser() {
