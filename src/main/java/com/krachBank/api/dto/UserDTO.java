@@ -40,5 +40,19 @@ public class UserDTO implements DTO {
         user.setBsn(this.BSN);
         return user;
     }
+    public static UserDTO fromModel(User user) {
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setTransferLimit(user.getTransferLimit());
+        dto.setCreatedAt(user.getCreatedAt());
+        dto.setVerified(user.isVerified());
+        dto.setActive(user.isActive());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setEmail(user.getEmail());
+        dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setBSN(user.getBsn());
+        return dto;
+    }
 
 }
