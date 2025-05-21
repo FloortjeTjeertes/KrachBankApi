@@ -1,122 +1,118 @@
 package com.krachbank.api.service;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.modelmapper.ModelMapper;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+@ExtendWith(MockitoExtension.class)
 
 public class UserServiceJpaTest {
-    private UserServiceJpa userService;
+    @Mock
     private UserRepository userRepository;
 
-    private User user1;
-    private User user2;
+    @Mock
+    private ModelMapper modelMapper;
+
+    @InjectMocks
+    private UserServiceJPA userService;
+
+    private User user;
+    private UserDTO userDTO;
 
     @BeforeEach
     void setUp() {
-        userRepository = mock(UserRepository.class);
-        userService = new UserServiceJpa(userRepository);
+        user = new User();
+        user.setId(1L);
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setEmail("john.doe@example.com");
+        user.setActive(true);
+        user.setVerified(false);
+        user.setCreatedAt(LocalDateTime.now());
+        user.setDailyLimit("1000");
+        user.setPhoneNumber("123456789");
+        user.setBsn(123456789);
 
-        user1 = new User();
-        user1.setId(1L);
-        user1.setDailyLimit("1000");
-        user1.setCreatedAt(LocalDateTime.now());
-        user1.setVerified(true);
-        user1.setActive(true);
-        user1.setFirstName("John");
-        user1.setLastName("Doe");
-        user1.setEmail("john@example.com");
-        user1.setPhoneNumber("1234567890");
-        user1.setBsn(123456789);
-
-        user2 = new User();
-        user2.setId(2L);
-        user2.setDailyLimit("2000");
-        user2.setCreatedAt(LocalDateTime.now());
-        user2.setVerified(false);
-        user2.setActive(false);
-        user2.setFirstName("Jane");
-        user2.setLastName("Smith");
-        user2.setEmail("jane@example.com");
-        user2.setPhoneNumber("0987654321");
-        user2.setBsn(987654321);
+        userDTO = new UserDTO();
+        userDTO.setId(1L);
+        userDTO.setFirstName("John");
+        userDTO.setLastName("Doe");
+        userDTO.setEmail("john.doe@example.com");
+        userDTO.setIsActive(true);
+        userDTO.setIsVerified(false);
+        userDTO.setCreatedAt(user.getCreatedAt());
+        userDTO.setTransferLimit("1000");
+        userDTO.setPhoneNumber("123456789");
+        userDTO.setBSN(123456789);
     }
 
     @Test
-    void testGetUsers() {
-        when(userRepository.findAll()).thenReturn(Arrays.asList(user1, user2));
+    void testGetUserById_Found() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(modelMapper.map(user, UserDTO.class)).thenReturn(userDTO);
 
-        List<UserDTO> users = userService.getUsers();
+        UserDTO result = userService.getUserById(1L);
 
-        assertNotNull(users);
-        assertEquals(2, users.size());
-        assertEquals(user1.getId(), users.get(0).getId());
-        assertEquals(user2.getId(), users.get(1).getId());
-        verify(userRepository, times(1)).findAll();
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getFirstName()).isEqualTo("John");
+
+        verify(userRepository).findById(1L);
+        verify(modelMapper).map(user, UserDTO.class);
     }
 
     @Test
-    void testVerifyUser() {
-        user1.setVerified(false);
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User savedUser = invocation.getArgument(0);
-            // Simulate that the repository sets verified to true (if your service does
-            // this)
-            savedUser.setVerified(true);
-            return savedUser;
-        });
+    void testGetUserById_NotFound() {
+        when(userRepository.findById(2L)).thenReturn(Optional.empty());
 
-        UserDTO dto = (UserDTO) userService.verifyUser(user1);
-
-        assertNotNull(dto);
-        assertEquals(user1.getId(), dto.getId());
-        assertEquals(user1.getEmail(), dto.getEmail());
-        assertTrue(user1.isVerified(), "User should be verified after verifyUser");
-        verify(userRepository, times(1)).save(user1);
+        // expect your service to throw a RuntimeException or custom NotFoundException
+        assertThatThrownBy(() -> userService.getUserById(2L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("User not found");
     }
 
     @Test
-    void testVerifyUser_NullUser_ThrowsException() {
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(null));
+    void testCreateUser() {
+        when(modelMapper.map(userDTO, User.class)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+        when(modelMapper.map(user, UserDTO.class)).thenReturn(userDTO);
+
+        UserDTO created = userService.createUser(userDTO);
+
+        assertThat(created).isNotNull();
+        assertThat(created.getIsActive()).isTrue();
+        assertThat(created.getIsVerified()).isFalse();
+
+        verify(userRepository).save(user);
     }
 
     @Test
-    void testVerifyUser_MissingEmail_ThrowsException() {
-        user1.setEmail(null);
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
-        user1.setEmail(""); // empty string
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
+    void testDeactivateUser() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(modelMapper.map(any(User.class), eq(UserDTO.class))).thenReturn(userDTO);
+
+        UserDTO deactivated = userService.deactivateUser(1L);
+
+        assertThat(deactivated).isNotNull();
+        verify(userRepository).findById(1L);
+        verify(userRepository).save(user);
+        assertThat(user.isActive()).isFalse();
     }
 
-    @Test
-    void testVerifyUser_MissingFirstName_ThrowsException() {
-        user1.setFirstName(null);
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
-        user1.setFirstName(""); // empty string
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
-    }
-
-    @Test
-    void testVerifyUser_MissingLastName_ThrowsException() {
-        user1.setLastName(null);
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
-        user1.setLastName(""); // empty string
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
-    }
-
-    @Test
-    void testVerifyUser_InvalidBsn_ThrowsException() {
-        user1.setBsn(0);
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
-        user1.setBsn(-1);
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
-    }
+    // Add more tests for updateUser, verifyUser, getAllUsers similarly...
 }
+

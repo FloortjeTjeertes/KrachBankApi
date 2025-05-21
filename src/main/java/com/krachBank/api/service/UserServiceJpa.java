@@ -1,81 +1,83 @@
 package com.krachbank.api.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
-import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
 
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
 
 @Service
-public class UserServiceJpa implements UserService {
+@RequiredArgsConstructor
+public class UserServiceJPA implements UserService {
+
     private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
+    @Configuration
+    public static class ModelMapperConfig {
 
-
-    public UserServiceJpa(UserRepository userRepository) {
-        this.userRepository = userRepository;
+        @Bean
+        public ModelMapper modelMapper() {
+            return new ModelMapper();
+        }
     }
 
-    @Override
-    public List<UserDTO> getUsers() {
+    public List<UserDTO> getAllUsers(Map<String, String> filters) {
+        // You can add filtering logic here if needed
         return userRepository.findAll().stream()
-                .map(user -> new UserDTO(
-                        user.getId(),
-                        String.valueOf(user.getDailyLimit()),
-                        user.getCreatedAt(),
-                        user.isVerified(),
-                        user.isActive(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getEmail(),
-                        user.getPhoneNumber(),
-                        user.getBsn()))
+                .map(user -> modelMapper.map(user, UserDTO.class))
                 .collect(Collectors.toList());
     }
 
     @Override
     public UserDTO getUserById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getUserById'");
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+        return modelMapper.map(user, UserDTO.class);
     }
 
     @Override
-    public DTO verifyUser(User user) {
-        // Basic validation example, adjust as needed for your User fields
-        if (user == null) {
-            throw new IllegalArgumentException("User cannot be null");
-        }
-        if (user.getEmail() == null || user.getEmail().isEmpty()) {
-            throw new IllegalArgumentException("Email is required");
-        }
-        if (user.getFirstName() == null || user.getFirstName().isEmpty()) {
-            throw new IllegalArgumentException("First name is required");
-        }
-        if (user.getLastName() == null || user.getLastName().isEmpty()) {
-            throw new IllegalArgumentException("Last name is required");
-        }
-        if (user.getBsn() <= 0) {
-            throw new IllegalArgumentException("BSN must be a positive number");
-        }
-        return userRepository.save(user).toDTO();
+    public UserDTO createUser(UserDTO userDTO) {
+        User user = modelMapper.map(userDTO, User.class);
+        user.setIsActive(true);
+        user.setIsVerified(false);
+        User savedUser = userRepository.save(user);
+        return modelMapper.map(savedUser, UserDTO.class);
     }
 
     @Override
-    public UserDTO updateUser(Long id, User userDTO) {
-
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateUser'");
+    public UserDTO updateUser(Long id, UserDTO userDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+        modelMapper.map(userDTO, user);  // Map DTO fields to existing entity
+        User updatedUser = userRepository.save(user);
+        return modelMapper.map(updatedUser, UserDTO.class);
     }
 
     @Override
-    public void removeUser(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'removeUser'");
+    public UserDTO deactivateUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+        user.setIsActive(false);
+        User updatedUser = userRepository.save(user);
+        return modelMapper.map(updatedUser, UserDTO.class);
     }
 
-
+    @Override
+    public UserDTO verifyUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+        user.setIsVerified(true);
+        User updatedUser = userRepository.save(user);
+        return modelMapper.map(updatedUser, UserDTO.class);
+    }
 }

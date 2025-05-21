@@ -146,4 +146,10 @@ public class User implements Model {
 
     }
 
+    public void setIsActive(boolean b) {
+    }
+
+    public void setIsVerified(boolean b) {
+    }
+
 }

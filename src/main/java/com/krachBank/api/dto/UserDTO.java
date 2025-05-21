@@ -41,4 +41,17 @@ public class UserDTO implements DTO {
         return user;
     }
 
+    public boolean getIsActive() {
+        return isActive;
+    }
+    public boolean getIsVerified() {
+        return isVerified;
+    }
+
+    public void setIsActive(boolean b) {
+        this.isActive = b;
+    }
+    public void setIsVerified(boolean b) {
+        this.isVerified = b;
+    }
 }
