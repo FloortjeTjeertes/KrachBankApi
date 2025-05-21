@@ -44,6 +44,8 @@ public class Account implements Model {
     @OneToMany(mappedBy = "toAccount")
     private List<Transaction> transactionsTo;
 
+    private BigDecimal transactionLimit;
+
 
     public List<Transaction>  getTransactions(){
         List<Transaction> transactions = Stream.concat(this.transactionsFrom.stream(), this.transactionsTo.stream())
@@ -60,6 +62,7 @@ public class Account implements Model {
         accountDTO.setAccountType(this.accountType);
         accountDTO.setBalance(this.Balance);
         accountDTO.setAbsoluteLimit(this.AbsoluteLimit);
+        accountDTO.setAbsoluteLimit(this.transactionLimit);
         accountDTO.setUserId(this.user.getId().toString());
         return accountDTO;
     }

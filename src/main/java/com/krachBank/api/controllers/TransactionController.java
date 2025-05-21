@@ -18,11 +18,11 @@ import com.krachbank.api.service.TransactionService;
 
 @RestController
 @RequestMapping("/transactions")
-public class TransactionContoller {
+public class TransactionController {
 
     private final TransactionService transactionService;
 
-    public TransactionContoller(TransactionService transactionService) {
+    public TransactionController(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
@@ -54,11 +54,10 @@ public class TransactionContoller {
                 return ResponseEntity.ok(transactionService.toDTO(createdTransaction.get()));
 
             } else {
-                ErrorDTO error = new ErrorDTO("Transaction already exists", 400);
-                return ResponseEntity.status(error.getCode()).body(error.getMessage());
+                throw new Exception("transaction did not safe right");
             }
         } catch (Exception e) {
-            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            ErrorDTO error= new ErrorDTO(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error.getMessage());
         }
     }

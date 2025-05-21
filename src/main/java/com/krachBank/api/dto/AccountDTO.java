@@ -20,6 +20,7 @@ public class AccountDTO implements DTO {
     private AccountType accountType;
     private BigDecimal balance;
     private BigDecimal absoluteLimit;
+    private BigDecimal transactionLimit;
     private String userId;
 
    

@@ -3,7 +3,6 @@ package com.krachbank.api.models;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
 
 import jakarta.persistence.Entity;
