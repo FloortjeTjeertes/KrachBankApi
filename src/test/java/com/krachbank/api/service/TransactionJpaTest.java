@@ -45,11 +45,12 @@ public class TransactionJpaTest {
         fullTransaction.setFromAccount(fromAccount);
 
         Account toAccount = new Account();
-        toAccount.setIBAN("NL91ABNA0417164300");
+        toAccount.setIBAN(iban);
         toAccount.setId(20L);
         fullTransaction.setToAccount(toAccount);
 
         User initiator = new User();
+        toAccount.setIBAN(iban2);
         initiator.setId(100L);
         fullTransaction.setInitiator(initiator);
 
