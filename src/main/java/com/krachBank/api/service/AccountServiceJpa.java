@@ -2,6 +2,7 @@ package com.krachbank.api.service;
 
 import java.util.List;
 
+import com.krachbank.api.dto.AccountDTO;
 import com.krachbank.api.models.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,18 +22,18 @@ public class AccountServiceJpa implements AccountService {
         this.accountRepository = accountRepository;
     }
 
-//    @Override
-//    public List<AccountDTO> getAccounts() {
-//        // TODO Auto-generated method stub
-//        throw new UnsupportedOperationException("Unimplemented method 'getAccounts'");
-//    }
-//
-//    @Override
-//    public AccountDTO getAccountById(Long id) {
-//
-//        // TODO Auto-generated method stub
-//        throw new UnsupportedOperationException("Unimplemented method 'getAccountById'");
-//    }
+    @Override
+    public List<AccountDTO> getAccounts() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAccounts'");
+    }
+
+    @Override
+    public AccountDTO getAccountById(Long id) {
+
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAccountById'");
+    }
 
     @Override
   public List<Account> createAccounts(List<Account> accounts) {

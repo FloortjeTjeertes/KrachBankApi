@@ -4,15 +4,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
+import jakarta.persistence.*;
 import org.iban4j.Iban;
 
 import com.krachbank.api.dto.AccountDTO;
 import com.krachbank.api.dto.DTO;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 
 import lombok.Data;
 
