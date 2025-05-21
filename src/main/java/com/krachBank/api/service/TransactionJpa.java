@@ -19,7 +19,6 @@ import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.TransactionRepository;
 
-
 @Service
 public class TransactionJpa implements TransactionService {
 
@@ -33,45 +32,40 @@ public class TransactionJpa implements TransactionService {
     public Optional<Transaction> createTransaction(TransactionDTO transactionDto) {
         Transaction transaction = toModel(transactionDto);
 
-
-
         try {
             isValidTransaction(transaction);
             transactionRepository.findById(transaction.getId()).ifPresent(existingTransaction -> {
                 throw new IllegalArgumentException("Transaction already exists");
             });
 
-            Account  sendingAccount =  transaction.getFromAccount();
-            Account  receivingAccount = transaction.getToAccount();
+            Account sendingAccount = transaction.getFromAccount();
+            Account receivingAccount = transaction.getToAccount();
 
-            //check if the transaction is to the same account
-            if(sendingAccount.getIBAN().equals(receivingAccount.getIBAN())){
+            // check if the transaction is to the same account
+            if (sendingAccount.getIBAN().equals(receivingAccount.getIBAN())) {
                 throw new IllegalArgumentException("cant transfer to the same account");
 
             }
 
-            if(!receivingAccount.getUser().equals(sendingAccount.getUser())   ){
-                if(receivingAccount.getAccountType()==AccountType.SAVINGS || sendingAccount.getAccountType()==AccountType.SAVINGS ){
+            if (!receivingAccount.getUser().equals(sendingAccount.getUser())) {
+                if (receivingAccount.getAccountType() == AccountType.SAVINGS
+                        || sendingAccount.getAccountType() == AccountType.SAVINGS) {
                     throw new IllegalArgumentException("cant transfer money to or from another persons saving account");
                 }
 
-               
             }
 
-            
-            //calculate the resulting balance of the sending account
-            // if the calculated resulting balance is  more then the absolute limit ( more then the -absolutelimit amount)
-            //check if the amount is not more then the daily limit
-            //check if the amount is not more then the transaction limit (amount of money that can be transferred per transaction)
+            // calculate the resulting balance of the sending account
+            // check if the amount is not more then the transaction limit (amount of money
+            // that can be transferred per transaction)
             reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
-            reachedDailyTransferLimit(sendingAccount.getUser() ,transaction.getAmount());
-                
-
-            
-
-
+            reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount());
 
             Transaction savedTransaction = transactionRepository.save(transaction);
+
+            //check if it saved correctly 
+            
+
             return Optional.of(savedTransaction);
         } catch (Exception e) {
             // TODO: handle exception
@@ -80,28 +74,24 @@ public class TransactionJpa implements TransactionService {
 
     }
 
-   
+    public Boolean reachedAbsoluteLimit(Account account, BigDecimal amount) throws Exception {
+        BigDecimal resultingAmount = account.getBalance().subtract(amount);
 
-    public Boolean reachedAbsoluteLimit(Account account, BigDecimal amount) throws Exception{
-    BigDecimal resultingAmount = account.getBalance().subtract(amount);
+        if (resultingAmount.compareTo(account.getAbsoluteLimit()) < 0) {
+            throw new Exception("cant spend more then the absolute limit. in other words: you broke");
 
-        if(resultingAmount.compareTo(account.getAbsoluteLimit()) < 0) {
-                throw new Exception("cant spend more then the absolute limit. in other words: you broke");
-            
         }
 
         return true;
     }
 
-    public Boolean reachedDailyTransferLimit(User  user, BigDecimal amount) throws Exception{
+    public Boolean reachedDailyTransferLimit(User user, BigDecimal amount) throws Exception {
 
-
-        BigDecimal totalSpendBeforeToday = null; //total amount of money spend today
+        BigDecimal totalSpendBeforeToday = null; // total amount of money spend today
         BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
-        BigDecimal dailyLimit  = user.getDailyLimit(); //users daily limit
+        BigDecimal dailyLimit = user.getDailyLimit(); // users daily limit
 
-
-        if(totalSpendToday.equals(dailyLimit) || totalSpendToday.compareTo(dailyLimit) < 0){
+        if (totalSpendToday.equals(dailyLimit) || totalSpendToday.compareTo(dailyLimit) < 0) {
             throw new Exception("dailylimit reached"); //
 
         }
@@ -109,24 +99,25 @@ public class TransactionJpa implements TransactionService {
         return true;
     }
 
-    public Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount) throws Exception{
+    public Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount) throws Exception {
         throw new Exception();
-     
+
     }
 
-    public BigDecimal getUserTotalAmountSpendAtDate(User user , LocalDateTime date){
-        List<Transaction> transactionsForUser = transactionRepository.findByInitiatorIdOrderByCreatedAtAsc(user.getId()); //change this to a service method if we ever get one that retrieves all transactions for a single user
+    public BigDecimal getUserTotalAmountSpendAtDate(User user, LocalDateTime date) {
+        List<Transaction> transactionsForUser = transactionRepository
+                .findByInitiatorIdOrderByCreatedAtAsc(user.getId()); // change this to a service method if we ever get
+                                                                     // one that retrieves all transactions for a single
+                                                                     // user
         List<Transaction> filteredTransactions = transactionsForUser.stream()
-            .filter(t -> t.getCreatedAt().toLocalDate().equals(date))
-            .toList();
-            
+                .filter(t -> t.getCreatedAt().toLocalDate().equals(date))
+                .toList();
+
         return filteredTransactions.stream()
-        .map(Transaction::getAmount)
-        .reduce(BigDecimal.ZERO,BigDecimal::add);
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
     }
-
-    
 
     @Override
     public Optional<Transaction> getTransactionById(Long id) {
@@ -159,35 +150,32 @@ public class TransactionJpa implements TransactionService {
     }
 
     public static Specification<Transaction> MakeTransactionsSpecification(TransactionFilter filter) {
-    return  (root,query,cb)->{
-        List<Predicate> predicates = new ArrayList<>();
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-        if (filter.getSenderId() != null) {
-            predicates.add(cb.equal(root.get("fromAccount").get("id"), filter.getSenderId()));
-        }
-        if (filter.getReceiverId() != null) {
-            predicates.add(cb.equal(root.get("toAccount").get("id"), filter.getReceiverId()));
-       }
-        if (filter.getMinAmount() != null) {
-            predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), filter.getMinAmount()));
-        }
-        if (filter.getMaxAmount() != null) {
-            predicates.add(cb.lessThanOrEqualTo(root.get("amount"), filter.getMaxAmount()));
-        }
+            if (filter.getSenderId() != null) {
+                predicates.add(cb.equal(root.get("fromAccount").get("id"), filter.getSenderId()));
+            }
+            if (filter.getReceiverId() != null) {
+                predicates.add(cb.equal(root.get("toAccount").get("id"), filter.getReceiverId()));
+            }
+            if (filter.getMinAmount() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), filter.getMinAmount()));
+            }
+            if (filter.getMaxAmount() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("amount"), filter.getMaxAmount()));
+            }
 
-        if (filter.getBeforeDate() != null) {
-            predicates.add(cb.lessThan(root.get("date"), filter.getBeforeDate()));
-        }
-        if (filter.getAfterDate() != null) {
-            predicates.add(cb.greaterThan(root.get("date"), filter.getAfterDate()));
-        }
-        return cb.and(predicates.toArray(new Predicate[0]));
-    };
+            if (filter.getBeforeDate() != null) {
+                predicates.add(cb.lessThan(root.get("date"), filter.getBeforeDate()));
+            }
+            if (filter.getAfterDate() != null) {
+                predicates.add(cb.greaterThan(root.get("date"), filter.getAfterDate()));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
 
-
-
-    
-}
+    }
 
     public boolean isValidTransaction(Transaction transaction) {
         if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
@@ -206,12 +194,11 @@ public class TransactionJpa implements TransactionService {
     public Transaction toModel(TransactionDTO dto) {
 
         User initUser = new User();
-       initUser.setId(dto.getInitiator());
+        initUser.setId(dto.getInitiator());
 
         Account fromAccount = new Account();
 
         Account receivingAccount = new Account();
-
 
         Transaction transaction = new Transaction();
         transaction.setAmount(dto.getAmount());
@@ -227,7 +214,7 @@ public class TransactionJpa implements TransactionService {
     @Override
     public TransactionDTO toDTO(Transaction model) {
         // TODO Auto-generated method stub
-       return model.toDTO();
+        return model.toDTO();
     }
 
     @Override
@@ -238,7 +225,5 @@ public class TransactionJpa implements TransactionService {
         }
         return transactionDTOs;
     }
-  
-
 
 }
