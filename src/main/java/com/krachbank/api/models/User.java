@@ -19,7 +19,8 @@ public class User implements Model {
     @GeneratedValue
     private Long id;
 
-    private String name;
+    //TODO: refactor name to nickname
+    private String nickName;
 
     private BigDecimal dailyLimit;
 

@@ -1,8 +1,6 @@
 package com.krachbank.api.service;
 
-import java.math.BigDecimal;
 import java.security.InvalidParameterException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,8 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.AccountDTO;
 import com.krachbank.api.models.Account;
-import com.krachbank.api.models.Transaction;
-import com.krachbank.api.models.User;
 import com.krachbank.api.repository.AccountRepository;
 
 import jakarta.transaction.Transactional;
@@ -23,11 +19,9 @@ public class AccountServiceJpa implements AccountService {
 
     private final AccountRepository accountRepository;
 
-    private final TransactionService transactionService;
 
     public AccountServiceJpa(AccountRepository accountRepository, TransactionService transactionJpa) {
         this.accountRepository = accountRepository;
-        this.transactionService = transactionJpa;
     }
 
     @Override
@@ -128,12 +122,9 @@ public class AccountServiceJpa implements AccountService {
         throw new UnsupportedOperationException("Unimplemented method 'removeAccount'");
     }
 
-    @Override
-    public Account toModel(AccountDTO dto) {
+ 
 
-        return new Account();
-    }
-
+    //TODO: maybe make an parent base Service class that has generalised these methods if posible
     @Override
     public AccountDTO toDTO(Account model) {
         AccountDTO accountDTO = new AccountDTO();
@@ -162,41 +153,6 @@ public class AccountServiceJpa implements AccountService {
         throw new UnsupportedOperationException("Unimplemented method 'getAccountByIBAN'");
     }
 
-    @Override
-    public Boolean reachedAbsoluteLimit(Account account, BigDecimal amountToSubtract) throws Exception {
-        BigDecimal resultingAmount = account.getBalance().subtract(amountToSubtract);
-
-        if (resultingAmount.compareTo(account.getAbsoluteLimit()) < 0) {
-            throw new Exception("cant spend more then the absolute limit. in other words: you broke");
-        }
-
-        return true;
-    }
-
-    @Override
-    public Boolean reachedDailyTransferLimit(User user, BigDecimal amount, LocalDateTime today) throws Exception {
-
-        BigDecimal totalSpendBeforeToday = transactionService.getUserTotalAmountSpendAtDate(user, today); // total
-                                                                                                          // amount of
-                                                                                                          // money spend
-        // today
-        BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
-        BigDecimal dailyLimit = user.getDailyLimit(); // users daily limit
-
-        if (totalSpendToday.equals(dailyLimit) || totalSpendToday.compareTo(dailyLimit) < 0) {
-            throw new Exception("dailylimit reached"); //
-
-        }
-
-        return true;
-    }
-
-    @Override
-    public Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount) throws Exception {
-        if (account.getTransactionLimit().compareTo(amount) < 0) {
-            throw new Exception("this amount is more than your transfer limit of the account");
-        }
-        return true;
-    }
+   
 
 }

@@ -6,12 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.iban4j.Iban;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
 
 import com.krachbank.api.dto.TransactionDTO;
 import com.krachbank.api.filters.TransactionFilter;
@@ -21,21 +17,21 @@ import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.TransactionRepository;
 
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+
 @Service
 public class TransactionJpa implements TransactionService {
 
     private final TransactionRepository transactionRepository;
-    private final AccountService accountService;
 
-    public TransactionJpa(TransactionRepository transactionRepository,AccountService accountService) {
+    public TransactionJpa(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
-        this.accountService = accountService;
     }
 
     @Override
     @Transactional
-    public Optional<Transaction> createTransaction(TransactionDTO transactionDto) throws Exception {
-        Transaction transaction = toModel(transactionDto);
+    public Optional<Transaction> createTransaction(Transaction transaction) throws Exception {
 
         isValidTransaction(transaction);
         transactionRepository.findById(transaction.getId()).ifPresent(existingTransaction -> {
@@ -70,9 +66,9 @@ public class TransactionJpa implements TransactionService {
             }
 
         }
-        accountService.reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
-        accountService.reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount(), LocalDateTime.now());
-        accountService.transferAmountBiggerThenTransferLimit(sendingAccount, transaction.getAmount());
+        reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
+        reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount(), LocalDateTime.now());
+        transferAmountBiggerThenTransferLimit(sendingAccount, transaction.getAmount());
 
         //update account balance
         //subtract from
@@ -141,7 +137,7 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public Optional<Transaction> updateTransaction(Long id, TransactionDTO transaction) {
+    public Optional<Transaction> updateTransaction(Long id, Transaction transaction) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updateTransaction'");
     }
@@ -189,27 +185,7 @@ public class TransactionJpa implements TransactionService {
         return true;
     }
 
-    @Override
-    public Transaction toModel(TransactionDTO dto) {
-
-        User initUser = new User();
-        initUser.setId(dto.getInitiator());
-
-        Optional<Account> fromAccount = accountService.getAccountByIBAN(Iban.valueOf(dto.getSender()));
-     
-
-        Optional<Account> receivingAccount = accountService.getAccountByIBAN(Iban.valueOf(dto.getReceiver()));
-
-        Transaction transaction = new Transaction();
-        transaction.setAmount(dto.getAmount());
-        transaction.setFromAccount(fromAccount.get());
-        transaction.setToAccount(receivingAccount.get());
-        transaction.setInitiator(initUser);
-        transaction.setCreatedAt(dto.getCreatedAt());
-        transaction.setDescription(dto.getDescription());
-        return transaction;
-
-    }
+  
 
     @Override
     public TransactionDTO toDTO(Transaction model) {
@@ -230,6 +206,44 @@ public class TransactionJpa implements TransactionService {
             transactionDTOs.add(toDTO(transaction));
         }
         return transactionDTOs;
+    }
+
+
+
+    //TODO: maybe move this to an helper class
+    public Boolean reachedAbsoluteLimit(Account account, BigDecimal amountToSubtract) throws Exception {
+        BigDecimal resultingAmount = account.getBalance().subtract(amountToSubtract);
+
+        if (resultingAmount.compareTo(account.getAbsoluteLimit()) < 0) {
+            throw new Exception("cant spend more then the absolute limit. in other words: you broke");
+        }
+
+        return true;
+    }
+
+    public Boolean reachedDailyTransferLimit(User user, BigDecimal amount, LocalDateTime today) throws Exception {
+
+        BigDecimal totalSpendBeforeToday = getUserTotalAmountSpendAtDate(user, today); // total
+                                                                                                          // amount of
+                                                                                                          // money spend
+        // today
+        BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
+        BigDecimal dailyLimit = user.getDailyLimit(); // users daily limit
+
+        if (totalSpendToday.equals(dailyLimit) || totalSpendToday.compareTo(dailyLimit) < 0) {
+            throw new Exception("dailylimit reached"); //
+
+        }
+
+        return true;
+    }
+
+    
+    public Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount) throws Exception {
+        if (account.getTransactionLimit().compareTo(amount) < 0) {
+            throw new Exception("this amount is more than your transfer limit of the account");
+        }
+        return true;
     }
 
 }

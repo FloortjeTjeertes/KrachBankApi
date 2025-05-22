@@ -2,12 +2,10 @@ package com.krachbank.api.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.lang.foreign.Linker.Option;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,10 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.iban4j.Iban;
-import org.iban4j.Iban4jException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.internal.matchers.Null;
 
 import com.krachbank.api.dto.TransactionDTO;
 import com.krachbank.api.models.Account;
@@ -41,7 +37,7 @@ public class TransactionJpaTest {
     void setUp() {
         transactionRepository = mock(TransactionRepository.class);
         accountService = mock(AccountServiceJpa.class);
-        transactionService = new TransactionJpa(transactionRepository, accountService);
+        transactionService = new TransactionJpa(transactionRepository);
 
         fullTransaction = new Transaction();
         fullTransaction.setId(1L);
@@ -152,44 +148,8 @@ public class TransactionJpaTest {
         assertThrows(IllegalArgumentException.class, () -> transactionService.isValidTransaction(transaction));
     }
 
-    @Test
-    void testToModelWithValidDTO() {
-        TransactionDTO dto = new TransactionDTO();
-        dto.setAmount(fullTransaction.getAmount());
-        dto.setCreatedAt(fullTransaction.getCreatedAt());
-        dto.setInitiator(fullTransaction.getInitiator().getId());
-        dto.setSender(fullTransaction.getFromAccount().getIBAN().toString());
-        dto.setReceiver(fullTransaction.getToAccount().getIBAN().toString());
-        dto.setDescription(fullTransaction.getDescription());
-
-        Transaction transaction = transactionService.toModel(dto);
-
-        assertNotNull(transaction);
-        assertEquals(fullTransaction.getAmount(), transaction.getAmount());
-        assertEquals(fullTransaction.getCreatedAt(), transaction.getCreatedAt());
-        assertEquals(fullTransaction.getDescription(), transaction.getDescription());
-        assertNotNull(transaction.getInitiator());
-        assertEquals(fullTransaction.getInitiator().getId(), transaction.getInitiator().getId());
-        assertNotNull(transaction.getFromAccount());
-        assertEquals(fullTransaction.getFromAccount().getIBAN(), transaction.getFromAccount().getIBAN());
-        assertNotNull(transaction.getToAccount());
-        assertEquals(fullTransaction.getToAccount().getIBAN(), transaction.getToAccount().getIBAN());
-    }
-
-    //TODO: maybe rename this test?
-    @Test
-    void testToModelWithNullFields() {
-        TransactionDTO dto = new TransactionDTO();
-        // Only set initiator from setup
-        assertThrows(Iban4jException.class, ()-> transactionService.toModel(dto));
-      
-    }
-
-    @Test
-    void testToModelWithNullDTO() {
-        assertThrows(NullPointerException.class, () -> transactionService.toModel(null));
-    }
-
+  
+    //TODO: move this to the test class for the transaction Mapper
     @Test
     void testToDTOWithFullTransaction() {
 

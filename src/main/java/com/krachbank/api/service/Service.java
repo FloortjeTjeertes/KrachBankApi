@@ -11,7 +11,6 @@ public interface Service<D extends DTO, M extends Model> {
 
     List<D> toDTO(List<M> fields);
 
-    M toModel(D dto);
 
 
 }

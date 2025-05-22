@@ -14,9 +14,8 @@ import com.krachbank.api.service.AccountService;
 
 @RestController
 @RequestMapping("/accounts")
-public class AccountController {
+public class AccountController implements Controller<Account, AccountDTO> {
     private final AccountService accountService;
-
 
     public AccountController(AccountService accountService) {
         this.accountService = accountService;
@@ -39,6 +38,12 @@ public class AccountController {
             System.out.println("Error creating accounts: " + e.getMessage());
             return null; // or throw a custom exception
         }
+    }
+
+    @Override
+    public Account toModel(AccountDTO dto) {
+
+        return new Account();
     }
 
 }

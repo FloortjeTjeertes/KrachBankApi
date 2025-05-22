@@ -15,7 +15,7 @@ import jakarta.transaction.Transactional;
 public interface TransactionService extends Service<TransactionDTO, Transaction> {
 
     @Transactional
-    public Optional<Transaction> createTransaction(TransactionDTO transaction) throws Exception;
+    public Optional<Transaction> createTransaction(Transaction transaction) throws Exception;
 
     public Optional<Transaction> getTransactionById(Long id) throws Exception;
 
@@ -26,7 +26,7 @@ public interface TransactionService extends Service<TransactionDTO, Transaction>
     public List<Transaction> getAllTransactions();
 
     @Transactional
-    public Optional<Transaction> updateTransaction(Long id, TransactionDTO transaction);
+    public Optional<Transaction> updateTransaction(Long id, Transaction transaction);
 
     public BigDecimal getUserTotalAmountSpendAtDate(User user, LocalDateTime date);
 }

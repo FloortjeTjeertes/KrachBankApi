@@ -13,7 +13,7 @@ import com.krachbank.api.service.UserService;
 
 @RestController
 @RequestMapping("/users")
-public class UserController {
+public class UserController implements Controller<User, UserDTO> {
     private final UserService userService;
 
     public UserController(UserService userService) {
@@ -34,5 +34,21 @@ public class UserController {
             System.out.println("Error creating user: " + e.getMessage());
             return null; // or throw a custom exception
         }
+    }
+
+    @Override
+    public User toModel(UserDTO dto) {
+        User user = new User();
+        user.setId(dto.getId());
+        user.setDailyLimit(dto.getTransferLimit());
+        user.setCreatedAt(dto.getCreatedAt());
+        user.setVerified(dto.isVerified());
+        user.setActive(dto.isActive());
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setBsn(dto.getBSN());
+        return user;
     }
 }
