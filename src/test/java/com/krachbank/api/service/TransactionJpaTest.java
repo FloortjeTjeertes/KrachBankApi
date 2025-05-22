@@ -3,6 +3,7 @@ package com.krachbank.api.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.krachbank.api.dto.TransactionDTO;
+import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
@@ -27,7 +29,7 @@ public class TransactionJpaTest {
     TransactionJpa transactionService;
     AccountServiceJpa accountService;
     TransactionRepository transactionRepository;
-
+    TransactionFilter transactionFilter;
 
     Transaction fullTransaction;
     Transaction fullTransaction2;
@@ -37,66 +39,82 @@ public class TransactionJpaTest {
     void setUp() {
         transactionRepository = mock(TransactionRepository.class);
         accountService = mock(AccountServiceJpa.class);
+        transactionFilter = mock(TransactionFilter.class);
+
         transactionService = new TransactionJpa(transactionRepository);
+
+        Iban iban = Iban.valueOf("DE32500211205487556354");
+        Iban iban2 = Iban.valueOf("DE52500202006796187625");
+
+        User initiator = new User();
+        initiator.setId(100L);
+
+         User initiator2 = new User();
+        initiator2.setId(200L);
+
+        
+        Account fromAccount = new Account();
+        fromAccount.setId(10L);
+        fromAccount.setIBAN(iban);
+        fromAccount.setUser(initiator);
+
+        Account toAccount = new Account();
+        toAccount.setIBAN(iban2);
+        toAccount.setId(20L);
+        fromAccount.setUser(initiator2);
 
         fullTransaction = new Transaction();
         fullTransaction.setId(1L);
         fullTransaction.setAmount(new BigDecimal("100.00"));
         fullTransaction.setDescription("Test transaction");
         fullTransaction.setCreatedAt(LocalDateTime.now());
-
-        Iban iban = Iban.valueOf("DE32500211205487556354");
-        Iban iban2 = Iban.valueOf("DE52500202006796187625");
-
-        Account fromAccount = new Account();
-        fromAccount.setId(10L);
-        fromAccount.setIBAN(iban);
-        fullTransaction.setFromAccount(fromAccount);
-
-        Account toAccount = new Account();
-        toAccount.setIBAN(iban2);
-        toAccount.setId(20L);
         fullTransaction.setToAccount(toAccount);
-
-        User initiator = new User();
-        initiator.setId(100L);
+        fullTransaction.setFromAccount(fromAccount);
         fullTransaction.setInitiator(initiator);
 
-        fullTransaction2 = new Transaction();
-        fullTransaction2.setId(2L);
-        fullTransaction2.setAmount(new BigDecimal("250.50"));
-        fullTransaction2.setDescription("Second test transaction");
-        fullTransaction2.setCreatedAt(LocalDateTime.now().minusDays(1));
+       
+
+
 
         Account fromAccount2 = new Account();
         fromAccount2.setId(30L);
         fromAccount2.setIBAN(Iban.valueOf("DE44500105175407324931"));
-        fullTransaction2.setFromAccount(fromAccount2);
+        fromAccount2.setUser(initiator2);
 
         Account toAccount2 = new Account();
         toAccount2.setId(40L);
         toAccount2.setIBAN(Iban.valueOf("DE12500105170648489890"));
+        toAccount2.setUser(initiator);
+
+
+        fullTransaction2 = new Transaction();
+        fullTransaction2.setInitiator(initiator2);
+        fullTransaction2.setId(2L);
+        fullTransaction2.setAmount(new BigDecimal("250.50"));
+        fullTransaction2.setDescription("Second test transaction");
+        fullTransaction2.setCreatedAt(LocalDateTime.now().minusDays(1));
+        fullTransaction2.setFromAccount(fromAccount2);
         fullTransaction2.setToAccount(toAccount2);
 
-        User initiator2 = new User();
-        initiator2.setId(200L);
-        fullTransaction2.setInitiator(initiator2);
+        
 
         transactions = List.of(fullTransaction, fullTransaction2);
 
         when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN()))
-                .thenReturn( Optional.of( fullTransaction.getFromAccount()));
+                .thenReturn(Optional.of(fullTransaction.getFromAccount()));
         when(accountService.getAccountByIBAN(fullTransaction.getToAccount().getIBAN()))
                 .thenReturn(Optional.of(fullTransaction.getToAccount()));
         when(accountService.getAccountByIBAN(fullTransaction2.getFromAccount().getIBAN()))
                 .thenReturn(Optional.of(fullTransaction2.getFromAccount()));
         when(accountService.getAccountByIBAN(fullTransaction2.getToAccount().getIBAN()))
                 .thenReturn(Optional.of(fullTransaction2.getToAccount()));
+
+        when(transactionRepository.findAll((org.springframework.data.jpa.domain.Specification<Transaction>) any()))
+                .thenReturn(transactions);
+
+        when(transactionRepository.findOne((org.springframework.data.jpa.domain.Specification<Transaction>) any()))
+                .thenReturn(Optional.of(fullTransaction));
     }
-
-
-
-
 
     @Test
     void testIsValidTransactionWithValidTransaction() {
@@ -148,8 +166,7 @@ public class TransactionJpaTest {
         assertThrows(IllegalArgumentException.class, () -> transactionService.isValidTransaction(transaction));
     }
 
-  
-    //TODO: move this to the test class for the transaction Mapper
+    // TODO: move this to the test class for the transaction Mapper
     @Test
     void testToDTOWithFullTransaction() {
 
@@ -202,6 +219,156 @@ public class TransactionJpaTest {
         assertEquals(0, dtos.size());
     }
 
+    @Test
+    void testGetTransactionByFilterWithValidFilterReturnsTransaction() {
 
+        Optional<Transaction> result = transactionService.getTransactionByFilter(transactionFilter);
+
+        assertNotNull(result);
+        assertEquals(fullTransaction, result.get());
+    }
+
+    @Test
+    void testGetTransactionByFilterWithValidFilterReturnsEmpty() {
+
+        when(transactionRepository.findOne((org.springframework.data.jpa.domain.Specification<Transaction>) any()))
+                .thenReturn(Optional.empty());
+
+        Optional<Transaction> result = transactionService.getTransactionByFilter(transactionFilter);
+
+        assertNotNull(result);
+        assertEquals(Optional.empty(), result);
+    }
+
+    @Test
+    void testGetTransactionByFilterWithNullFilterThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> transactionService.getTransactionByFilter(null));
+    }
+
+    @Test
+    void testGetTransactionsByFilterWithValidFilterReturnsTransactions() {
+
+        List<Transaction> result = transactionService.getTransactionsByFilter(transactionFilter);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(fullTransaction, result.get(0));
+        assertEquals(fullTransaction2, result.get(1));
+    }
+
+    @Test
+    void testGetTransactionsByFilterWithValidFilterReturnsEmptyList() {
+        when(transactionRepository.findAll((org.springframework.data.jpa.domain.Specification<Transaction>) any()))
+                .thenReturn(new ArrayList<>());
+
+        List<Transaction> result = transactionService.getTransactionsByFilter(transactionFilter);
+
+        assertNotNull(result);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    void testGetTransactionsByFilterWithNullFilterThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> transactionService.getTransactionsByFilter(null));
+    }
+
+    @Test
+    void testGetTransactionByIdWithValidIdReturnsTransaction() throws Exception {
+        Long id = fullTransaction.getId();
+        when(transactionRepository.findById(id)).thenReturn(Optional.of(fullTransaction));
+
+        Optional<Transaction> result = transactionService.getTransactionById(id);
+
+        assertNotNull(result);
+        assertEquals(fullTransaction, result.get());
+    }
+
+    @Test
+    void testGetTransactionByIdWithNonExistingIdReturnsEmpty() throws Exception {
+        Long id = 999L;
+        when(transactionRepository.findById(id)).thenReturn(Optional.empty());
+
+        Optional<Transaction> result = transactionService.getTransactionById(id);
+
+        assertNotNull(result);
+        assertEquals(Optional.empty(), result);
+    }
+
+    @Test
+    void testGetTransactionByIdWithNullIdThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> transactionService.getTransactionById(null));
+    }
+
+    @Test
+    void testGetTransactionByIdWithNegativeIdThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> transactionService.getTransactionById(-1L));
+    }
+
+    @Test
+    void testGetUserTotalAmountSpendAtDateWithTransactionsOnSameDay() {
+
+        User user = fullTransaction.getInitiator();
+        LocalDateTime date = fullTransaction.getCreatedAt();
+
+        transactions = List.of(fullTransaction, fullTransaction2);
+
+        when(transactionRepository.findByInitiatorIdOrderByCreatedAtAsc(user.getId()))
+                .thenReturn(transactions);
+
+        when(transactionRepository.findByInitiatorIdOrderByCreatedAtAsc(user.getId()))
+                .thenReturn(transactions);
+
+        BigDecimal total = transactionService.getUserTotalAmountSpendAtDate(user, date);
+
+        assertEquals(new BigDecimal("100.00"), total);
+    }
+
+    @Test
+    void testGetUserTotalAmountSpendAtDateWithTransactionsOnDifferentDays() {
+        Transaction transaction1 = fullTransaction;
+        Transaction transaction2 = fullTransaction;
+        transaction2.setCreatedAt(transaction1.getCreatedAt().minusDays(1));
+        User user = fullTransaction.getInitiator();
+        LocalDateTime date = fullTransaction.getCreatedAt();
+
+        List<Transaction> userTransactions = List.of(transaction1, transaction2);
+
+        when(transactionRepository.findByInitiatorIdOrderByCreatedAtAsc(user.getId()))
+                .thenReturn(userTransactions);
+
+        when(transactionRepository.findByInitiatorIdOrderByCreatedAtAsc(user.getId()))
+                .thenReturn(userTransactions);
+
+        BigDecimal total = transactionService.getUserTotalAmountSpendAtDate(user, date);
+
+        assertEquals(transaction1.getAmount(), total);
+    }
+
+    @Test
+    void testGetUserTotalAmountSpendAtDateWithNoTransactions() {
+        User user = new User();
+        user.setId(100L);
+        LocalDateTime date = LocalDateTime.of(2024, 6, 10, 12, 0);
+
+        when(transactionRepository.findByInitiatorIdOrderByCreatedAtAsc(user.getId()))
+                .thenReturn(new ArrayList<>());
+
+        BigDecimal total = transactionService.getUserTotalAmountSpendAtDate(user, date);
+
+        assertEquals(BigDecimal.ZERO, total);
+    }
+
+    @Test
+    void testGetUserTotalAmountSpendAtDateWithNullUser() {
+        LocalDateTime date = LocalDateTime.of(2024, 6, 10, 12, 0);
+        assertThrows(NullPointerException.class, () -> transactionService.getUserTotalAmountSpendAtDate(null, date));
+    }
+
+    @Test
+    void testGetUserTotalAmountSpendAtDateWithNullDate() {
+        User user = new User();
+        user.setId(100L);
+        assertThrows(NullPointerException.class, () -> transactionService.getUserTotalAmountSpendAtDate(user, null));
+    }
 
 }

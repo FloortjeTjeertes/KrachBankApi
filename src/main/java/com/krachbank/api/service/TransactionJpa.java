@@ -46,10 +46,10 @@ public class TransactionJpa implements TransactionService {
         Account sendingAccount = transaction.getFromAccount();
         Account receivingAccount = transaction.getToAccount();
 
-        //validate Accounts are valid bank accounts
-        //validate if accounts are from our bank
+        // validate Accounts are valid bank accounts
+        // validate if accounts are from our bank
 
-        if(IsInternalTransaction(sendingAccount , receivingAccount)){
+        if (IsInternalTransaction(sendingAccount, receivingAccount)) {
             throw new Exception("this transaction is not whit accounts from our bank");
         }
 
@@ -70,10 +70,9 @@ public class TransactionJpa implements TransactionService {
         reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount(), LocalDateTime.now());
         transferAmountBiggerThenTransferLimit(sendingAccount, transaction.getAmount());
 
-        //update account balance
-        //subtract from
-        //validate changes
-
+        // update account balance
+        // subtract from
+        // validate changes
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
@@ -81,19 +80,21 @@ public class TransactionJpa implements TransactionService {
 
     }
 
-    //check if the transaction is whit local accounts
-    public Boolean IsInternalTransaction(Account sendingAccount , Account retrievingAccount ){
+    // check if the transaction is whit local accounts
+    public Boolean IsInternalTransaction(Account sendingAccount, Account retrievingAccount) {
         return (sendingAccount.getIBAN().getBankCode() == retrievingAccount.getIBAN().getBankCode());
     }
 
-    //check the total amount spend by an user
+    // check the total amount spend by an user 
+    // TODO: should transactions done by the admin be included?
     public BigDecimal getUserTotalAmountSpendAtDate(User user, LocalDateTime date) {
         List<Transaction> transactionsForUser = transactionRepository
                 .findByInitiatorIdOrderByCreatedAtAsc(user.getId()); // change this to a service method if we ever get
                                                                      // one that retrieves all transactions for a single
                                                                      // user
         List<Transaction> filteredTransactions = transactionsForUser.stream()
-                .filter(t -> t.getCreatedAt().toLocalDate().equals(date))
+                .filter(t -> t.getCreatedAt().toLocalDate().equals(date.toLocalDate()))
+                .filter(t-> t.getFromAccount().getUser().getId().equals(user.getId()))
                 .toList();
 
         return filteredTransactions.stream()
@@ -101,14 +102,12 @@ public class TransactionJpa implements TransactionService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
     }
- 
 
     @Override
     public Optional<Transaction> getTransactionById(Long id) throws Exception {
-        if(id == null || id < 0){
+        if (id == null || id <= 0) {
             throw new IllegalArgumentException("invalid id given");
         }
-        
 
         return transactionRepository.findById(id);
     }
@@ -122,11 +121,14 @@ public class TransactionJpa implements TransactionService {
         Specification<Transaction> spec = MakeTransactionsSpecification(filter);
         List<Transaction> transactions = transactionRepository.findAll(spec);
 
-         return List.copyOf(transactions);
+        return List.copyOf(transactions);
     }
 
     @Override
     public Optional<Transaction> getTransactionByFilter(TransactionFilter filter) {
+        if (filter == null) {
+            throw new IllegalArgumentException("No filter provided");
+        }
         return transactionRepository.findOne(MakeTransactionsSpecification(filter));
     }
 
@@ -181,11 +183,9 @@ public class TransactionJpa implements TransactionService {
             throw new IllegalArgumentException("Transaction accounts must be different");
         }
 
-        //TODO: should i validate the description field?
+        // TODO: should i validate the description field?
         return true;
     }
-
-  
 
     @Override
     public TransactionDTO toDTO(Transaction model) {
@@ -208,9 +208,7 @@ public class TransactionJpa implements TransactionService {
         return transactionDTOs;
     }
 
-
-
-    //TODO: maybe move this to an helper class
+    // TODO: maybe move this to an helper class
     public Boolean reachedAbsoluteLimit(Account account, BigDecimal amountToSubtract) throws Exception {
         BigDecimal resultingAmount = account.getBalance().subtract(amountToSubtract);
 
@@ -224,13 +222,13 @@ public class TransactionJpa implements TransactionService {
     public Boolean reachedDailyTransferLimit(User user, BigDecimal amount, LocalDateTime today) throws Exception {
 
         BigDecimal totalSpendBeforeToday = getUserTotalAmountSpendAtDate(user, today); // total
-                                                                                                          // amount of
-                                                                                                          // money spend
+                                                                                       // amount of
+                                                                                       // money spend
         // today
         BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
         BigDecimal dailyLimit = user.getDailyLimit(); // users daily limit
 
-        if (totalSpendToday.equals(dailyLimit) || totalSpendToday.compareTo(dailyLimit) < 0) {
+        if (totalSpendToday.compareTo(dailyLimit) > 0 || totalSpendToday.equals(dailyLimit)) {
             throw new Exception("dailylimit reached"); //
 
         }
@@ -238,7 +236,6 @@ public class TransactionJpa implements TransactionService {
         return true;
     }
 
-    
     public Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount) throws Exception {
         if (account.getTransactionLimit().compareTo(amount) < 0) {
             throw new Exception("this amount is more than your transfer limit of the account");
