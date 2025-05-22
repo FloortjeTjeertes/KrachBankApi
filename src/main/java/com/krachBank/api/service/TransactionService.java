@@ -1,11 +1,10 @@
-package com.krachbank.api.service;
+package com.krachBank.api.service;
 
-import java.lang.foreign.Linker.Option;
 import java.util.List;
 import java.util.Optional;
 
-import com.krachbank.api.filters.TransactionFilter;
-import com.krachbank.api.models.Transaction;
+import com.krachBank.api.filters.TransactionFilter;
+import com.krachBank.api.models.Transaction;
 
 public interface TransactionService {
 

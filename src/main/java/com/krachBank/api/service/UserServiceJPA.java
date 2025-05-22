@@ -1,23 +1,21 @@
-package com.krachbank.api.service;
+package com.krachBank.api.service;
+
+import com.krachBank.api.dto.UserDTO;
+import com.krachBank.api.models.User;
+import com.krachBank.api.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.crossstore.ChangeSetPersister;
-import org.springframework.stereotype.Service;
-
-import com.krachbank.api.dto.UserDTO;
-
-import com.krachbank.api.models.User;
-import com.krachbank.api.repository.UserRepository;
-
 @Service
 @RequiredArgsConstructor
+
 public class UserServiceJPA implements UserService {
 
     private final UserRepository userRepository;

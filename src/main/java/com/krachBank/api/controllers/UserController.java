@@ -1,4 +1,4 @@
-package com.krachbank.api.controllers;
+package com.krachBank.api.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-import com.krachbank.api.dto.UserDTO;
-import com.krachbank.api.service.UserService;
+import com.krachBank.api.dto.UserDTO;
+import com.krachBank.api.service.UserService;
 
 
 @RestController

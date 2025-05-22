@@ -1,9 +1,8 @@
-package com.krachbank.api.dto;
+package com.krachBank.api.dto;
 
 import java.time.LocalDateTime;
 
-import com.krachbank.api.models.Model;
-import com.krachbank.api.models.User;
+import com.krachBank.api.models.User;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,10 +1,10 @@
-package com.krachbank.api.dto;
+package com.krachBank.api.dto;
 
 import org.iban4j.Iban;
 
-import com.krachbank.api.models.Account;
-import com.krachbank.api.models.AccountType;
-import com.krachbank.api.models.Model;
+import com.krachBank.api.models.Account;
+import com.krachBank.api.models.AccountType;
+import com.krachBank.api.models.Model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

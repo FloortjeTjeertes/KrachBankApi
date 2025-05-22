@@ -1,12 +1,9 @@
-package com.krachbank.api.service;
+package com.krachBank.api.service;
 
 import java.util.List;
 import java.util.Map;
 
-import com.krachbank.api.dto.DTO;
-import com.krachbank.api.dto.UserDTO;
-
-import com.krachbank.api.models.User;
+import com.krachBank.api.dto.UserDTO;
 
 public interface UserService {
 

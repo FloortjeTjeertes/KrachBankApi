@@ -1,16 +1,13 @@
-package com.krachbank.api.models;
+package com.krachBank.api.models;
+
+import com.krachBank.api.dto.AccountDTO;
+import jakarta.persistence.*;
+import lombok.Data;
+import org.iban4j.Iban;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
-
-import jakarta.persistence.*;
-import org.iban4j.Iban;
-
-import com.krachbank.api.dto.AccountDTO;
-import com.krachbank.api.dto.DTO;
-
-import lombok.Data;
 
 @Entity
 @Data
@@ -36,6 +33,8 @@ public class Account implements Model {
 
     @OneToMany(mappedBy = "toAccount")
     private List<Transaction> transactionsTo;
+    private double balance;
+    private double absoluteLimit;
 
 
     public List<Transaction>  getTransactions(){

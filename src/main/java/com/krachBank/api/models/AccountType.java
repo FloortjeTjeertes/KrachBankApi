@@ -1,4 +1,4 @@
-package com.krachbank.api.models;
+package com.krachBank.api.models;
 
 public enum AccountType {
     CHECKING,

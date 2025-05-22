@@ -1,9 +1,9 @@
-package com.krachbank.api.service;
+package com.krachBank.api.service;
 
 import java.util.List;
 
-import com.krachbank.api.dto.AccountDTO;
-import com.krachbank.api.models.Account;
+import com.krachBank.api.dto.AccountDTO;
+import com.krachBank.api.models.Account;
 
 public interface AccountService {
     public List<AccountDTO> getAccounts();
