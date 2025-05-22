@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 public class AccountServiceJpaTest {
     private AccountServiceJpa accountService;
     private AccountRepository accountRepository;
+    private TransactionService transactionService;
     private IBANGenerator ibanGenerator;
 
     private User user1;
@@ -35,7 +36,8 @@ public class AccountServiceJpaTest {
     void setUp() {
         accountRepository = mock(AccountRepository.class);
         ibanGenerator = mock(IBANGenerator.class);
-        accountService = new AccountServiceJpa(accountRepository);
+        transactionService = mock(TransactionService.class);
+        accountService = new AccountServiceJpa(accountRepository, transactionService);
 
         user1 = new User();
         user1.setId(1L);

@@ -7,10 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.foreign.Linker.Option;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.iban4j.Iban;
 import org.iban4j.Iban4jException;
@@ -87,13 +89,13 @@ public class TransactionJpaTest {
         transactions = List.of(fullTransaction, fullTransaction2);
 
         when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN()))
-                .thenReturn(fullTransaction.getFromAccount());
+                .thenReturn( Optional.of( fullTransaction.getFromAccount()));
         when(accountService.getAccountByIBAN(fullTransaction.getToAccount().getIBAN()))
-                .thenReturn(fullTransaction.getToAccount());
+                .thenReturn(Optional.of(fullTransaction.getToAccount()));
         when(accountService.getAccountByIBAN(fullTransaction2.getFromAccount().getIBAN()))
-                .thenReturn(fullTransaction2.getFromAccount());
+                .thenReturn(Optional.of(fullTransaction2.getFromAccount()));
         when(accountService.getAccountByIBAN(fullTransaction2.getToAccount().getIBAN()))
-                .thenReturn(fullTransaction2.getToAccount());
+                .thenReturn(Optional.of(fullTransaction2.getToAccount()));
     }
 
 

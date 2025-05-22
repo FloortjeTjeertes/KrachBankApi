@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 
 import com.krachbank.api.dto.TransactionDTO;
 import com.krachbank.api.filters.TransactionFilter;
@@ -32,6 +33,7 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
+    @Transactional
     public Optional<Transaction> createTransaction(TransactionDTO transactionDto) throws Exception {
         Transaction transaction = toModel(transactionDto);
 
@@ -52,7 +54,7 @@ public class TransactionJpa implements TransactionService {
         //validate if accounts are from our bank
 
         if(IsInternalTransaction(sendingAccount , receivingAccount)){
-            throw new Exception();
+            throw new Exception("this transaction is not whit accounts from our bank");
         }
 
         // check if the transaction is to the same account
@@ -68,11 +70,12 @@ public class TransactionJpa implements TransactionService {
             }
 
         }
-        reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
-        reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount(), LocalDateTime.now());
-        transferAmountBiggerThenTransferLimit(sendingAccount, transaction.getAmount());
+        accountService.reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
+        accountService.reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount(), LocalDateTime.now());
+        accountService.transferAmountBiggerThenTransferLimit(sendingAccount, transaction.getAmount());
 
-        //make changes 
+        //update account balance
+        //subtract from
         //validate changes
 
 
@@ -87,40 +90,7 @@ public class TransactionJpa implements TransactionService {
         return (sendingAccount.getIBAN().getBankCode() == retrievingAccount.getIBAN().getBankCode());
     }
 
-    public Boolean reachedAbsoluteLimit(Account account, BigDecimal amountToSubtract) throws Exception {
-        BigDecimal resultingAmount = account.getBalance().subtract(amountToSubtract);
-
-        if (resultingAmount.compareTo(account.getAbsoluteLimit()) < 0) {
-            throw new Exception("cant spend more then the absolute limit. in other words: you broke");
-        }
-
-        return true;
-    }
-
-    public Boolean reachedDailyTransferLimit(User user, BigDecimal amount, LocalDateTime today) throws Exception {
-
-        BigDecimal totalSpendBeforeToday = getUserTotalAmountSpendAtDate(user, today); // total amount of money spend
-                                                                                       // today
-        BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
-        BigDecimal dailyLimit = user.getDailyLimit(); // users daily limit
-
-        if (totalSpendToday.equals(dailyLimit) || totalSpendToday.compareTo(dailyLimit) < 0) {
-            throw new Exception("dailylimit reached"); //
-
-        }
-
-        return true;
-    }
-
-    
-    public Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount) throws Exception {
-        if (account.getTransactionLimit().compareTo(amount) < 0) {
-            throw new Exception("this amount is more than your transfer limit of the account");
-        }
-        return true;
-    }
-
-    
+    //check the total amount spend by an user
     public BigDecimal getUserTotalAmountSpendAtDate(User user, LocalDateTime date) {
         List<Transaction> transactionsForUser = transactionRepository
                 .findByInitiatorIdOrderByCreatedAtAsc(user.getId()); // change this to a service method if we ever get
@@ -135,6 +105,7 @@ public class TransactionJpa implements TransactionService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
     }
+ 
 
     @Override
     public Optional<Transaction> getTransactionById(Long id) throws Exception {
@@ -224,14 +195,15 @@ public class TransactionJpa implements TransactionService {
         User initUser = new User();
         initUser.setId(dto.getInitiator());
 
-        Account fromAccount = accountService.getAccountByIBAN(Iban.valueOf(dto.getSender()));
+        Optional<Account> fromAccount = accountService.getAccountByIBAN(Iban.valueOf(dto.getSender()));
+     
 
-        Account receivingAccount = accountService.getAccountByIBAN(Iban.valueOf(dto.getReceiver()));
+        Optional<Account> receivingAccount = accountService.getAccountByIBAN(Iban.valueOf(dto.getReceiver()));
 
         Transaction transaction = new Transaction();
         transaction.setAmount(dto.getAmount());
-        transaction.setFromAccount(fromAccount);
-        transaction.setToAccount(receivingAccount);
+        transaction.setFromAccount(fromAccount.get());
+        transaction.setToAccount(receivingAccount.get());
         transaction.setInitiator(initUser);
         transaction.setCreatedAt(dto.getCreatedAt());
         transaction.setDescription(dto.getDescription());

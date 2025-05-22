@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import org.iban4j.Iban;
 
 import com.krachbank.api.converters.IbanConverter;
-import com.krachbank.api.dto.AccountDTO;
 
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;

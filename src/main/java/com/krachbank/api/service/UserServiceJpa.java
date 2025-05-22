@@ -1,15 +1,12 @@
 package com.krachbank.api.service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
-
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
 
