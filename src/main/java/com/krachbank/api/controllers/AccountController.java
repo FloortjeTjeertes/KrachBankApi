@@ -31,7 +31,7 @@ public class AccountController {
             List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
             List<Account> returnAccounts = accountService.createAccounts(accounts);
             for (Account account : returnAccounts) {
-                accountDTOs.add(account.toDTO());
+                accountDTOs.add(accountService.toDTO(account));
             }
             return accountDTOs;
         } catch (IllegalArgumentException e) {

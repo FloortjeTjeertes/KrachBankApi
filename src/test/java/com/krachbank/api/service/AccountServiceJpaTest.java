@@ -78,8 +78,8 @@ public class AccountServiceJpaTest {
         assertNotNull(savedAccount);
         assertEquals(1L, savedAccount.getId());
         assertEquals(iban1, savedAccount.getIBAN());
-        assertEquals(1000.0, savedAccount.getBalance());
-        assertEquals(100.0, savedAccount.getAbsoluteLimit());
+        assertEquals(BigDecimal.valueOf(1000.0), savedAccount.getBalance());
+        assertEquals(BigDecimal.valueOf(100.0), savedAccount.getAbsoluteLimit());
         assertEquals(AccountType.SAVINGS, savedAccount.getAccountType());
         assertEquals(user1, savedAccount.getUser());
         verify(accountRepository, times(1)).save(any(Account.class));

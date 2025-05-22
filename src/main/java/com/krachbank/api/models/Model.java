@@ -4,5 +4,4 @@ import com.krachbank.api.dto.DTO;
 
 
 public interface Model {
-    public DTO toDTO();
 }

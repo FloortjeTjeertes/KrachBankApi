@@ -36,10 +36,4 @@ public class Transaction implements Model{
 
     private String description;
 
-    @Override
-    public TransactionDTO toDTO() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'ToDTO'");
-    }
-
 }

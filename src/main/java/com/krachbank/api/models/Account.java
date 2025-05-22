@@ -54,18 +54,6 @@ public class Account implements Model {
     }
 
 
-    @Override
-    public AccountDTO toDTO() {
-        AccountDTO accountDTO = new AccountDTO();
-        accountDTO.setId(this.id);
-        accountDTO.setIBAN(this.IBAN);
-        accountDTO.setAccountType(this.accountType);
-        accountDTO.setBalance(this.Balance);
-        accountDTO.setAbsoluteLimit(this.AbsoluteLimit);
-        accountDTO.setAbsoluteLimit(this.transactionLimit);
-        accountDTO.setUserId(this.user.getId().toString());
-        return accountDTO;
-    }
 
 
 }

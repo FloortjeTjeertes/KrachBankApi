@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.iban4j.Iban;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -22,50 +24,67 @@ import com.krachbank.api.repository.TransactionRepository;
 public class TransactionJpa implements TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final AccountService accountService;
 
-    public TransactionJpa(TransactionRepository transactionRepository) {
+    public TransactionJpa(TransactionRepository transactionRepository,AccountService accountService) {
         this.transactionRepository = transactionRepository;
+        this.accountService = accountService;
     }
 
     @Override
     public Optional<Transaction> createTransaction(TransactionDTO transactionDto) throws Exception {
         Transaction transaction = toModel(transactionDto);
 
-            isValidTransaction(transaction);
-            transactionRepository.findById(transaction.getId()).ifPresent(existingTransaction -> {
-                throw new IllegalArgumentException("Transaction already exists");
-            });
+        isValidTransaction(transaction);
+        transactionRepository.findById(transaction.getId()).ifPresent(existingTransaction -> {
+            throw new IllegalArgumentException("Transaction already exists");
+        });
 
-            //TODO maybe make this into a method
-            if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new Exception("can transfer 0 or less");
+        // TODO maybe make this into a method
+        if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new Exception("can transfer 0 or less");
+        }
+
+        Account sendingAccount = transaction.getFromAccount();
+        Account receivingAccount = transaction.getToAccount();
+
+        //validate Accounts are valid bank accounts
+        //validate if accounts are from our bank
+
+        if(IsInternalTransaction(sendingAccount , receivingAccount)){
+            throw new Exception();
+        }
+
+        // check if the transaction is to the same account
+        if (sendingAccount.getIBAN().equals(receivingAccount.getIBAN())) {
+            throw new IllegalArgumentException("cant transfer to the same account");
+
+        }
+
+        if (!receivingAccount.getUser().equals(sendingAccount.getUser())) {
+            if (receivingAccount.getAccountType() == AccountType.SAVINGS
+                    || sendingAccount.getAccountType() == AccountType.SAVINGS) {
+                throw new IllegalArgumentException("cant transfer money to or from another persons saving account");
             }
 
-            Account sendingAccount = transaction.getFromAccount();
-            Account receivingAccount = transaction.getToAccount();
+        }
+        reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
+        reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount(), LocalDateTime.now());
+        transferAmountBiggerThenTransferLimit(sendingAccount, transaction.getAmount());
 
-            // check if the transaction is to the same account
-            if (sendingAccount.getIBAN().equals(receivingAccount.getIBAN())) {
-                throw new IllegalArgumentException("cant transfer to the same account");
+        //make changes 
+        //validate changes
 
-            }
 
-            if (!receivingAccount.getUser().equals(sendingAccount.getUser())) {
-                if (receivingAccount.getAccountType() == AccountType.SAVINGS
-                        || sendingAccount.getAccountType() == AccountType.SAVINGS) {
-                    throw new IllegalArgumentException("cant transfer money to or from another persons saving account");
-                }
+        Transaction savedTransaction = transactionRepository.save(transaction);
 
-            }
-            reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
-            reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount(),LocalDateTime.now());
-            transferAmountBiggerThenTransferLimit(sendingAccount, transaction.getAmount());
+        return Optional.of(savedTransaction);
 
-            Transaction savedTransaction = transactionRepository.save(transaction);
-         
+    }
 
-            return Optional.of(savedTransaction);
-
+    //check if the transaction is whit local accounts
+    public Boolean IsInternalTransaction(Account sendingAccount , Account retrievingAccount ){
+        return (sendingAccount.getIBAN().getBankCode() == retrievingAccount.getIBAN().getBankCode());
     }
 
     public Boolean reachedAbsoluteLimit(Account account, BigDecimal amountToSubtract) throws Exception {
@@ -78,10 +97,10 @@ public class TransactionJpa implements TransactionService {
         return true;
     }
 
-    @Override
-    public Boolean reachedDailyTransferLimit(User user, BigDecimal amount,LocalDateTime today) throws Exception {
+    public Boolean reachedDailyTransferLimit(User user, BigDecimal amount, LocalDateTime today) throws Exception {
 
-        BigDecimal totalSpendBeforeToday = getUserTotalAmountSpendAtDate(user,today ); // total amount of money spend today
+        BigDecimal totalSpendBeforeToday = getUserTotalAmountSpendAtDate(user, today); // total amount of money spend
+                                                                                       // today
         BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
         BigDecimal dailyLimit = user.getDailyLimit(); // users daily limit
 
@@ -93,7 +112,7 @@ public class TransactionJpa implements TransactionService {
         return true;
     }
 
-    @Override
+    
     public Boolean transferAmountBiggerThenTransferLimit(Account account, BigDecimal amount) throws Exception {
         if (account.getTransactionLimit().compareTo(amount) < 0) {
             throw new Exception("this amount is more than your transfer limit of the account");
@@ -101,6 +120,7 @@ public class TransactionJpa implements TransactionService {
         return true;
     }
 
+    
     public BigDecimal getUserTotalAmountSpendAtDate(User user, LocalDateTime date) {
         List<Transaction> transactionsForUser = transactionRepository
                 .findByInitiatorIdOrderByCreatedAtAsc(user.getId()); // change this to a service method if we ever get
@@ -117,16 +137,25 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public Optional<Transaction> getTransactionById(Long id) {
+    public Optional<Transaction> getTransactionById(Long id) throws Exception {
+        if(id == null || id < 0){
+            throw new IllegalArgumentException("invalid id given");
+        }
+        
 
         return transactionRepository.findById(id);
     }
 
     @Override
     public List<Transaction> getTransactionsByFilter(TransactionFilter filter) {
+        if (filter == null) {
+            throw new IllegalArgumentException("No filter provided");
+        }
 
-        return transactionRepository.findAll(MakeTransactionsSpecification(filter));
+        Specification<Transaction> spec = MakeTransactionsSpecification(filter);
+        List<Transaction> transactions = transactionRepository.findAll(spec);
 
+         return List.copyOf(transactions);
     }
 
     @Override
@@ -184,6 +213,8 @@ public class TransactionJpa implements TransactionService {
         if (transaction.getFromAccount().equals(transaction.getToAccount())) {
             throw new IllegalArgumentException("Transaction accounts must be different");
         }
+
+        //TODO: should i validate the description field?
         return true;
     }
 
@@ -193,9 +224,9 @@ public class TransactionJpa implements TransactionService {
         User initUser = new User();
         initUser.setId(dto.getInitiator());
 
-        Account fromAccount = new Account();
+        Account fromAccount = accountService.getAccountByIBAN(Iban.valueOf(dto.getSender()));
 
-        Account receivingAccount = new Account();
+        Account receivingAccount = accountService.getAccountByIBAN(Iban.valueOf(dto.getReceiver()));
 
         Transaction transaction = new Transaction();
         transaction.setAmount(dto.getAmount());
@@ -217,7 +248,7 @@ public class TransactionJpa implements TransactionService {
         transactionDTO.setSender(model.getFromAccount().getIBAN().toString());
         transactionDTO.setReceiver(model.getToAccount().getIBAN().toString());
         transactionDTO.setDescription(model.getDescription());
-        return model.toDTO();
+        return transactionDTO;
     }
 
     @Override
@@ -228,7 +259,5 @@ public class TransactionJpa implements TransactionService {
         }
         return transactionDTOs;
     }
-
-
 
 }

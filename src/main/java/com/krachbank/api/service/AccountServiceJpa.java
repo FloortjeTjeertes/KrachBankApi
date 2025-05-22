@@ -3,6 +3,7 @@ package com.krachbank.api.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.iban4j.Iban;
 import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.AccountDTO;
@@ -84,6 +85,8 @@ public class AccountServiceJpa implements AccountService {
         throw new UnsupportedOperationException("Unimplemented method 'removeAccount'");
     }
 
+    
+
     @Override
     public Account toModel(AccountDTO dto) {
 
@@ -92,17 +95,30 @@ public class AccountServiceJpa implements AccountService {
 
     @Override
     public AccountDTO toDTO(Account model) {
-      
-        return model.toDTO();
+        AccountDTO accountDTO = new AccountDTO();
+        accountDTO.setId(model.getId());
+        accountDTO.setIBAN(model.getIBAN());
+        accountDTO.setAccountType(model.getAccountType());
+        accountDTO.setBalance(model.getBalance());
+        accountDTO.setAbsoluteLimit(model.getAbsoluteLimit());
+        accountDTO.setAbsoluteLimit(model.getAbsoluteLimit());
+        accountDTO.setUserId(model.getUser().getId().toString());
+        return accountDTO;
     }
 
     @Override
     public List<AccountDTO> toDTO(List<Account> accounts) {
         List<AccountDTO> accountDTOs = new ArrayList<>();
        for (Account accountDTO : accounts) {
-            accountDTOs.add((AccountDTO) toDTO(accountDTO));
+            accountDTOs.add(toDTO(accountDTO));
         }
         return accountDTOs;
+    }
+
+    @Override
+    public Account getAccountByIBAN(Iban iban) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAccountByIBAN'");
     }
     
 

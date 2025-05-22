@@ -75,7 +75,7 @@ public class UserServiceJpaTest {
             return savedUser;
         });
 
-        UserDTO dto = (UserDTO) userService.verifyUser(user1);
+        UserDTO dto = userService.verifyUser(user1);
 
         assertNotNull(dto);
         assertEquals(user1.getId(), dto.getId());

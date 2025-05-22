@@ -1,5 +1,6 @@
 package com.krachbank.api.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
-    public DTO verifyUser(User user) {
+    public UserDTO verifyUser(User user) {
         // Basic validation example, adjust as needed for your User fields
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null");
@@ -61,7 +62,7 @@ public class UserServiceJpa implements UserService {
         if (user.getBsn() <= 0) {
             throw new IllegalArgumentException("BSN must be a positive number");
         }
-        return userRepository.save(user).toDTO();
+        return toDTO(userRepository.save(user));
     }
 
     @Override
@@ -95,7 +96,20 @@ public class UserServiceJpa implements UserService {
 
     @Override
     public UserDTO toDTO(User model) {
-        return model.toDTO();
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(model.getId());
+        userDTO.setTransferLimit(model.getDailyLimit());
+        userDTO.setCreatedAt(model.getCreatedAt());
+        userDTO.setVerified(model.isVerified());
+        userDTO.setActive(model.isActive());
+        userDTO.setFirstName(model.getFirstName());
+        userDTO.setLastName(model.getLastName());
+        userDTO.setEmail(model.getEmail());
+        userDTO.setPhoneNumber(model.getPhoneNumber());
+        userDTO.setBSN(model.getBsn());
+
+
+        return userDTO;
     }
 
     @Override

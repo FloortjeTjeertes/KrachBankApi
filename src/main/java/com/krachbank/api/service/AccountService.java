@@ -2,6 +2,8 @@ package com.krachbank.api.service;
 
 import java.util.List;
 
+import org.iban4j.Iban;
+
 import com.krachbank.api.dto.AccountDTO;
 import com.krachbank.api.models.Account;
 
@@ -17,5 +19,7 @@ public interface AccountService extends Service<AccountDTO, Account> {
     public AccountDTO updateAccount(Long id, Account account);
 
     public void removeAccount(Account account);
+
+    public Account getAccountByIBAN(Iban iban);
 }
 
