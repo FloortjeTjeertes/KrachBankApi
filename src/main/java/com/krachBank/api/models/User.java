@@ -1,7 +1,7 @@
-package com.krachbank.api.models;
+package com.krachBank.api.models;
 
-import com.krachbank.api.dto.DTO;
-import com.krachbank.api.dto.UserDTO;
+import com.krachBank.api.dto.DTO;
+import com.krachBank.api.dto.UserDTO;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -51,10 +51,12 @@ public class User implements Model {
                 email, phoneNumber, bsn);
     }
 
-    public void setIsActive(boolean b) {
+    public void setIsActive(boolean isActive) {
+        this.active = isActive;
     }
 
-    public void setIsVerified(boolean b) {
+    public void setIsVerified(boolean isVerified) {
+        this.verified = isVerified;
     }
 
 }

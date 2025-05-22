@@ -1,12 +1,12 @@
 package com.krachbank.api.service;
 
-import com.krachbank.api.configuration.IBANGenerator;
-import com.krachbank.api.dto.AccountDTO;
-import com.krachbank.api.models.Account;
-import com.krachbank.api.models.AccountType;
-import com.krachbank.api.models.User;
-import com.krachbank.api.repository.AccountRepository;
+import com.krachBank.api.configuration.IBANGenerator;
+import com.krachBank.api.models.Account;
+import com.krachBank.api.models.AccountType;
+import com.krachBank.api.models.User;
+import com.krachBank.api.repository.AccountRepository;
 
+import com.krachBank.api.service.AccountServiceJpa;
 import org.iban4j.Iban;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

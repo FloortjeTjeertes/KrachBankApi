@@ -1,17 +1,16 @@
-package com.krachbank.api.controllers;
+package com.krachBank.api.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.krachbank.api.configuration.IBANGenerator;
-import com.krachbank.api.dto.AccountDTO;
-import com.krachbank.api.models.Account;
-import com.krachbank.api.service.AccountService;
+import com.krachBank.api.configuration.IBANGenerator;
+import com.krachBank.api.dto.AccountDTO;
+import com.krachBank.api.models.Account;
+import com.krachBank.api.service.AccountService;
 
 @RestController
 @RequestMapping("/accounts")

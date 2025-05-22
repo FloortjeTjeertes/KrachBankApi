@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.krachbank.api.controllers.BankAccountController;
+import com.krachBank.api.controllers.BankAccountController;
 
 @WebMvcTest(BankAccountController.class)
 @AutoConfigureMockMvc

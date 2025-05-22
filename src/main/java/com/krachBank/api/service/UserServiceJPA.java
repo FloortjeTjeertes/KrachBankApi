@@ -1,8 +1,8 @@
-package com.krachbank.api.service;
+package com.krachBank.api.service;
 
-import com.krachbank.api.dto.UserDTO;
-import com.krachbank.api.models.User;
-import com.krachbank.api.repository.UserRepository;
+import com.krachBank.api.dto.UserDTO;
+import com.krachBank.api.models.User;
+import com.krachBank.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;

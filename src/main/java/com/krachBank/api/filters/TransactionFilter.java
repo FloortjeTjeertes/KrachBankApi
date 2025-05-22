@@ -1,4 +1,4 @@
-package com.krachbank.api.filters;
+package com.krachBank.api.filters;
 
 import java.time.LocalDateTime;
 

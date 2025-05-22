@@ -1,6 +1,6 @@
-package com.krachbank.api.dto;
+package com.krachBank.api.dto;
 
-import com.krachbank.api.models.Model;
+import com.krachBank.api.models.Model;
 
 public interface DTO {
     public Model ToModel();

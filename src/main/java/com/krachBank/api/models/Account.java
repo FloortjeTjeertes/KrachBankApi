@@ -1,6 +1,6 @@
-package com.krachbank.api.models;
+package com.krachBank.api.models;
 
-import com.krachbank.api.dto.AccountDTO;
+import com.krachBank.api.dto.AccountDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.iban4j.Iban;

@@ -1,4 +1,4 @@
-package com.krachbank.api.service;
+package com.krachBank.api.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +8,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.criteria.Predicate;
 
-import com.krachbank.api.filters.TransactionFilter;
-import com.krachbank.api.models.Transaction;
-import com.krachbank.api.repository.TransactionRepository;
+import com.krachBank.api.filters.TransactionFilter;
+import com.krachBank.api.models.Transaction;
+import com.krachBank.api.repository.TransactionRepository;
 
 @Service
 public class TransactionJpa implements TransactionService {

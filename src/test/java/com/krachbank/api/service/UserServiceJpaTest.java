@@ -1,8 +1,9 @@
 package com.krachbank.api.service;
 
-import com.krachbank.api.dto.UserDTO;
-import com.krachbank.api.models.User;
-import com.krachbank.api.repository.UserRepository;
+import com.krachBank.api.dto.UserDTO;
+import com.krachBank.api.models.User;
+import com.krachBank.api.repository.UserRepository;
+import com.krachBank.api.service.UserServiceJPA;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -143,15 +144,15 @@ public class UserServiceJpaTest {
     }
     @Test
     void testUpdateUser() {
-        when(userRepository.findById(Long.valueOf(1L))).thenReturn(Optional.of(user));
-        when(modelMapper.map(userDTO, User.class)).thenReturn(user);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        doNothing().when(modelMapper).map(eq(userDTO), eq(user)); // ✅ FIXED
         when(userRepository.save(user)).thenReturn(user);
         when(modelMapper.map(user, UserDTO.class)).thenReturn(userDTO);
 
-        UserDTO updated = userService.updateUser(Long.valueOf(1L), userDTO);
+        UserDTO updated = userService.updateUser(1L, userDTO);
 
         assertThat(updated).isNotNull();
-        verify(userRepository).findById(Long.valueOf(1L));
+        verify(userRepository).findById(1L);
         verify(userRepository).save(user);
     }
     @Test

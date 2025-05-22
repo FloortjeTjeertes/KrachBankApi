@@ -1,15 +1,14 @@
-package com.krachbank.api.models;
+package com.krachBank.api.models;
 
 import java.time.LocalDateTime;
 
-import com.krachbank.api.dto.DTO;
+import com.krachBank.api.dto.DTO;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
-import lombok.Getter;
 
 @Entity
 
