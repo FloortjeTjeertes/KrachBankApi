@@ -13,7 +13,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 
 @Entity
@@ -55,8 +56,8 @@ public class Account implements Model {
         accountDTO.setId(this.id);
         accountDTO.setIBAN(this.IBAN);
         accountDTO.setAccountType(this.accountType);
-        accountDTO.setBalance(this.balance);
-        accountDTO.setAbsoluteLimit(this.absoluteLimit);
+        accountDTO.setBalance(this.getBalance());
+        accountDTO.setAbsoluteLimit(this.getAbsoluteLimit());
         accountDTO.setUserId(this.user.getId().toString());
         return accountDTO;
     }
@@ -78,19 +79,19 @@ public class Account implements Model {
     }
 
     public Double getBalance() {
-        return balance;
+        return Balance;
     }
 
     public void setBalance(Double balance) {
-        this.balance = balance;
+        this.Balance = balance;
     }
 
     public Double getAbsoluteLimit() {
-        return absoluteLimit;
+        return AbsoluteLimit;
     }
 
     public void setAbsoluteLimit(Double absoluteLimit) {
-        this.absoluteLimit = absoluteLimit;
+        this.AbsoluteLimit = absoluteLimit;
     }
 
     public AccountType getAccountType() {

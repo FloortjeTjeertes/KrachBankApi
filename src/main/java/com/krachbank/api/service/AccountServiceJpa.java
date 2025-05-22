@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.krachbank.api.dto.AccountDTO;
 import com.krachbank.api.filters.AccountFilter;
+import com.krachbank.api.models.Account;
 import com.krachbank.api.models.Transaction;
 import com.krachbank.api.repository.AccountRepository;
 
