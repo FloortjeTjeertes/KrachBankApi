@@ -181,14 +181,14 @@ public class AccountServiceJpa implements AccountService {
     }
 
     @Override
-    public List<Account> getAccountsByUserId(String userId) {
+    public List<Account> getAccountsByUserId(Long userId) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
         List<Account> accounts = accountRepository.findAll();
         List<Account> userAccounts = new ArrayList<>();
         for (Account account : accounts) {
-            if (account.getUser().getId().toString().equals(userId)) {
+            if (account.getUser().getId().equals(userId)) {
                 userAccounts.add(account);
             }
         }
