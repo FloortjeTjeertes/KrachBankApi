@@ -20,7 +20,7 @@ public class AccountServiceJpa implements AccountService {
     private final AccountRepository accountRepository;
 
 
-    public AccountServiceJpa(AccountRepository accountRepository, TransactionService transactionJpa) {
+    public AccountServiceJpa(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
 

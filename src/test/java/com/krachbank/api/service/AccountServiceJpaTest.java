@@ -43,7 +43,7 @@ public class AccountServiceJpaTest {
         accountRepository = mock(AccountRepository.class);
         ibanGenerator = mock(IBANGenerator.class);
         transactionService = mock(TransactionService.class);
-        accountService = new AccountServiceJpa(accountRepository, transactionService);
+        accountService = new AccountServiceJpa(accountRepository);
 
         user1 = new User();
         user1.setId(1L);

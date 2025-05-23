@@ -3,7 +3,9 @@ package com.krachbank.api.seeders;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.User;
 import com.krachbank.api.models.AccountType;
+import com.krachbank.api.models.Transaction;
 import com.krachbank.api.repository.AccountRepository;
+import com.krachbank.api.repository.TransactionRepository;
 import com.krachbank.api.repository.UserRepository;
 import org.iban4j.Iban;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,17 +20,21 @@ public class DatabaseSeeder {
 
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
 
     @Autowired
-    public DatabaseSeeder(UserRepository userRepository, AccountRepository accountRepository) {
+    public DatabaseSeeder(UserRepository userRepository, AccountRepository accountRepository,
+                          TransactionRepository transactionRepository) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     @PostConstruct
     public void seed() {
         // Create users
-        // TODO: passwords need to be hashed acording to the security and authentication methods
+        // TODO: passwords need to be hashed acording to the security and authentication
+        // methods
         User user1 = new User();
         user1.setFirstName("Alice");
         user1.setLastName("Smith");
@@ -85,6 +91,17 @@ public class DatabaseSeeder {
         account2.setVerifiedBy(user1);
         accountRepository.save(account2);
 
-        // Add more seeding as needed
+        // make an test Transaction
+        Transaction transaction = new com.krachbank.api.models.Transaction();
+        transaction.setAmount(new BigDecimal("250.00"));
+        transaction.setCreatedAt(LocalDateTime.now());
+        transaction.setFromAccount(account1);
+        transaction.setInitiator(user1);
+        transaction.setToAccount(account2);
+        transaction.setDescription("Test transaction from Alice to Bob");
+
+        // Assuming you have a TransactionRepository and it's injected similarly
+        transactionRepository.save(transaction);
+
     }
 }

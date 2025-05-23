@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.iban4j.Iban;
 import org.iban4j.Iban4jException;
@@ -13,9 +14,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.krachbank.api.dto.TransactionDTO;
+import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
@@ -64,15 +67,7 @@ public class TransactionControllerTest {
         fullTransaction.setDescription("Test transaction");
     }
 
-    @Test
-    void testCreateTransaction() {
-
-    }
-
-    @Test
-    void testGetTransactions() {
-
-    }
+ 
     // TODO: move these to the test for the mapper class
 
     @Test
@@ -110,5 +105,50 @@ public class TransactionControllerTest {
     @Test
     void testToModelWithNullDTO() {
         assertThrows(NullPointerException.class, () -> transactionController.toModel(null));
+    }
+
+    @Test
+    void testGetTransactionsReturnsOkWithTransactions() {
+        TransactionFilter filter = new TransactionFilter();
+        List<Transaction> transactions = List.of(fullTransaction);
+        List<TransactionDTO> transactionDTOs = List.of(new TransactionDTO());
+
+        // Mock service behavior
+        org.mockito.Mockito.when(transactionService.getTransactionsByFilter(filter)).thenReturn(transactions);
+        org.mockito.Mockito.when(transactionService.toDTO(transactions)).thenReturn(transactionDTOs);
+
+        ResponseEntity<?> response = transactionController.getTransactions(filter);
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(transactionDTOs, response.getBody());
+    }
+
+    @Test
+    void testGetTransactionsReturnsNullWhenEmpty() {
+        TransactionFilter filter = new TransactionFilter();
+        List<Transaction> transactions = List.of();
+
+        org.mockito.Mockito.when(transactionService.getTransactionsByFilter(filter)).thenReturn(transactions);
+
+        ResponseEntity<?> response = transactionController.getTransactions(filter);
+
+        // According to implementation, should return null if empty
+        assertEquals(null, response);
+    }
+
+    @Test
+    void testGetTransactionsHandlesException() {
+        TransactionFilter filter = new TransactionFilter();
+        String errorMessage = "Database error";
+
+        org.mockito.Mockito.when(transactionService.getTransactionsByFilter(filter))
+            .thenThrow(new RuntimeException(errorMessage));
+
+        ResponseEntity<?> response = transactionController.getTransactions(filter);
+
+        assertNotNull(response);
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(errorMessage, response.getBody());
     }
 }
