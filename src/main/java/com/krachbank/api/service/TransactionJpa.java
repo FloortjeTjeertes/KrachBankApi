@@ -56,7 +56,6 @@ public class TransactionJpa implements TransactionService {
         // check if the transaction is to the same account
         if (sendingAccount.getIBAN().equals(receivingAccount.getIBAN())) {
             throw new IllegalArgumentException("cant transfer to the same account");
-
         }
 
         if (!receivingAccount.getUser().equals(sendingAccount.getUser())) {
