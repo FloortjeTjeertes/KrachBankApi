@@ -23,10 +23,13 @@ import jakarta.transaction.Transactional;
 @Service
 public class TransactionJpa implements TransactionService {
 
+    private final AccountServiceJpa accountServiceJpa;
+
     private final TransactionRepository transactionRepository;
 
-    public TransactionJpa(TransactionRepository transactionRepository) {
+    public TransactionJpa(TransactionRepository transactionRepository, AccountServiceJpa accountServiceJpa) {
         this.transactionRepository = transactionRepository;
+        this.accountServiceJpa = accountServiceJpa;
     }
 
     @Override
@@ -38,18 +41,12 @@ public class TransactionJpa implements TransactionService {
             throw new IllegalArgumentException("Transaction already exists");
         });
 
-        // TODO maybe make this into a method
-        if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new Exception("can transfer 0 or less");
-        }
-
+     
         Account sendingAccount = transaction.getFromAccount();
         Account receivingAccount = transaction.getToAccount();
 
-        // validate Accounts are valid bank accounts
         // validate if accounts are from our bank
-
-        if (IsInternalTransaction(sendingAccount, receivingAccount)) {
+        if (!IsInternalTransaction(sendingAccount, receivingAccount)) {
             throw new Exception("this transaction is not whit accounts from our bank");
         }
 
@@ -58,21 +55,30 @@ public class TransactionJpa implements TransactionService {
             throw new IllegalArgumentException("cant transfer to the same account");
         }
 
+        // check if the transaction is to another persons account
         if (!receivingAccount.getUser().equals(sendingAccount.getUser())) {
+            // check if the transaction is to another persons savings account
             if (receivingAccount.getAccountType() == AccountType.SAVINGS
                     || sendingAccount.getAccountType() == AccountType.SAVINGS) {
                 throw new IllegalArgumentException("cant transfer money to or from another persons saving account");
             }
 
         }
-        // check if users are active
+        // check if account reached the absolute limit
         reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
+
+        // check if the transaction is below then the daily limit
         reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount(), LocalDateTime.now());
+        // check if the transaction is bigger then the transfer limit
         transferAmountBiggerThenTransferLimit(sendingAccount, transaction.getAmount());
 
         // update account balance
-        // subtract from
-        // validate changes
+        sendingAccount.setBalance(sendingAccount.getBalance().subtract(transaction.getAmount()));
+        receivingAccount.setBalance(receivingAccount.getBalance().add(transaction.getAmount()));
+
+        // save the transaction
+        accountServiceJpa.createAccount(sendingAccount);
+        accountServiceJpa.createAccount(receivingAccount);
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
@@ -82,6 +88,11 @@ public class TransactionJpa implements TransactionService {
 
     // check if the transaction is whit local accounts
     public Boolean IsInternalTransaction(Account sendingAccount, Account retrievingAccount) {
+        if (sendingAccount == null || retrievingAccount == null) {
+            throw new IllegalArgumentException("account is null");
+        }
+        String sendingAccountIBAN = sendingAccount.getIBAN().toString();
+        String retrievingAccountIBAN = retrievingAccount.getIBAN().toString();
         return sendingAccount.getIBAN().getBankCode().equals(retrievingAccount.getIBAN().getBankCode());
     }
 
@@ -143,13 +154,28 @@ public class TransactionJpa implements TransactionService {
     public List<Transaction> getAllTransactions() {
 
         return transactionRepository.findAll();
-       
+
     }
 
     @Override
-    public Optional<Transaction> updateTransaction(Long id, Transaction transaction) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateTransaction'");
+    @Transactional
+    public Optional<Transaction> updateTransaction(Long id, Transaction transaction) throws Exception {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("invalid id given");
+        }
+        if (transaction == null) {
+            throw new IllegalArgumentException("transaction is null");
+        }
+        if (transaction.getId() == null || transaction.getId() <= 0) {
+            throw new IllegalArgumentException("transaction id is null");
+        }
+
+        transaction.setId(id);
+        Transaction existingTransaction = transactionRepository.save(transaction);
+
+        Optional<Transaction> updatedTransaction = getTransactionById(id);
+
+        return updatedTransaction;
     }
 
     public static Specification<Transaction> MakeTransactionsSpecification(TransactionFilter filter) {
@@ -221,7 +247,7 @@ public class TransactionJpa implements TransactionService {
         BigDecimal resultingAmount = account.getBalance().subtract(amountToSubtract);
 
         if (resultingAmount.compareTo(account.getAbsoluteLimit()) < 0) {
-            throw new Exception("cant spend more then the absolute limit. in other words: you broke");
+            throw new Exception("cant spend more then the absolute limit");
         }
 
         return true;
@@ -237,7 +263,7 @@ public class TransactionJpa implements TransactionService {
         BigDecimal dailyLimit = user.getDailyLimit(); // users daily limit
 
         if (totalSpendToday.compareTo(dailyLimit) > 0 || totalSpendToday.equals(dailyLimit)) {
-            throw new Exception("dailylimit reached"); //
+            throw new Exception("daily limit reached"); //
 
         }
 

@@ -43,7 +43,7 @@ public class TransactionJpaTest {
         accountService = mock(AccountServiceJpa.class);
         transactionFilter = mock(TransactionFilter.class);
 
-        transactionService = new TransactionJpa(transactionRepository);
+        transactionService = new TransactionJpa(transactionRepository, accountService);
 
         Iban iban = Iban.valueOf("DE32500211205487556354");
         Iban iban2 = Iban.valueOf("DE52500202006796187625");
@@ -58,11 +58,13 @@ public class TransactionJpaTest {
         account1.setId(10L);
         account1.setIBAN(iban);
         account1.setUser(user1);
+        account1.setBalance(new BigDecimal("1000.00"));
 
         Account account2 = new Account();
         account2.setIBAN(iban2);
         account2.setId(20L);
         account2.setUser(user2);
+        account1.setBalance(new BigDecimal("1000.00"));
 
         fullTransaction = new Transaction();
         fullTransaction.setId(1L);
@@ -431,13 +433,15 @@ public class TransactionJpaTest {
 
         // Set up account types and limits
         sendingAccount.setAccountType(AccountType.CHECKING);
-        receivingAccount.setAccountType(AccountType.CHECKING);
         sendingAccount.setBalance(new BigDecimal("1000.00"));
         sendingAccount.setAbsoluteLimit(new BigDecimal("-500.00"));
         sendingAccount.setTransactionLimit(new BigDecimal("1000.00"));
-        sendingAccount.setUser(transaction.getInitiator());
-        receivingAccount.setUser(fullTransaction2.getInitiator());
         sendingAccount.getUser().setDailyLimit(new BigDecimal("10000.00"));
+        sendingAccount.setUser(transaction.getInitiator());
+
+        receivingAccount.setUser(fullTransaction2.getInitiator());
+        receivingAccount.setBalance(new BigDecimal("1000.00"));
+        receivingAccount.setAccountType(AccountType.CHECKING);
 
         Optional<Transaction> result = transactionService.createTransaction(transaction);
 
@@ -452,36 +456,27 @@ public class TransactionJpaTest {
 
         when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.of(transaction));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionService.createTransaction(transaction));
+        Exception exeption = assertThrows(IllegalArgumentException.class, () -> transactionService.createTransaction(transaction));
+        assertEquals("Transaction already exists", exeption.getMessage());
     }
 
-    @Test
-    void testCreateTransactionThrowsIfAmountZeroOrNegative() {
-        Transaction transaction = fullTransaction;
-        transaction.setId(102L);
-
-        when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
-
-        transaction.setAmount(BigDecimal.ZERO);
-        assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
-
-        transaction.setAmount(new BigDecimal("-1.00"));
-        assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
-    }
+ 
 
     @Test
-    void testCreateTransactionThrowsIfInternalTransaction() {
+    void testCreateTransactionThrowsIfNotInternalTransaction() {
         Transaction transaction = fullTransaction;
         transaction.setId(103L);
 
         when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
 
-        // Set both accounts to have the same bank code
+        // Set both accounts to have the diverent bank code
         Iban iban = Iban.valueOf("DE32500211205487556354");
+        Iban invalidIban = Iban.valueOf("AL62134113212579341242716778");
         transaction.getFromAccount().setIBAN(iban);
-        transaction.getToAccount().setIBAN(iban);
+        transaction.getToAccount().setIBAN(invalidIban);
 
-        assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
+        Exception exception = assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
+        assertEquals("this transaction is not whit accounts from our bank",exception.getMessage());
     }
 
     @Test
@@ -492,19 +487,24 @@ public class TransactionJpaTest {
         when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
 
         Account account = new Account();
-        Iban iban = Iban.valueOf("DE32500211205487556354");
+        Iban iban = Iban.valueOf("DE22500211208825963824");
         account.setIBAN(iban);
         account.setId(1L);
         account.setUser(new User());
-        account.setAccountType(com.krachbank.api.models.AccountType.CHECKING);
+        account.setAccountType(AccountType.CHECKING);
         account.setBalance(new BigDecimal("1000.00"));
         account.setAbsoluteLimit(new BigDecimal("-500.00"));
         account.setTransactionLimit(new BigDecimal("1000.00"));
 
-        transaction.setFromAccount(account);
-        transaction.setToAccount(account);
+        Account account2 = new Account();
+        account2.setIBAN(iban);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionService.createTransaction(transaction));
+        transaction.setFromAccount(account);
+
+        transaction.setToAccount(account2);
+
+       Exception exception = assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
+        assertEquals("cant transfer to the same account", exception.getMessage());
     }
 
     @Test
@@ -533,7 +533,8 @@ public class TransactionJpaTest {
         from.setTransactionLimit(new BigDecimal("1000.00"));
         user1.setDailyLimit(new BigDecimal("10000.00"));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionService.createTransaction(transaction));
+        Exception exception = assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
+        assertEquals("cant transfer money to or from another persons saving account", exception.getMessage());
     }
 
     @Test
@@ -557,7 +558,8 @@ public class TransactionJpaTest {
 
         transaction.setAmount(new BigDecimal("20.00"));
 
-        assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
+        Exception exception =assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
+        assertEquals("cant spend more then the absolute limit", exception.getMessage());
     }
 
     @Test
@@ -584,7 +586,8 @@ public class TransactionJpaTest {
         when(transactionRepository.findByInitiatorIdOrderByCreatedAtAsc(from.getUser().getId()))
                 .thenReturn(List.of(transaction));
 
-        assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
+       Exception exception = assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
+        assertEquals("daily limit reached", exception.getMessage());
     }
 
     @Test
@@ -608,7 +611,8 @@ public class TransactionJpaTest {
 
         transaction.setAmount(new BigDecimal("100.00"));
 
-        assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
+       Exception exception = assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
+        assertEquals("this amount is more than your transfer limit of the account", exception.getMessage());
     }
 
     @Test

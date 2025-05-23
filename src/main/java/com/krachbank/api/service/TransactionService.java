@@ -26,7 +26,6 @@ public interface TransactionService extends Service<TransactionDTO, Transaction>
     public List<Transaction> getAllTransactions();
 
     @Transactional
-    public Optional<Transaction> updateTransaction(Long id, Transaction transaction);
-
+public Optional<Transaction> updateTransaction(Long id, Transaction transaction) throws Exception;
     public BigDecimal getUserTotalAmountSpendAtDate(User user, LocalDateTime date);
 }
