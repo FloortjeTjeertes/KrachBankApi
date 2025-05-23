@@ -3,13 +3,21 @@ package com.krachbank.api.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.krachbank.api.configuration.IBANGenerator;
 import com.krachbank.api.dto.AccountDTO;
+import com.krachbank.api.dto.ErrorDTO;
 import com.krachbank.api.models.Account;
+import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
 
 @RestController
@@ -22,7 +30,7 @@ public class AccountController implements Controller<Account, AccountDTO> {
     }
 
     @PostMapping
-    public List<AccountDTO> createAccounts(List<Account> accounts) {
+    public ResponseEntity<?> createAccounts(List<Account> accounts) {
         try {
             for (Account account : accounts) {
                 account.setIBAN(IBANGenerator.generateIBAN());
@@ -32,12 +40,47 @@ public class AccountController implements Controller<Account, AccountDTO> {
             for (Account account : returnAccounts) {
                 accountDTOs.add(accountService.toDTO(account));
             }
-            return accountDTOs;
+
+            return ResponseEntity.ok(accountDTOs);
         } catch (IllegalArgumentException e) {
-            // Handle the exception as needed, e.g., log it or return an error response
-            System.out.println("Error creating accounts: " + e.getMessage());
-            return null; // or throw a custom exception
+            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            return ResponseEntity.status(error.getCode()).body(error);
         }
+    }
+
+    @GetMapping("/accounts/{IBAN}")
+    public ResponseEntity<?> getAccountByIban(@RequestParam String iban) {
+        try {
+
+            accountService.getAccountByIBAN(iban);
+
+            return ResponseEntity.ok(accountService.toDTO(accountService.getAccountByIBAN(iban).get()));
+        } catch (Exception e) {
+            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            return ResponseEntity.status(error.getCode()).body(error);
+        }
+
+    }
+
+    @GetMapping()
+    public ResponseEntity<?> getAccountsForUser() {
+        try {
+
+            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (user == null) {
+                throw new Exception("User not found");
+            }
+            List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
+            List<Account> accounts = accountService.getAccountsByUserId(null);
+            for (Account account : accounts) {
+                accountDTOs.add(accountService.toDTO(account));
+            }
+            return ResponseEntity.ok(accountDTOs);
+        } catch (Exception e) {
+            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            return ResponseEntity.status(error.getCode()).body(error);
+        }
+
     }
 
     @Override

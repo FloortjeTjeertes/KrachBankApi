@@ -73,9 +73,9 @@ public class TransactionController implements Controller<Transaction, Transactio
         User initUser = new User();
         initUser.setId(dto.getInitiator());
 
-        Optional<Account> fromAccount = accountService.getAccountByIBAN(Iban.valueOf(dto.getSender()));
+        Optional<Account> fromAccount = accountService.getAccountByIBAN(dto.getSender());
 
-        Optional<Account> receivingAccount = accountService.getAccountByIBAN(Iban.valueOf(dto.getReceiver()));
+        Optional<Account> receivingAccount = accountService.getAccountByIBAN(dto.getReceiver());
 
         Transaction transaction = new Transaction();
         transaction.setAmount(dto.getAmount());

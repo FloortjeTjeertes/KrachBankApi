@@ -19,7 +19,6 @@ public class AccountServiceJpa implements AccountService {
 
     private final AccountRepository accountRepository;
 
-
     public AccountServiceJpa(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
@@ -27,7 +26,9 @@ public class AccountServiceJpa implements AccountService {
     @Override
     public List<Account> getAccounts() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAccounts'");
+        List<Account> accounts = new ArrayList<>();
+        accountRepository.findAll().forEach(accounts::add);
+        return accounts;
     }
 
     @Override
@@ -49,23 +50,30 @@ public class AccountServiceJpa implements AccountService {
     }
 
     @Override
+    @Transactional
     public List<Account> createAccounts(List<Account> accounts) {
         // Validate accounts
         for (Account account : accounts) {
-            if (account == null) {
-                throw new IllegalArgumentException("Account cannot be null");
-            }
-            if (account.getIBAN() == null) {
-                throw new IllegalArgumentException("Account number is required");
-            }
-            if (account.getBalance() == null) {
-                throw new IllegalArgumentException("Account balance is required");
-            }
-            if (account.getUser() == null) {
-                throw new IllegalArgumentException("Account owner is required");
-            }
+            validateAccount(account);
         }
         return accountRepository.saveAll(accounts);
+    }
+
+    public Account validateAccount(Account account) {
+        if (account == null) {
+            throw new IllegalArgumentException("Account cannot be null");
+        }
+        if (account.getIBAN() == null) {
+            throw new IllegalArgumentException("Account number is required");
+        }
+        if (account.getBalance() == null) {
+            throw new IllegalArgumentException("Account balance is required");
+        }
+        if (account.getUser() == null) {
+            throw new IllegalArgumentException("Account owner is required");
+        }
+        return account;
+
     }
 
     @Override
@@ -118,13 +126,20 @@ public class AccountServiceJpa implements AccountService {
 
     @Override
     public void removeAccount(Account account) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'removeAccount'");
+        if (account == null) {
+            throw new IllegalArgumentException("Account cannot be null");
+        }
+        if (account.getId() == null || account.getId() <= 0) {
+            throw new IllegalArgumentException("Account ID is required");
+        }
+        if (!accountRepository.existsById(account.getId())) {
+            throw new IllegalArgumentException("Account does not exist");
+        }
+        accountRepository.delete(account);
     }
 
- 
-
-    //TODO: maybe make an parent base Service class that has generalised these methods if posible
+    // TODO: maybe make an parent base Service class that has generalised these
+    // methods if posible
     @Override
     public AccountDTO toDTO(Account model) {
         AccountDTO accountDTO = new AccountDTO();
@@ -148,11 +163,36 @@ public class AccountServiceJpa implements AccountService {
     }
 
     @Override
-    public Optional<Account> getAccountByIBAN(Iban iban) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAccountByIBAN'");
+    public Optional<Account> getAccountByIBAN(String iban) {
+      
+        if (iban == null) {
+            throw new IllegalArgumentException("IBAN cannot be null");
+        }
+        Iban ibanObj = Iban.valueOf(iban);
+        if (ibanObj == null) {
+            throw new IllegalArgumentException("IBAN is not valid");
+        }
+        
+        Optional<Account> account = accountRepository.findByIBAN(iban.toString());
+        if (!account.isPresent()) {
+            throw new IllegalArgumentException("Account with this IBAN does not exist");
+        }
+        return account;
     }
 
-   
+    @Override
+    public List<Account> getAccountsByUserId(String userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        List<Account> accounts = accountRepository.findAll();
+        List<Account> userAccounts = new ArrayList<>();
+        for (Account account : accounts) {
+            if (account.getUser().getId().toString().equals(userId)) {
+                userAccounts.add(account);
+            }
+        }
+        return userAccounts;
+    }
 
 }

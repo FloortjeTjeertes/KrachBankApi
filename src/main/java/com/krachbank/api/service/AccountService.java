@@ -24,7 +24,9 @@ public interface AccountService extends Service<AccountDTO, Account> {
 
     public void removeAccount(Account account);
 
-    public Optional<Account> getAccountByIBAN(Iban iban);
+    public Optional<Account> getAccountByIBAN(String iban);
+
+    public List<Account> getAccountsByUserId(Long userId);
 
 
 }
