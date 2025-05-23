@@ -65,6 +65,7 @@ public class TransactionJpa implements TransactionService {
             }
 
         }
+        // check if users are active
         reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
         reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount(), LocalDateTime.now());
         transferAmountBiggerThenTransferLimit(sendingAccount, transaction.getAmount());
@@ -81,19 +82,26 @@ public class TransactionJpa implements TransactionService {
 
     // check if the transaction is whit local accounts
     public Boolean IsInternalTransaction(Account sendingAccount, Account retrievingAccount) {
-        return (sendingAccount.getIBAN().getBankCode() == retrievingAccount.getIBAN().getBankCode());
+        return sendingAccount.getIBAN().getBankCode().equals(retrievingAccount.getIBAN().getBankCode());
     }
 
-    // check the total amount spend by an user 
+    // check the total amount spend by an user
     // TODO: should transactions done by the admin be included?
     public BigDecimal getUserTotalAmountSpendAtDate(User user, LocalDateTime date) {
+        if (user == null || user.getId() <= 0) {
+            throw new IllegalArgumentException("user is null");
+        }
+
+        if (date == null) {
+            throw new IllegalArgumentException("date is null");
+        }
         List<Transaction> transactionsForUser = transactionRepository
                 .findByInitiatorIdOrderByCreatedAtAsc(user.getId()); // change this to a service method if we ever get
                                                                      // one that retrieves all transactions for a single
                                                                      // user
         List<Transaction> filteredTransactions = transactionsForUser.stream()
                 .filter(t -> t.getCreatedAt().toLocalDate().equals(date.toLocalDate()))
-                .filter(t-> t.getFromAccount().getUser().getId().equals(user.getId()))
+                .filter(t -> t.getFromAccount().getUser().getId().equals(user.getId()))
                 .toList();
 
         return filteredTransactions.stream()
@@ -133,8 +141,9 @@ public class TransactionJpa implements TransactionService {
 
     @Override
     public List<Transaction> getAllTransactions() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllTransactions'");
+
+        return transactionRepository.findAll();
+       
     }
 
     @Override
