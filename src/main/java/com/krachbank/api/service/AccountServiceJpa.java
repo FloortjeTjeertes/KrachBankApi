@@ -143,13 +143,13 @@ public class AccountServiceJpa implements AccountService {
     @Override
     public AccountDTO toDTO(Account model) {
         AccountDTO accountDTO = new AccountDTO();
-        accountDTO.setId(model.getId());
-        accountDTO.setIBAN(model.getIBAN());
-        accountDTO.setAccountType(model.getAccountType());
+        accountDTO.setIBAN(model.getIBAN().toString());
+        accountDTO.setType(model.getAccountType());
         accountDTO.setBalance(model.getBalance());
         accountDTO.setAbsoluteLimit(model.getAbsoluteLimit());
-        accountDTO.setAbsoluteLimit(model.getAbsoluteLimit());
-        accountDTO.setUserId(model.getUser().getId().toString());
+        accountDTO.setTransactionLimit(model.getTransactionLimit());
+        accountDTO.setOwner(model.getUser().getId().toString());
+        accountDTO.setCreatedAt(model.getCreatedAt().toString());
         return accountDTO;
     }
 
@@ -164,7 +164,7 @@ public class AccountServiceJpa implements AccountService {
 
     @Override
     public Optional<Account> getAccountByIBAN(String iban) {
-      
+
         if (iban == null) {
             throw new IllegalArgumentException("IBAN cannot be null");
         }
@@ -172,8 +172,7 @@ public class AccountServiceJpa implements AccountService {
         if (ibanObj == null) {
             throw new IllegalArgumentException("IBAN is not valid");
         }
-        
-        Optional<Account> account = accountRepository.findByIBAN(iban.toString());
+        Optional<Account> account = accountRepository.findByIBAN(ibanObj);
         if (!account.isPresent()) {
             throw new IllegalArgumentException("Account with this IBAN does not exist");
         }

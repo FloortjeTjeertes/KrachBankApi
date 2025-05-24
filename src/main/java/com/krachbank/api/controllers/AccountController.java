@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,8 +49,8 @@ public class AccountController implements Controller<Account, AccountDTO> {
         }
     }
 
-    @GetMapping("/accounts/{IBAN}")
-    public ResponseEntity<?> getAccountByIban(@RequestParam String iban) {
+    @GetMapping("/{iban}")
+    public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
 
             accountService.getAccountByIBAN(iban);

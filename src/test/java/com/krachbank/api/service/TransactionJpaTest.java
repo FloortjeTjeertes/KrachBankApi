@@ -95,13 +95,13 @@ public class TransactionJpaTest {
 
         transactions = List.of(fullTransaction, fullTransaction2);
 
-        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN()))
+        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN().toString()))
                 .thenReturn(Optional.of(fullTransaction.getFromAccount()));
-        when(accountService.getAccountByIBAN(fullTransaction.getToAccount().getIBAN()))
+        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN().toString()))
                 .thenReturn(Optional.of(fullTransaction.getToAccount()));
-        when(accountService.getAccountByIBAN(fullTransaction2.getFromAccount().getIBAN()))
+        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN().toString()))
                 .thenReturn(Optional.of(fullTransaction2.getFromAccount()));
-        when(accountService.getAccountByIBAN(fullTransaction2.getToAccount().getIBAN()))
+        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN().toString()))
                 .thenReturn(Optional.of(fullTransaction2.getToAccount()));
 
         when(transactionRepository.findAll((org.springframework.data.jpa.domain.Specification<Transaction>) any()))

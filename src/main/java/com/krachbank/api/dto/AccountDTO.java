@@ -15,14 +15,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AccountDTO implements DTO {
 
-    private Long id;
-    private Iban IBAN;
-    private AccountType accountType;
+    private String IBAN;
     private BigDecimal balance;
+    private String owner;
     private BigDecimal absoluteLimit;
+    private AccountType type;
     private BigDecimal transactionLimit;
-    private String userId;
-
-   
+    private String createdAt;
 
 }
