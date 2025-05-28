@@ -1,6 +1,7 @@
 package com.krachbank.api.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -65,6 +66,11 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
+    public UserDTO createUser(User user) {
+        return null;
+    }
+
+    @Override
     public UserDTO updateUser(Long id, User userDTO) {
 
         // TODO Auto-generated method stub
@@ -72,10 +78,15 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
-    public void removeUser(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'removeUser'");
+    public UserDTO deactivateUser(Long id) {
+        return null;
     }
+
+    @Override
+    public List<UserDTO> getAllUsers(Map<String, String> params) {
+        return List.of();
+    }
+
 
 
 }
