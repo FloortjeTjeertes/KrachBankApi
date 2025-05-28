@@ -66,7 +66,7 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
-    public UserDTO createUser(User user) {
+    public UserDTO createUser(UserDTO userDTO) {
         return null;
     }
 

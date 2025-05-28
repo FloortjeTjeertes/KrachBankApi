@@ -1,15 +1,11 @@
 package com.krachbank.api.controllers;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.models.User;
 import com.krachbank.api.service.UserService;
@@ -28,14 +24,19 @@ public class UserController {
         return userService.getUsers();
     }
 
-    @PostMapping("{id}/verify")
-    public UserDTO verifyUser(User user) {
+    @PostMapping("/{id}/verify")
+    public UserDTO verifyUser(@RequestBody User user) {
+        return (UserDTO) userService.verifyUser(user);
+    }
+
+    // ✅ Add this for signup
+    @PostMapping
+    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
         try {
-            return (UserDTO) userService.verifyUser(user);
+            UserDTO createdUser = userService.createUser(userDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
         } catch (IllegalArgumentException e) {
-            // Handle the exception as needed, e.g., log it or return an error response
-            System.out.println("Error creating user: " + e.getMessage());
-            return null; // or throw a custom exception
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 }

@@ -17,7 +17,7 @@ public interface UserService {
 
     DTO verifyUser(User user);
 
-    UserDTO createUser(User user);
+    UserDTO createUser(UserDTO userDTO);
 
     UserDTO updateUser(Long id, User user);
 
