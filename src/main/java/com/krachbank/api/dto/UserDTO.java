@@ -43,7 +43,6 @@ public class UserDTO implements DTO {
     public static UserDTO fromModel(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
-        dto.setTransferLimit(user.getTransferLimit());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setVerified(user.isVerified());
         dto.setActive(user.isActive());
