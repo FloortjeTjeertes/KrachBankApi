@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+
 import java.io.IOException;
 
 @Component
@@ -27,12 +28,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    @Override // <--- This annotation was crucial and helps catch such errors during compilation
+    @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
-    ) throws ServletException, IOException { // <--- Added throws clause
+    ) throws ServletException, IOException { // <--- The correct throws clause is essential
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
