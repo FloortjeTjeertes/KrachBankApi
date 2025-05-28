@@ -23,13 +23,16 @@ public class UserDTO implements DTO {
     private String lastName;
     private String email;
     private String phoneNumber;
-    private int BSN;
+    private String BSN;
+
+    public UserDTO(Long id, String transferLimit, LocalDateTime createdAt, boolean verified, boolean active, String firstName, String lastName, String email, String phoneNumber, int bsn) {
+    }
 
     @Override
     public User ToModel() {
         User user = new User();
         user.setId(this.id);
-        user.setDailyLimit(this.transferLimit);
+        user.setDailyLimit(Double.valueOf(this.transferLimit));
         user.setCreatedAt(this.createdAt);
         user.setVerified(this.isVerified);
         user.setActive(this.isActive);
@@ -37,7 +40,7 @@ public class UserDTO implements DTO {
         user.setLastName(this.lastName);
         user.setEmail(this.email);
         user.setPhoneNumber(this.phoneNumber);
-        user.setBsn(this.BSN);
+        user.setBSN(this.BSN);
         return user;
     }
     public static UserDTO fromModel(User user) {
@@ -50,7 +53,7 @@ public class UserDTO implements DTO {
         dto.setLastName(user.getLastName());
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
-        dto.setBSN(user.getBsn());
+        dto.setBSN(user.getBSN());
         return dto;
     }
 
