@@ -27,14 +27,6 @@ public class AuthenticationDTO implements DTO {
     private boolean isVerified;
     private boolean isActive;
 
-    /**
-     * Converts this AuthenticationDTO to a User model.
-     * Note: This conversion will not include sensitive data like password.
-     * It's primarily for mapping core identity details for updates or partial creation.
-     * If creating a new user, password hashing would be handled in the service.
-     *
-     * @return A User model populated with data from this DTO.
-     */
     public User ToModel() {
         User user = new User();
         user.setId(this.id);
@@ -53,15 +45,6 @@ public class AuthenticationDTO implements DTO {
         return user;
     }
 
-    /**
-     * Creates an AuthenticationDTO from a User model.
-     * This method is suitable for exposing essential user identity and status
-     * after authentication or for fetching profile details, without exposing
-     * sensitive data like the hashed password.
-     *
-     * @param user The User model to convert.
-     * @return An AuthenticationDTO populated from the User model.
-     */
     public static AuthenticationDTO fromModel(User user) {
         AuthenticationDTO dto = new AuthenticationDTO();
         dto.setId(user.getId());

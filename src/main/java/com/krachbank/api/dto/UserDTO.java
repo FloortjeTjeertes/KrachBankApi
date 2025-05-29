@@ -25,28 +25,10 @@ public class UserDTO implements DTO {
     private String phoneNumber;
     private String BSN; // Note: Ensure consistency with 'bsn' property in RegisterRequest/User entity if needed
     private String password; // Added for registration input
-    private String username; // Added to carry username (e.g., first + last name, or email)
+    private String username;
 
-    // --- IMPORTANT NOTE ABOUT THIS CONSTRUCTOR ---
-    // This constructor currently does not initialize any fields and takes 'int bsn' while
-    // your field is 'String BSN'. If you intend to use a custom constructor, you MUST
-    // initialize all fields, including 'password' and 'username', and ensure type consistency.
-    // Otherwise, it's best to remove it and rely on Lombok's @AllArgsConstructor
-    // and @NoArgsConstructor if they fit your needs.
+
     public UserDTO(Long id, String transferLimit, LocalDateTime createdAt, boolean verified, boolean active, String firstName, String lastName, String email, String phoneNumber, String bsn) {
-        // Example:
-        // this.id = id;
-        // this.transferLimit = transferLimit;
-        // this.createdAt = createdAt;
-        // this.isVerified = verified;
-        // this.isActive = active;
-        // this.firstName = firstName;
-        // this.lastName = lastName;
-        // this.email = email;
-        // this.phoneNumber = phoneNumber;
-        // this.BSN = String.valueOf(bsn); // Correcting type mismatch
-        // this.password = null; // Or pass as argument if needed
-        // this.username = null; // Or pass as argument if needed
     }
 
     @Override
@@ -64,20 +46,9 @@ public class UserDTO implements DTO {
         user.setEmail(this.email);
         user.setPhoneNumber(this.phoneNumber);
         user.setBSN(this.BSN);
-        user.setUsername(this.username); // Setting username on the model
-
-        // IMPORTANT: The raw password from DTO should NOT be set directly on the User model
-        // for persistence. Password encoding should happen in your UserService.createUser
-        // implementation using BCryptPasswordEncoder before saving to the database.
-        // user.setPassword(this.password); // <-- DO NOT DO THIS HERE DIRECTLY
+        user.setUsername(this.username);
         return user;
     }
-
-    /**
-     * Creates a UserDTO from a User model.
-     * This method should typically NOT include the password for security reasons
-     * when returning user data to the client.
-     */
     public static UserDTO fromModel(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
