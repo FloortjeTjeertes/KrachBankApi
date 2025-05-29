@@ -9,7 +9,6 @@ import com.krachbank.api.models.User;
 import com.krachbank.api.repository.AuthenticationRepository;
 import com.krachbank.api.exceptions.UserAlreadyExistsException;
 import com.krachbank.api.exceptions.InvalidCredentialsException;
-import com.krachbank.api.security.JwtService; // Import JwtService
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager; // For login

@@ -1,4 +1,4 @@
-package com.krachbank.api.security;
+package com.krachbank.api.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

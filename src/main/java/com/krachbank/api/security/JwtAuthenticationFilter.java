@@ -1,6 +1,7 @@
 // src/main/java/com/krachbank/api/security/JwtAuthenticationFilter.java
 package com.krachbank.api.security;
 
+import com.krachbank.api.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,10 +21,10 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final com.krachbank.api.security.JwtService jwtService;
+    private final JwtService jwtService;
     private final UserDetailsService userDetailsService; // Your UserDetailsServiceImpl
 
-    public JwtAuthenticationFilter(com.krachbank.api.security.JwtService jwtService, UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }

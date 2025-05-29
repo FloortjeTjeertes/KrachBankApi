@@ -2,9 +2,8 @@ package com.krachbank.api.controllers;
 
 import com.krachbank.api.dto.*;
 import com.krachbank.api.exceptions.InvalidCredentialsException;
-import com.krachbank.api.models.User;
-import com.krachbank.api.security.JwtService;
 import com.krachbank.api.service.AuthenticationService;
+import com.krachbank.api.service.JwtService;
 import com.krachbank.api.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
