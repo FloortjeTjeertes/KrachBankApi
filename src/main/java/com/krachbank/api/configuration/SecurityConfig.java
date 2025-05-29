@@ -34,12 +34,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    /**
-     * Configures the authentication provider that will be used by the AuthenticationManager.
-     * Uses DaoAuthenticationProvider with your UserDetailsService and PasswordEncoder.
-     * @return The configured AuthenticationProvider.
-     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -47,25 +41,10 @@ public class SecurityConfig {
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
-
-    /**
-     * Exposes the AuthenticationManager bean, which is responsible for authenticating users.
-     * @param config The AuthenticationConfiguration from Spring.
-     * @return The AuthenticationManager.
-     * @throws Exception if an error occurs during configuration.
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
-    /**
-     * Defines the security filter chain. This is where you configure authorization rules
-     * and add your custom JWT filter.
-     * @param http The HttpSecurity object to configure.
-     * @return The built SecurityFilterChain.
-     * @throws Exception if an error occurs during configuration.
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

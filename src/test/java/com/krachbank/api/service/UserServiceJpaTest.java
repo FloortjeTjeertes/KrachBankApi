@@ -27,7 +27,7 @@ public class UserServiceJpaTest {
 
         user1 = new User();
         user1.setId(1L);
-        user1.setDailyLimit("1000");
+        user1.setDailyLimit(Double.valueOf("1000"));
         user1.setCreatedAt(LocalDateTime.now());
         user1.setVerified(true);
         user1.setActive(true);
@@ -35,11 +35,11 @@ public class UserServiceJpaTest {
         user1.setLastName("Doe");
         user1.setEmail("john@example.com");
         user1.setPhoneNumber("1234567890");
-        user1.setBsn(123456789);
+        user1.setBSN(String.valueOf(123456789));
 
         user2 = new User();
         user2.setId(2L);
-        user2.setDailyLimit("2000");
+        user2.setDailyLimit(Double.valueOf("2000"));
         user2.setCreatedAt(LocalDateTime.now());
         user2.setVerified(false);
         user2.setActive(false);
@@ -47,7 +47,7 @@ public class UserServiceJpaTest {
         user2.setLastName("Smith");
         user2.setEmail("jane@example.com");
         user2.setPhoneNumber("0987654321");
-        user2.setBsn(987654321);
+        user2.setBSN(String.valueOf(987654321));
     }
 
     @Test
@@ -114,9 +114,9 @@ public class UserServiceJpaTest {
 
     @Test
     void testVerifyUser_InvalidBsn_ThrowsException() {
-        user1.setBsn(0);
+        user1.setBSN(String.valueOf(0));
         assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
-        user1.setBsn(-1);
+        user1.setBSN(String.valueOf(-1));
         assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
     }
 }
