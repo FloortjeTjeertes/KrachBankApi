@@ -4,17 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.krachbank.api.converters.IbanAttributeConverter;
+import jakarta.persistence.*;
 import org.iban4j.Iban;
 
 import com.krachbank.api.dto.AccountDTO;
 import com.krachbank.api.dto.DTO;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import lombok.Data;
 
 @Entity
@@ -24,7 +20,7 @@ public class Account implements Model {
     @Id
     @GeneratedValue
     private Long id;
-
+    @Convert(converter = IbanAttributeConverter.class)
     private Iban IBAN;
     private Double Balance;
     private Double AbsoluteLimit;

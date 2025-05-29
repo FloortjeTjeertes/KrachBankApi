@@ -103,9 +103,9 @@ public class User implements Model, UserDetails { // Implement UserDetails
         return null;
     }
 
-    public int getBsn() {
+    public String getBsn() {
         try {
-            return Integer.parseInt(BSN);
+            return BSN;
         } catch (NumberFormatException e) {
             // Handle the case where BSN is not a valid integer
             throw new IllegalArgumentException("BSN must be a valid integer", e);
