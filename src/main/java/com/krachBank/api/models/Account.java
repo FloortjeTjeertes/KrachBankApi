@@ -8,6 +8,7 @@ import org.iban4j.Iban;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
+import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -18,8 +19,6 @@ public class Account implements Model {
     private Long id;
 
     private Iban IBAN;
-    private Double Balance;
-    private Double AbsoluteLimit;
     private AccountType accountType;
     private LocalDateTime createdAt;
 
@@ -33,16 +32,14 @@ public class Account implements Model {
 
     @OneToMany(mappedBy = "toAccount")
     private List<Transaction> transactionsTo;
-    private double balance;
-    private double absoluteLimit;
+    private BigDecimal balance;
+    private BigDecimal absoluteLimit;
 
-
-    public List<Transaction>  getTransactions(){
+    public List<Transaction> getTransactions() {
         List<Transaction> transactions = Stream.concat(this.transactionsFrom.stream(), this.transactionsTo.stream())
                 .toList();
         return transactions;
     }
-
 
     @Override
     public AccountDTO toDTO() {
@@ -72,19 +69,22 @@ public class Account implements Model {
         IBAN = iBAN;
     }
 
-    public Double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(Double balance) {
+    public void setBalance(BigDecimal balance) {
+        if (balance == null) {
+            throw new IllegalArgumentException("Balance cannot be null");
+        }
         this.balance = balance;
     }
 
-    public Double getAbsoluteLimit() {
+    public BigDecimal getAbsoluteLimit() {
         return absoluteLimit;
     }
 
-    public void setAbsoluteLimit(Double absoluteLimit) {
+    public void setAbsoluteLimit(BigDecimal absoluteLimit) {
         this.absoluteLimit = absoluteLimit;
     }
 

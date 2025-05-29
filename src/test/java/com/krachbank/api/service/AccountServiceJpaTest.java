@@ -11,6 +11,7 @@ import org.iban4j.Iban;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,16 +47,16 @@ public class AccountServiceJpaTest {
         account1 = new Account();
         account1.setId(1L);
         account1.setIBAN(iban1);
-        account1.setBalance(1000.0);
-        account1.setAbsoluteLimit(100.0);
+        account1.setBalance(new BigDecimal("1000.00"));
+        account1.setAbsoluteLimit(new BigDecimal("100.00"));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
 
         account2 = new Account();
         account2.setId(2L);
         account2.setIBAN(iban2);
-        account2.setBalance(1500.0);
-        account2.setAbsoluteLimit(200.0);
+        account2.setBalance(new BigDecimal("1500.00"));
+        account2.setAbsoluteLimit(new BigDecimal("200.00"));
         account2.setAccountType(AccountType.CHECKING);
         account2.setUser(user2);
     }
@@ -63,8 +64,8 @@ public class AccountServiceJpaTest {
     @Test
     void testCreateAccount() {
         // Change values for this test
-        account1.setBalance(1000.0);
-        account1.setAbsoluteLimit(100.0);
+        account1.setBalance(new BigDecimal("1000.00"));
+        account1.setAbsoluteLimit(new BigDecimal("100.00"));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
         account1.setIBAN(iban1);
@@ -76,8 +77,8 @@ public class AccountServiceJpaTest {
         assertNotNull(savedAccount);
         assertEquals(1L, savedAccount.getId());
         assertEquals(iban1, savedAccount.getIBAN());
-        assertEquals(1000.0, savedAccount.getBalance());
-        assertEquals(100.0, savedAccount.getAbsoluteLimit());
+        assertEquals(new BigDecimal("1000.00"), savedAccount.getBalance());
+        assertEquals(new BigDecimal("100.00"), savedAccount.getAbsoluteLimit());
         assertEquals(AccountType.SAVINGS, savedAccount.getAccountType());
         assertEquals(user1, savedAccount.getUser());
         verify(accountRepository, times(1)).save(any(Account.class));
@@ -86,14 +87,14 @@ public class AccountServiceJpaTest {
     @Test
     void testCreateAccounts() {
         // Change values for this test
-        account1.setBalance(500.0);
-        account1.setAbsoluteLimit(50.0);
+        account1.setBalance(new BigDecimal("500.00"));
+        account1.setAbsoluteLimit(new BigDecimal("50.00"));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
         account1.setIBAN(iban1);
 
-        account2.setBalance(1500.0);
-        account2.setAbsoluteLimit(200.0);
+        account2.setBalance(new BigDecimal("1500.00"));
+        account2.setAbsoluteLimit(new BigDecimal("200.00"));
         account2.setAccountType(AccountType.CHECKING);
         account2.setUser(user2);
         account2.setIBAN(iban2);
