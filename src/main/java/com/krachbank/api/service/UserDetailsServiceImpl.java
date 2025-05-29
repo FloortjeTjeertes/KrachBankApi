@@ -1,4 +1,4 @@
-package com.krachbank.api.security;
+package com.krachbank.api.service;
 
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.AuthenticationRepository;

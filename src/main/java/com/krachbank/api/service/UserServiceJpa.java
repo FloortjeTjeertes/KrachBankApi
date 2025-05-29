@@ -1,9 +1,12 @@
+// src/main/java/com/krachbank/api/service/UserServiceJpa.java
 package com.krachbank.api.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.DTO;
@@ -12,30 +15,23 @@ import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
 
-import jakarta.persistence.EntityNotFoundException; // You might want to use a specific exception
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UserServiceJpa implements UserService {
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserServiceJpa(UserRepository userRepository) {
+    public UserServiceJpa(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public List<UserDTO> getUsers() {
+        // USE UserDTO.fromModel() for consistent conversion
         return userRepository.findAll().stream()
-                .map(user -> new UserDTO(
-                        user.getId(),
-                        String.valueOf(user.getDailyLimit()),
-                        user.getCreatedAt(),
-                        user.isVerified(),
-                        user.isActive(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getEmail(),
-                        user.getPhoneNumber(),
-                        user.getBsn()))
+                .map(UserDTO::fromModel) // <--- CHANGED HERE
                 .collect(Collectors.toList());
     }
 
@@ -43,17 +39,8 @@ public class UserServiceJpa implements UserService {
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
-        return new UserDTO(
-                user.getId(),
-                String.valueOf(user.getDailyLimit()),
-                user.getCreatedAt(),
-                user.isVerified(),
-                user.isActive(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getPhoneNumber(),
-                user.getBsn());
+        // USE UserDTO.fromModel() for consistent conversion
+        return UserDTO.fromModel(user); // <--- CHANGED HERE
     }
 
     @Override
@@ -71,46 +58,65 @@ public class UserServiceJpa implements UserService {
         if (user.getLastName() == null || user.getLastName().isEmpty()) {
             throw new IllegalArgumentException("Last name is required");
         }
-        if (user.getBsn() == null || user.getBsn().isEmpty() || Integer.parseInt(user.getBsn()) <= 0) {
-            throw new IllegalArgumentException("BSN must be a positive number");
+        // Note: Your User model has getBSN() returning String, but your method here parses to int
+        if (user.getBSN() == null || user.getBSN().isEmpty()) {
+            throw new IllegalArgumentException("BSN is required");
         }
+        try {
+            if (Integer.parseInt(user.getBSN()) <= 0) {
+                throw new IllegalArgumentException("BSN must be a positive number");
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("BSN must be a valid number", e);
+        }
+
+        // Assuming toDTO() on your User model correctly converts to a DTO (e.g., UserDTO)
         return userRepository.save(user).toDTO();
     }
 
     @Override
     public UserDTO createUser(UserDTO userDTO) {
-        // You would typically convert the UserDTO to a User entity here,
-        // then save it using userRepository.save(), and convert the result back to UserDTO.
-        // For example:
+        // --- Validation for existing user (based on email and username) ---
+        if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+            throw new RuntimeException("User with email " + userDTO.getEmail() + " already exists!");
+        }
+        // This check is important if username is "First Last" and needs to be unique.
+        // It will throw if a user with that exact first and last name combination already exists.
+        if (userDTO.getUsername() != null && userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
+            throw new RuntimeException("User with username " + userDTO.getUsername() + " already exists!");
+        }
+
+        // --- Convert UserDTO to User entity ---
         User user = new User();
-        // Set properties from userDTO to user entity
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
         user.setEmail(userDTO.getEmail());
-        user.setPhoneNumber(userDTO.getPhoneNumber());
         user.setBSN(userDTO.getBSN());
-        user.setVerified(userDTO.isVerified());
-        user.setActive(userDTO.isActive());
-        // createdAt might be set by @CreationTimestamp or in service
-        // user.setCreatedAt(LocalDateTime.now()); // Or use an annotation like @CreationTimestamp in your User entity
+        user.setPhoneNumber(userDTO.getPhoneNumber());
+        user.setUsername(userDTO.getUsername()); // Set the username (e.g., "First Last")
 
+        // --- Encode the password ---
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+
+        // --- Set default properties for the new user ---
+        user.setCreatedAt(LocalDateTime.now());
+        user.setActive(true);
+        user.setVerified(false);
+        user.setDailyLimit(0.0);
+        // user.setTransferLimit(0.0); // Set a default transfer limit, if you have this field in User entity
+
+        // --- Save the User entity to the database ---
         User savedUser = userRepository.save(user);
-        return new UserDTO(
-                savedUser.getId(),
-                String.valueOf(savedUser.getDailyLimit()),
-                savedUser.getCreatedAt(),
-                savedUser.isVerified(),
-                savedUser.isActive(),
-                savedUser.getFirstName(),
-                savedUser.getLastName(),
-                savedUser.getEmail(),
-                savedUser.getPhoneNumber(),
-                savedUser.getBsn());
+
+        // --- Debugging Print (can remove after successful testing) ---
+        System.out.println("User created successfully: " + savedUser.getEmail() + " (Username: " + savedUser.getUsername() + ")");
+
+        // --- Convert the saved User entity back to UserDTO for response ---
+        return UserDTO.fromModel(savedUser);
     }
 
     @Override
     public UserDTO updateUser(Long id, User userDetails) {
-        // Find the existing user
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
 
@@ -120,51 +126,31 @@ public class UserServiceJpa implements UserService {
         existingUser.setEmail(userDetails.getEmail());
         existingUser.setPhoneNumber(userDetails.getPhoneNumber());
         existingUser.setDailyLimit(userDetails.getDailyLimit());
-        existingUser.setBSN(userDetails.getBsn());
+        existingUser.setBSN(userDetails.getBSN()); // Ensure this maps correctly from userDetails
         existingUser.setVerified(userDetails.isVerified());
         existingUser.setActive(userDetails.isActive());
-        // Do not update ID or createdAt unless it's a specific requirement for audit purposes
+        existingUser.setUsername(userDetails.getUsername()); // <--- Ensure username is updated if passed
 
-        // Save the updated entity. JpaRepository's save() handles the update when the ID is present.
+        // Save the updated entity
         User updatedUser = userRepository.save(existingUser);
 
-        // Convert the updated entity back to DTO
-        return new UserDTO(
-                updatedUser.getId(),
-                String.valueOf(updatedUser.getDailyLimit()),
-                updatedUser.getCreatedAt(),
-                updatedUser.isVerified(),
-                updatedUser.isActive(),
-                updatedUser.getFirstName(),
-                updatedUser.getLastName(),
-                updatedUser.getEmail(),
-                updatedUser.getPhoneNumber(),
-                updatedUser.getBsn());
+        // USE UserDTO.fromModel() for consistent conversion
+        return UserDTO.fromModel(updatedUser); // <--- CHANGED HERE
     }
 
     @Override
     public UserDTO deactivateUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
-        user.setActive(false); // Set active to false
-        User deactivatedUser = userRepository.save(user); // Save the updated user
-        return new UserDTO(
-                deactivatedUser.getId(),
-                String.valueOf(deactivatedUser.getDailyLimit()),
-                deactivatedUser.getCreatedAt(),
-                deactivatedUser.isVerified(),
-                deactivatedUser.isActive(),
-                deactivatedUser.getFirstName(),
-                deactivatedUser.getLastName(),
-                deactivatedUser.getEmail(),
-                deactivatedUser.getPhoneNumber(),
-                deactivatedUser.getBsn());
+        user.setActive(false);
+        User deactivatedUser = userRepository.save(user);
+        // USE UserDTO.fromModel() for consistent conversion
+        return UserDTO.fromModel(deactivatedUser); // <--- CHANGED HERE
     }
 
     @Override
     public List<UserDTO> getAllUsers(Map<String, String> params) {
         // Implement logic to filter users based on parameters
-        // For simplicity, let's just return all users for now if no specific filtering logic is provided
-        return getUsers(); // Re-use the existing getUsers method
+        return getUsers();
     }
 }
