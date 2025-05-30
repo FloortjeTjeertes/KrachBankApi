@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO implements DTO {
+public class UserDTOResponse implements DTO {
 
     private Long id;
     private BigDecimal transferLimit;

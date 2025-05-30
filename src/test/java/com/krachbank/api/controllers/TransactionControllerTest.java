@@ -17,7 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.krachbank.api.dto.TransactionDTO;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.Transaction;
@@ -72,7 +72,7 @@ public class TransactionControllerTest {
 
     @Test
     void testToModelWithValidDTO() {
-        TransactionDTO dto = new TransactionDTO();
+        TransactionDTOResponse dto = new TransactionDTOResponse();
         dto.setAmount(fullTransaction.getAmount());
         dto.setCreatedAt(fullTransaction.getCreatedAt());
         dto.setInitiator(fullTransaction.getInitiator().getId());
@@ -96,7 +96,7 @@ public class TransactionControllerTest {
 
     @Test
     void testToModelWithNullFields() {
-        TransactionDTO dto = new TransactionDTO();
+        TransactionDTOResponse dto = new TransactionDTOResponse();
         // Only set initiator from setup
         assertThrows(Iban4jException.class, () -> transactionController.toModel(dto));
 
@@ -111,7 +111,7 @@ public class TransactionControllerTest {
     void testGetTransactionsReturnsOkWithTransactions() {
         TransactionFilter filter = new TransactionFilter();
         List<Transaction> transactions = List.of(fullTransaction);
-        List<TransactionDTO> transactionDTOs = List.of(new TransactionDTO());
+        List<TransactionDTOResponse> transactionDTOs = List.of(new TransactionDTOResponse());
 
         // Mock service behavior
         org.mockito.Mockito.when(transactionService.getTransactionsByFilter(filter)).thenReturn(transactions);

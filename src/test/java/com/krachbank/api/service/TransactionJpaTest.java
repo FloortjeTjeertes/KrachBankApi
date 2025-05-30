@@ -17,7 +17,7 @@ import org.iban4j.Iban;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.krachbank.api.dto.TransactionDTO;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.Transaction;
@@ -165,7 +165,7 @@ public class TransactionJpaTest {
     @Test
     void testToDTOWithFullTransaction() {
 
-        TransactionDTO dto = transactionService.toDTO(fullTransaction);
+        TransactionDTOResponse dto = transactionService.toDTO(fullTransaction);
 
         assertNotNull(dto);
         assertEquals(fullTransaction.getAmount(), dto.getAmount());
@@ -184,12 +184,12 @@ public class TransactionJpaTest {
     @Test
     void testToDTOListWithMultipleTransactions() {
 
-        List<TransactionDTO> dtos = transactionService.toDTO(transactions);
+        List<TransactionDTOResponse> dtos = transactionService.toDTO(transactions);
 
         assertNotNull(dtos);
         assertEquals(2, dtos.size());
 
-        TransactionDTO dto1 = dtos.get(0);
+        TransactionDTOResponse dto1 = dtos.get(0);
         assertEquals(fullTransaction.getAmount(), dto1.getAmount());
         assertEquals(fullTransaction.getDescription(), dto1.getDescription());
         assertEquals(fullTransaction.getCreatedAt(), dto1.getCreatedAt());
@@ -197,7 +197,7 @@ public class TransactionJpaTest {
         assertEquals(fullTransaction.getToAccount().getIban().toString(), dto1.getReceiver());
         assertEquals(fullTransaction.getInitiator().getId(), dto1.getInitiator());
 
-        TransactionDTO dto2 = dtos.get(1);
+        TransactionDTOResponse dto2 = dtos.get(1);
         assertEquals(fullTransaction2.getAmount(), dto2.getAmount());
         assertEquals(fullTransaction2.getDescription(), dto2.getDescription());
         assertEquals(fullTransaction2.getCreatedAt(), dto2.getCreatedAt());
@@ -209,7 +209,7 @@ public class TransactionJpaTest {
     @Test
     void testToDTOListWithEmptyList() {
         TransactionJpa transactionJpa = transactionService;
-        List<TransactionDTO> dtos = transactionJpa.toDTO(new ArrayList<>());
+        List<TransactionDTOResponse> dtos = transactionJpa.toDTO(new ArrayList<>());
         assertNotNull(dtos);
         assertEquals(0, dtos.size());
     }

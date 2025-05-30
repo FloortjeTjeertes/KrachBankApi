@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import com.krachbank.api.dto.TransactionDTO;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
@@ -231,8 +231,8 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public TransactionDTO toDTO(Transaction model) {
-        TransactionDTO transactionDTO = new TransactionDTO();
+    public TransactionDTOResponse toDTO(Transaction model) {
+        TransactionDTOResponse transactionDTO = new TransactionDTOResponse();
         transactionDTO.setAmount(model.getAmount());
         transactionDTO.setCreatedAt(model.getCreatedAt());
         transactionDTO.setInitiator(model.getInitiator().getId());
@@ -243,8 +243,8 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public List<TransactionDTO> toDTO(List<Transaction> transactions) {
-        List<TransactionDTO> transactionDTOs = new ArrayList<>();
+    public List<TransactionDTOResponse> toDTO(List<Transaction> transactions) {
+        List<TransactionDTOResponse> transactionDTOs = new ArrayList<>();
         for (Transaction transaction : transactions) {
             transactionDTOs.add(toDTO(transaction));
         }

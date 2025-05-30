@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 
-import com.krachbank.api.dto.TransactionDTO;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Transaction;
@@ -14,7 +14,7 @@ import com.krachbank.api.models.User;
 
 import jakarta.transaction.Transactional;
 
-public interface TransactionService extends Service<TransactionDTO, Transaction> {
+public interface TransactionService extends Service<TransactionDTOResponse, Transaction> {
 
     @Transactional
     public Optional<Transaction> createTransaction(Transaction transaction) throws Exception;

@@ -1,6 +1,6 @@
 package com.krachbank.api.service;
 
-import com.krachbank.api.dto.UserDTO;
+import com.krachbank.api.dto.UserDTOResponse;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +55,7 @@ public class UserServiceJpaTest {
     void testGetUsers() {
         when(userRepository.findAll()).thenReturn(Arrays.asList(user1, user2));
 
-        List<UserDTO> users = userService.getUsers();
+        List<UserDTOResponse> users = userService.getUsers();
 
         assertNotNull(users);
         assertEquals(2, users.size());
@@ -75,7 +75,7 @@ public class UserServiceJpaTest {
             return savedUser;
         });
 
-        UserDTO dto = userService.verifyUser(user1);
+        UserDTOResponse dto = userService.verifyUser(user1);
 
         assertNotNull(dto);
         assertEquals(user1.getId(), dto.getId());

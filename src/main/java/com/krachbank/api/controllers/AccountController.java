@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.krachbank.api.configuration.IBANGenerator;
 import com.krachbank.api.dto.AccountDTOResponse;
-import com.krachbank.api.dto.ErrorDTO;
+import com.krachbank.api.dto.ErrorDTOResponse;
 import com.krachbank.api.filters.AccountFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.service.AccountService;
@@ -42,7 +42,7 @@ public class AccountController implements Controller<Account, AccountDTOResponse
 
             return ResponseEntity.ok(accountDTOs);
         } catch (IllegalArgumentException e) {
-            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
         }
     }
@@ -55,7 +55,7 @@ public class AccountController implements Controller<Account, AccountDTOResponse
 
             return ResponseEntity.ok(accountService.toDTO(accountService.getAccountByIBAN(iban).get()));
         } catch (Exception e) {
-            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
         }
 
@@ -104,7 +104,7 @@ public class AccountController implements Controller<Account, AccountDTOResponse
             }
             return ResponseEntity.ok(accountDTOs);
         } catch (Exception e) {
-            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
         }
 

@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.krachbank.api.dto.ErrorDTO;
-import com.krachbank.api.dto.TransactionDTO;
+import com.krachbank.api.dto.ErrorDTOResponse;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.Transaction;
@@ -22,7 +22,7 @@ import com.krachbank.api.service.TransactionService;
 
 @RestController
 @RequestMapping("/transactions")
-public class TransactionController implements Controller<Transaction, TransactionDTO> {
+public class TransactionController implements Controller<Transaction, TransactionDTOResponse> {
 
     private final TransactionService transactionService;
     private final AccountService accountService;
@@ -45,14 +45,14 @@ public class TransactionController implements Controller<Transaction, Transactio
             return ResponseEntity.ok(transactionService.toDTO(transaction));
 
         } catch (Exception e) {
-            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error.getMessage());
         }
 
     }
 
     @PostMapping
-    public ResponseEntity<?> createTransaction(TransactionDTO transactionDTO) {
+    public ResponseEntity<?> createTransaction(TransactionDTOResponse transactionDTO) {
         try {
             Transaction transaction = toModel(transactionDTO);
             Optional<Transaction> createdTransaction = transactionService.createTransaction(transaction);
@@ -63,14 +63,14 @@ public class TransactionController implements Controller<Transaction, Transactio
                 throw new Exception("transaction did not safe right");
             }
         } catch (Exception e) {
-            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error.getMessage());
         }
     }
 
     //TODO: transfer tomodel behaviour to the Transaction Mapper
     @Override
-    public Transaction toModel(TransactionDTO dto) {
+    public Transaction toModel(TransactionDTOResponse dto) {
 
         User initUser = new User();
         initUser.setId(dto.getInitiator());

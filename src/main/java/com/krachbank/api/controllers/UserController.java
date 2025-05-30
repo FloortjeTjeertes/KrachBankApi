@@ -6,13 +6,15 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.krachbank.api.dto.AccountDTOResponse;
-import com.krachbank.api.dto.ErrorDTO;
-import com.krachbank.api.dto.UserDTO;
+import com.krachbank.api.dto.ErrorDTOResponse;
+import com.krachbank.api.dto.UserDTOResponse;
 import com.krachbank.api.filters.UserFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.User;
@@ -21,7 +23,7 @@ import com.krachbank.api.service.UserService;
 
 @RestController
 @RequestMapping("/users")
-public class UserController implements Controller<User, UserDTO> {
+public class UserController implements Controller<User, UserDTOResponse> {
     private final UserService userService;
     private final AccountService accountService;
 
@@ -31,14 +33,14 @@ public class UserController implements Controller<User, UserDTO> {
     }
 
     @GetMapping
-    public List<UserDTO> getUsers() {
+    public List<UserDTOResponse> getUsers() {
         return userService.getUsers();
     }
 
     @PostMapping("{id}/verify")
-    public UserDTO verifyUser(User user) {
+    public UserDTOResponse verifyUser(User user) {
         try {
-            return (UserDTO) userService.verifyUser(user);
+            return (UserDTOResponse) userService.verifyUser(user);
         } catch (IllegalArgumentException e) {
             // Handle the exception as needed, e.g., log it or return an error response
             System.out.println("Error creating user: " + e.getMessage());
@@ -46,26 +48,26 @@ public class UserController implements Controller<User, UserDTO> {
         }
     }
 
-    @GetMapping("/{userId}/accounts")
-    public ResponseEntity<?> getAccountsForUser(Long userId, UserFilter filter) {
+    @GetMapping("{id}/accounts")
+    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id, UserFilter filter) {
         try {
-
+            System.out.println("Fetching accounts for user with ID: " + id);
             List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
-            Page<Account> accountsPage = accountService.getAccountsByUserId(userId, filter);
+            Page<Account> accountsPage = accountService.getAccountsByUserId(id, filter);
             List<Account> accounts = accountsPage.getContent();
             for (Account account : accounts) {
                 accountDTOs.add(accountService.toDTO(account));
             }
             return ResponseEntity.ok(accountDTOs);
         } catch (Exception e) {
-            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
         }
 
     }
 
     @Override
-    public User toModel(UserDTO dto) {
+    public User toModel(UserDTOResponse dto) {
         User user = new User();
         user.setId(dto.getId());
         user.setDailyLimit(dto.getTransferLimit());

@@ -17,7 +17,7 @@ public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Excepti
             .authorizeHttpRequests(auth -> auth
                             .requestMatchers("/h2-console/**").permitAll() // allow h2-console
                             // .anyRequest().authenticated()   // all other requests need authentication
-                            .anyRequest().permitAll() // allow all other requests
+                            .anyRequest().permitAll()
             )
             .csrf(csrf -> csrf.disable())  //disable CSRF for h2-console
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())); // disable frame options for h2-console because of firefox 

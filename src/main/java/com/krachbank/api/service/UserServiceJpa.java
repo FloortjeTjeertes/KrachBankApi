@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.krachbank.api.dto.UserDTO;
+import com.krachbank.api.dto.UserDTOResponse;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
 
@@ -19,9 +19,9 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
-    public List<UserDTO> getUsers() {
+    public List<UserDTOResponse> getUsers() {
         return userRepository.findAll().stream()
-                .map(user -> new UserDTO(
+                .map(user -> new UserDTOResponse(
                         user.getId(),
                         user.getDailyLimit(),
                         user.getCreatedAt(),
@@ -36,13 +36,13 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
-    public UserDTO getUserById(Long id) {
+    public UserDTOResponse getUserById(Long id) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getUserById'");
     }
 
     @Override
-    public UserDTO verifyUser(User user) {
+    public UserDTOResponse verifyUser(User user) {
         // Basic validation example, adjust as needed for your User fields
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null");
@@ -63,7 +63,7 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
-    public UserDTO updateUser(Long id, User userDTO) {
+    public UserDTOResponse updateUser(Long id, User userDTO) {
 
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'updateUser'");
@@ -78,8 +78,8 @@ public class UserServiceJpa implements UserService {
  
 
     @Override
-    public UserDTO toDTO(User model) {
-        UserDTO userDTO = new UserDTO();
+    public UserDTOResponse toDTO(User model) {
+        UserDTOResponse userDTO = new UserDTOResponse();
         userDTO.setId(model.getId());
         userDTO.setTransferLimit(model.getDailyLimit());
         userDTO.setCreatedAt(model.getCreatedAt());
@@ -96,9 +96,9 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
-    public List<UserDTO> toDTO(List<User> users) {
+    public List<UserDTOResponse> toDTO(List<User> users) {
 
-        List<UserDTO> userDTOs = new ArrayList<>();
+        List<UserDTOResponse> userDTOs = new ArrayList<>();
         for (User user : users) {
             userDTOs.add(toDTO(user));
         }
