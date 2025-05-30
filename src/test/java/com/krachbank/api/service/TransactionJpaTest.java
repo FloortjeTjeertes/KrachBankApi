@@ -16,6 +16,7 @@ import java.util.Optional;
 import org.iban4j.Iban;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
 
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
@@ -243,12 +244,12 @@ public class TransactionJpaTest {
     @Test
     void testGetTransactionsByFilterWithValidFilterReturnsTransactions() {
 
-        List<Transaction> result = transactionService.getTransactionsByFilter(transactionFilter);
+        Page<Transaction> result = transactionService.getTransactionsByFilter(transactionFilter);
 
         assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(fullTransaction, result.get(0));
-        assertEquals(fullTransaction2, result.get(1));
+        assertEquals(2, result.getSize());
+        assertEquals(fullTransaction, result.getContent().get(0));
+        assertEquals(fullTransaction2, result.getContent().get(1));
     }
 
     @Test
@@ -256,10 +257,10 @@ public class TransactionJpaTest {
         when(transactionRepository.findAll((org.springframework.data.jpa.domain.Specification<Transaction>) any()))
                 .thenReturn(new ArrayList<>());
 
-        List<Transaction> result = transactionService.getTransactionsByFilter(transactionFilter);
+        Page<Transaction> result = transactionService.getTransactionsByFilter(transactionFilter);
 
         assertNotNull(result);
-        assertEquals(0, result.size());
+        assertEquals(0, result.getSize());
     }
 
     @Test
@@ -618,23 +619,29 @@ public class TransactionJpaTest {
     @Test
     void testGetAllTransactionsReturnsAllTransactions() {
         List<Transaction> expectedTransactions = List.of(fullTransaction, fullTransaction2);
+        Page<Transaction> expectedPage = mock(Page.class);
+        when(expectedPage.getContent()).thenReturn(expectedTransactions);
+        when(expectedPage.getSize()).thenReturn(expectedTransactions.size());
         when(transactionRepository.findAll()).thenReturn(expectedTransactions);
 
-        List<Transaction> result = transactionService.getAllTransactions();
+        Page<Transaction> result = transactionService.getAllTransactions(transactionFilter);
 
         assertNotNull(result);
-        assertEquals(expectedTransactions.size(), result.size());
+        assertEquals(expectedTransactions.size(), result.getSize());
         assertEquals(expectedTransactions, result);
     }
 
     @Test
     void testGetAllTransactionsReturnsEmptyList() {
+        Page<Transaction> emptyPage = mock(Page.class);
+        when(emptyPage.getContent()).thenReturn(new ArrayList<>());
+        when(emptyPage.getSize()).thenReturn(0);
         when(transactionRepository.findAll()).thenReturn(new ArrayList<>());
-
-        List<Transaction> result = transactionService.getAllTransactions();
+        TransactionFilter transactionFilter = new TransactionFilter();
+        Page<Transaction> result = transactionService.getAllTransactions(transactionFilter);
 
         assertNotNull(result);
-        assertEquals(0, result.size());
+        assertEquals(0, result.getSize());
     }
 
 }

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -110,12 +111,12 @@ public class TransactionControllerTest {
     @Test
     void testGetTransactionsReturnsOkWithTransactions() {
         TransactionFilter filter = new TransactionFilter();
-        List<Transaction> transactions = List.of(fullTransaction);
+        Page<Transaction> transactions = new org.springframework.data.domain.PageImpl<>(List.of(fullTransaction));
         List<TransactionDTOResponse> transactionDTOs = List.of(new TransactionDTOResponse());
 
         // Mock service behavior
         org.mockito.Mockito.when(transactionService.getTransactionsByFilter(filter)).thenReturn(transactions);
-        org.mockito.Mockito.when(transactionService.toDTO(transactions)).thenReturn(transactionDTOs);
+        org.mockito.Mockito.when(transactionService.toDTO(transactions.getContent())).thenReturn(transactionDTOs);
 
         ResponseEntity<?> response = transactionController.getTransactions(filter);
 
@@ -127,7 +128,7 @@ public class TransactionControllerTest {
     @Test
     void testGetTransactionsReturnsNullWhenEmpty() {
         TransactionFilter filter = new TransactionFilter();
-        List<Transaction> transactions = List.of();
+        org.springframework.data.domain.Page<Transaction> transactions = new org.springframework.data.domain.PageImpl<>(List.of());
 
         org.mockito.Mockito.when(transactionService.getTransactionsByFilter(filter)).thenReturn(transactions);
 
