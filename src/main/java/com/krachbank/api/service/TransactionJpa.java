@@ -6,10 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.TransactionDTO;
+import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.AccountType;
@@ -131,15 +134,17 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public List<Transaction> getTransactionsByFilter(TransactionFilter filter) {
+    public Page<Transaction> getTransactionsByFilter(TransactionFilter filter) {
         if (filter == null) {
             throw new IllegalArgumentException("No filter provided");
         }
 
+        Pageable pageable = filter.toPageAble();
+      
         Specification<Transaction> spec = MakeTransactionsSpecification(filter);
-        List<Transaction> transactions = transactionRepository.findAll(spec);
+        Page<Transaction> transactionPage = transactionRepository.findAll(spec, pageable);
 
-        return List.copyOf(transactions);
+        return transactionPage;
     }
 
     @Override
@@ -151,9 +156,13 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public List<Transaction> getAllTransactions() {
+    public Page<Transaction> getAllTransactions(BaseFilter filter) {
+        Pageable pageable = filter.toPageAble();
+       
+        Page<Transaction> accountPage = transactionRepository.findAll(pageable);
 
-        return transactionRepository.findAll();
+
+        return accountPage;
 
     }
 

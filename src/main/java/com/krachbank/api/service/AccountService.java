@@ -3,16 +3,17 @@ package com.krachbank.api.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.iban4j.Iban;
+import org.springframework.data.domain.Page;
 
-import com.krachbank.api.dto.AccountDTO;
+import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.filters.AccountFilter;
+import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.models.Account;
 
 import jakarta.transaction.Transactional;
 
-public interface AccountService extends Service<AccountDTO, Account> {
-    public List<Account> getAccountsByFilter(AccountFilter filter);
+public interface AccountService extends Service<AccountDTOResponse, Account> {
+    public Page<Account> getAccountsByFilter(AccountFilter filter);
 
     public Optional<Account> getAccountById(Long id) throws Exception;
 
@@ -27,7 +28,7 @@ public interface AccountService extends Service<AccountDTO, Account> {
 
     public Optional<Account> getAccountByIBAN(String iban);
 
-    public List<Account> getAccountsByUserId(Long userId);
+    public Page<Account> getAccountsByUserId(Long userId,BaseFilter filter);
 
 
 }

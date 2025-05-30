@@ -1,19 +1,20 @@
 package com.krachbank.api.seeders;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import org.iban4j.Iban;
+import org.springframework.stereotype.Component;
+
 import com.krachbank.api.models.Account;
-import com.krachbank.api.models.User;
 import com.krachbank.api.models.AccountType;
 import com.krachbank.api.models.Transaction;
+import com.krachbank.api.models.User;
 import com.krachbank.api.repository.AccountRepository;
 import com.krachbank.api.repository.TransactionRepository;
 import com.krachbank.api.repository.UserRepository;
-import org.iban4j.Iban;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Component
 public class DatabaseSeeder {
@@ -22,7 +23,6 @@ public class DatabaseSeeder {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
 
-    @Autowired
     public DatabaseSeeder(UserRepository userRepository, AccountRepository accountRepository,
                           TransactionRepository transactionRepository) {
         this.userRepository = userRepository;

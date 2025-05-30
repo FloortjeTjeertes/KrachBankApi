@@ -3,31 +3,25 @@ package com.krachbank.api.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.krachbank.api.configuration.IBANGenerator;
-import com.krachbank.api.dto.AccountDTO;
+import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTO;
 import com.krachbank.api.filters.AccountFilter;
-import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
-import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
 
 @RestController
 @RequestMapping("/accounts")
-public class AccountController implements Controller<Account, AccountDTO> {
+public class AccountController implements Controller<Account, AccountDTOResponse> {
     private final AccountService accountService;
 
     public AccountController(AccountService accountService) {
@@ -40,7 +34,7 @@ public class AccountController implements Controller<Account, AccountDTO> {
             for (Account account : accounts) {
                 account.setIban(IBANGenerator.generateIBAN());
             }
-            List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
+            List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
             List<Account> returnAccounts = accountService.createAccounts(accounts);
             for (Account account : returnAccounts) {
                 accountDTOs.add(accountService.toDTO(account));
@@ -96,9 +90,15 @@ public class AccountController implements Controller<Account, AccountDTO> {
     public ResponseEntity<?> getAccounts(@ModelAttribute AccountFilter filter) {
         try {
 
-        
-            List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
-            List<Account> accounts = accountService.getAccountsByFilter(filter);
+            
+            List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
+            Page<Account> accountsPage = accountService.getAccountsByFilter(filter);
+
+            List<Account> accounts = accountsPage.getContent();
+
+            if (accounts == null || accounts.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
             for (Account account : accounts) {
                 accountDTOs.add(accountService.toDTO(account));
             }
@@ -111,7 +111,7 @@ public class AccountController implements Controller<Account, AccountDTO> {
     }
 
     @Override
-    public Account toModel(AccountDTO dto) {
+    public Account toModel(AccountDTOResponse dto) {
 
         return new Account();
     }

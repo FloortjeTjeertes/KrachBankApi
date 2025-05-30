@@ -3,7 +3,7 @@ package com.krachbank.api.controllers;
 import java.util.List;
 import java.util.Optional;
 
-import org.iban4j.Iban;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -35,7 +35,9 @@ public class TransactionController implements Controller<Transaction, Transactio
     @GetMapping
     public ResponseEntity<?> getTransactions(@ModelAttribute TransactionFilter filter) {
         try {
-            List<Transaction> transaction = transactionService.getTransactionsByFilter(filter);
+
+            Page<Transaction> transactionPage = transactionService.getTransactionsByFilter(filter);
+            List<Transaction> transaction =  transactionPage.getContent();
             if (transaction.isEmpty()) {
                 return null;
             }

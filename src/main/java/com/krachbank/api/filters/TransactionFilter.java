@@ -3,7 +3,7 @@ package com.krachbank.api.filters;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class TransactionFilter extends baseFilter {
+public class TransactionFilter extends BaseFilter {
     private Long senderId;
     private Long receiverId;
     private BigDecimal minAmount;

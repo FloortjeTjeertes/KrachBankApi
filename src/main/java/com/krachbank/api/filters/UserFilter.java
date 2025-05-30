@@ -1,6 +1,6 @@
 package com.krachbank.api.filters;
 
-public class UserFilter {
+public class UserFilter extends BaseFilter {
     private String email;
     private String createdBefore;
     private String createdAfter;

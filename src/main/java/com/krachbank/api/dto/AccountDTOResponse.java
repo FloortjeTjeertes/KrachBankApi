@@ -2,8 +2,6 @@ package com.krachbank.api.dto;
 
 import java.math.BigDecimal;
 
-import org.iban4j.Iban;
-
 import com.krachbank.api.models.AccountType;
 
 import lombok.AllArgsConstructor;
@@ -13,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountDTO implements DTO {
+public class AccountDTOResponse implements DTO {
 
     private String IBAN;
     private BigDecimal balance;

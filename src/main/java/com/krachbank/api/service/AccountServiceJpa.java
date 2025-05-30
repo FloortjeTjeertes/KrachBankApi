@@ -1,16 +1,21 @@
 package com.krachbank.api.service;
 
+import java.nio.file.DirectoryStream.Filter;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.iban4j.Iban;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import com.krachbank.api.dto.AccountDTO;
+import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.filters.AccountFilter;
+import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.repository.AccountRepository;
 
@@ -27,13 +32,14 @@ public class AccountServiceJpa implements AccountService {
     }
 
     @Override
-    public List<Account> getAccountsByFilter(AccountFilter filter) {
+    public Page<Account> getAccountsByFilter(AccountFilter filter) {
         if (filter == null) {
             throw new IllegalArgumentException("Filter cannot be null");
         }
         Specification<Account> specification = makeAccountFilterSpecification(filter);
-        List<Account> accounts = accountRepository.findAll(specification);
-        return List.copyOf(accounts);
+        Pageable pageable = filter.toPageAble();
+        Page<Account> accountPage = accountRepository.findAll(specification, pageable);
+        return accountPage;
     }
 
     @Override
@@ -146,8 +152,8 @@ public class AccountServiceJpa implements AccountService {
     // TODO: maybe make an parent base Service class that has generalised these
     // methods if posible
     @Override
-    public AccountDTO toDTO(Account model) {
-        AccountDTO accountDTO = new AccountDTO();
+    public AccountDTOResponse toDTO(Account model) {
+        AccountDTOResponse accountDTO = new AccountDTOResponse();
         accountDTO.setIBAN(model.getIban().toString());
         accountDTO.setType(model.getAccountType());
         accountDTO.setBalance(model.getBalance());
@@ -159,14 +165,15 @@ public class AccountServiceJpa implements AccountService {
     }
 
     @Override
-    public List<AccountDTO> toDTO(List<Account> accounts) {
-        List<AccountDTO> accountDTOs = new ArrayList<>();
+    public List<AccountDTOResponse> toDTO(List<Account> accounts) {
+        List<AccountDTOResponse> accountDTOs = new ArrayList<>();
         for (Account accountDTO : accounts) {
             accountDTOs.add(toDTO(accountDTO));
         }
         return accountDTOs;
     }
 
+    // add pagination filter to this method
     @Override
     public Optional<Account> getAccountByIBAN(String iban) {
 
@@ -184,21 +191,17 @@ public class AccountServiceJpa implements AccountService {
         return account;
     }
 
+    // add pagination filter to this method
     @Override
-    public List<Account> getAccountsByUserId(Long userId) {
+    public Page<Account> getAccountsByUserId(Long userId, BaseFilter filter) {
+        Pageable pageable = filter.toPageAble();
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
-        List<Account> accounts = accountRepository.findAll();
-        List<Account> userAccounts = new ArrayList<>();
-        for (Account account : accounts) {
-            if (account.getUser().getId().equals(userId)) {
-                userAccounts.add(account);
-            }
-        }
-        return userAccounts;
-    }
+        Page<Account> accounts = accountRepository.findByUserId(userId, pageable);
 
+        return accounts;
+    }
 
     public static Specification<Account> makeAccountFilterSpecification(AccountFilter filter) {
         return (root, query, cb) -> {
@@ -208,19 +211,21 @@ public class AccountServiceJpa implements AccountService {
                 if (filter.getIBAN() != null && !filter.getIBAN().isEmpty()) {
                     predicate.add(cb.equal(root.get("iban"), filter.getIBAN()));
                 }
-             
+
                 if (filter.getAccountType() != null) {
                     predicate.add(cb.equal(root.get("accountType"), filter.getAccountType()));
                 }
                 if (filter.getBalanceMin() != null) {
-                    predicate.add(cb.lessThan(root.get("balance"), filter.getBalanceMin()));
+                    predicate.add(cb.greaterThanOrEqualTo(root.get("balance"), filter.getBalanceMin()));
                 }
                 if (filter.getBalanceMax() != null) {
-                    predicate.add(cb.greaterThan(root.get("balance"), filter.getBalanceMin()));
+                    predicate.add(cb.lessThanOrEqualTo(root.get("balance"), filter.getBalanceMax()));
                 }
             }
             return cb.and(predicate.toArray(new Predicate[0]));
         };
     }
+
+    
 
 }
