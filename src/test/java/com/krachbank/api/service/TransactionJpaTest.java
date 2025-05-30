@@ -56,12 +56,12 @@ public class TransactionJpaTest {
 
         Account account1 = new Account();
         account1.setId(10L);
-        account1.setIBAN(iban);
+        account1.setIban(iban);
         account1.setUser(user1);
         account1.setBalance(new BigDecimal("1000.00"));
 
         Account account2 = new Account();
-        account2.setIBAN(iban2);
+        account2.setIban(iban2);
         account2.setId(20L);
         account2.setUser(user2);
         account1.setBalance(new BigDecimal("1000.00"));
@@ -95,13 +95,13 @@ public class TransactionJpaTest {
 
         transactions = List.of(fullTransaction, fullTransaction2);
 
-        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN().toString()))
+        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIban().toString()))
                 .thenReturn(Optional.of(fullTransaction.getFromAccount()));
-        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN().toString()))
+        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIban().toString()))
                 .thenReturn(Optional.of(fullTransaction.getToAccount()));
-        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN().toString()))
+        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIban().toString()))
                 .thenReturn(Optional.of(fullTransaction2.getFromAccount()));
-        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIBAN().toString()))
+        when(accountService.getAccountByIBAN(fullTransaction.getFromAccount().getIban().toString()))
                 .thenReturn(Optional.of(fullTransaction2.getToAccount()));
 
         when(transactionRepository.findAll((org.springframework.data.jpa.domain.Specification<Transaction>) any()))
@@ -171,8 +171,8 @@ public class TransactionJpaTest {
         assertEquals(fullTransaction.getAmount(), dto.getAmount());
         assertEquals(fullTransaction.getDescription(), dto.getDescription());
         assertEquals(fullTransaction.getCreatedAt().toString(), dto.getCreatedAt().toString());
-        assertEquals(fullTransaction.getFromAccount().getIBAN().toString(), dto.getSender());
-        assertEquals(fullTransaction.getToAccount().getIBAN().toString(), dto.getReceiver());
+        assertEquals(fullTransaction.getFromAccount().getIban().toString(), dto.getSender());
+        assertEquals(fullTransaction.getToAccount().getIban().toString(), dto.getReceiver());
         assertEquals(fullTransaction.getInitiator().getId(), dto.getInitiator());
     }
 
@@ -193,16 +193,16 @@ public class TransactionJpaTest {
         assertEquals(fullTransaction.getAmount(), dto1.getAmount());
         assertEquals(fullTransaction.getDescription(), dto1.getDescription());
         assertEquals(fullTransaction.getCreatedAt(), dto1.getCreatedAt());
-        assertEquals(fullTransaction.getFromAccount().getIBAN().toString(), dto1.getSender());
-        assertEquals(fullTransaction.getToAccount().getIBAN().toString(), dto1.getReceiver());
+        assertEquals(fullTransaction.getFromAccount().getIban().toString(), dto1.getSender());
+        assertEquals(fullTransaction.getToAccount().getIban().toString(), dto1.getReceiver());
         assertEquals(fullTransaction.getInitiator().getId(), dto1.getInitiator());
 
         TransactionDTO dto2 = dtos.get(1);
         assertEquals(fullTransaction2.getAmount(), dto2.getAmount());
         assertEquals(fullTransaction2.getDescription(), dto2.getDescription());
         assertEquals(fullTransaction2.getCreatedAt(), dto2.getCreatedAt());
-        assertEquals(fullTransaction2.getFromAccount().getIBAN().toString(), dto2.getSender());
-        assertEquals(fullTransaction2.getToAccount().getIBAN().toString(), dto2.getReceiver());
+        assertEquals(fullTransaction2.getFromAccount().getIban().toString(), dto2.getSender());
+        assertEquals(fullTransaction2.getToAccount().getIban().toString(), dto2.getReceiver());
         assertEquals(fullTransaction2.getInitiator().getId(), dto2.getInitiator());
     }
 
@@ -376,13 +376,13 @@ public class TransactionJpaTest {
         Account account2 = fullTransaction.getToAccount();
 
         // Set both accounts to have the same bank code
-        Iban iban = fullTransaction.getFromAccount().getIBAN();
-        account1.setIBAN(iban);
-        account2.setIBAN(iban);
+        Iban iban = fullTransaction.getFromAccount().getIban();
+        account1.setIban(iban);
+        account2.setIban(iban);
 
         boolean result = transactionService.IsInternalTransaction(account1, account2);
 
-        assertEquals(iban.getBankCode().equals(account2.getIBAN().getBankCode()), result);
+        assertEquals(iban.getBankCode().equals(account2.getIban().getBankCode()), result);
     }
 
     @Test
@@ -392,12 +392,12 @@ public class TransactionJpaTest {
         Account account2 = fullTransaction.getToAccount();
 
         // Set accounts to have different bank codes
-        account1.setIBAN(fullTransaction.getFromAccount().getIBAN());
-        account2.setIBAN(Iban.valueOf("DE64300205007996745665"));
+        account1.setIban(fullTransaction.getFromAccount().getIban());
+        account2.setIban(Iban.valueOf("DE64300205007996745665"));
 
         boolean result = transactionService.IsInternalTransaction(account1, account2);
 
-        assertEquals(account1.getIBAN().getBankCode().equals(account2.getIBAN().getBankCode()), result);
+        assertEquals(account1.getIban().getBankCode().equals(account2.getIban().getBankCode()), result);
     }
 
     @Test
@@ -413,8 +413,8 @@ public class TransactionJpaTest {
         Account account1 = fullTransaction.getFromAccount();
         Account account2 = fullTransaction.getToAccount();
 
-        account1.setIBAN(null);
-        account2.setIBAN(null);
+        account1.setIban(null);
+        account2.setIban(null);
 
         assertThrows(NullPointerException.class, () -> transactionService.IsInternalTransaction(account1, account2));
     }
@@ -472,8 +472,8 @@ public class TransactionJpaTest {
         // Set both accounts to have the diverent bank code
         Iban iban = Iban.valueOf("DE32500211205487556354");
         Iban invalidIban = Iban.valueOf("AL62134113212579341242716778");
-        transaction.getFromAccount().setIBAN(iban);
-        transaction.getToAccount().setIBAN(invalidIban);
+        transaction.getFromAccount().setIban(iban);
+        transaction.getToAccount().setIban(invalidIban);
 
         Exception exception = assertThrows(Exception.class, () -> transactionService.createTransaction(transaction));
         assertEquals("this transaction is not whit accounts from our bank",exception.getMessage());
@@ -488,7 +488,7 @@ public class TransactionJpaTest {
 
         Account account = new Account();
         Iban iban = Iban.valueOf("DE22500211208825963824");
-        account.setIBAN(iban);
+        account.setIban(iban);
         account.setId(1L);
         account.setUser(new User());
         account.setAccountType(AccountType.CHECKING);
@@ -497,7 +497,7 @@ public class TransactionJpaTest {
         account.setTransactionLimit(new BigDecimal("1000.00"));
 
         Account account2 = new Account();
-        account2.setIBAN(iban);
+        account2.setIban(iban);
 
         transaction.setFromAccount(account);
 

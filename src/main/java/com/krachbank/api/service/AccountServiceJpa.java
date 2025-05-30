@@ -6,13 +6,16 @@ import java.util.List;
 import java.util.Optional;
 
 import org.iban4j.Iban;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.AccountDTO;
+import com.krachbank.api.filters.AccountFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.repository.AccountRepository;
 
 import jakarta.transaction.Transactional;
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 public class AccountServiceJpa implements AccountService {
@@ -24,11 +27,13 @@ public class AccountServiceJpa implements AccountService {
     }
 
     @Override
-    public List<Account> getAccounts() {
-        // TODO Auto-generated method stub
-        List<Account> accounts = new ArrayList<>();
-        accountRepository.findAll().forEach(accounts::add);
-        return accounts;
+    public List<Account> getAccountsByFilter(AccountFilter filter) {
+        if (filter == null) {
+            throw new IllegalArgumentException("Filter cannot be null");
+        }
+        Specification<Account> specification = makeAccountFilterSpecification(filter);
+        List<Account> accounts = accountRepository.findAll(specification);
+        return List.copyOf(accounts);
     }
 
     @Override
@@ -63,7 +68,7 @@ public class AccountServiceJpa implements AccountService {
         if (account == null) {
             throw new IllegalArgumentException("Account cannot be null");
         }
-        if (account.getIBAN() == null) {
+        if (account.getIban() == null) {
             throw new IllegalArgumentException("Account number is required");
         }
         if (account.getBalance() == null) {
@@ -81,7 +86,7 @@ public class AccountServiceJpa implements AccountService {
         if (account == null) {
             throw new IllegalArgumentException("Account cannot be null");
         }
-        if (account.getIBAN() == null) {
+        if (account.getIban() == null) {
             throw new IllegalArgumentException("Account number is required");
         }
         if (account.getBalance() == null) {
@@ -143,7 +148,7 @@ public class AccountServiceJpa implements AccountService {
     @Override
     public AccountDTO toDTO(Account model) {
         AccountDTO accountDTO = new AccountDTO();
-        accountDTO.setIBAN(model.getIBAN().toString());
+        accountDTO.setIBAN(model.getIban().toString());
         accountDTO.setType(model.getAccountType());
         accountDTO.setBalance(model.getBalance());
         accountDTO.setAbsoluteLimit(model.getAbsoluteLimit());
@@ -172,7 +177,7 @@ public class AccountServiceJpa implements AccountService {
         if (ibanObj == null) {
             throw new IllegalArgumentException("IBAN is not valid");
         }
-        Optional<Account> account = accountRepository.findByIBAN(ibanObj);
+        Optional<Account> account = accountRepository.findByIban(ibanObj);
         if (!account.isPresent()) {
             throw new IllegalArgumentException("Account with this IBAN does not exist");
         }
@@ -192,6 +197,30 @@ public class AccountServiceJpa implements AccountService {
             }
         }
         return userAccounts;
+    }
+
+
+    public static Specification<Account> makeAccountFilterSpecification(AccountFilter filter) {
+        return (root, query, cb) -> {
+            List<Predicate> predicate = new ArrayList<>();
+
+            if (filter != null) {
+                if (filter.getIBAN() != null && !filter.getIBAN().isEmpty()) {
+                    predicate.add(cb.equal(root.get("iban"), filter.getIBAN()));
+                }
+             
+                if (filter.getAccountType() != null) {
+                    predicate.add(cb.equal(root.get("accountType"), filter.getAccountType()));
+                }
+                if (filter.getBalanceMin() != null) {
+                    predicate.add(cb.lessThan(root.get("balance"), filter.getBalanceMin()));
+                }
+                if (filter.getBalanceMax() != null) {
+                    predicate.add(cb.greaterThan(root.get("balance"), filter.getBalanceMin()));
+                }
+            }
+            return cb.and(predicate.toArray(new Predicate[0]));
+        };
     }
 
 }

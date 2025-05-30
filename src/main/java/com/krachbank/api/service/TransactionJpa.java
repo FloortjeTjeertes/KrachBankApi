@@ -51,7 +51,7 @@ public class TransactionJpa implements TransactionService {
         }
 
         // check if the transaction is to the same account
-        if (sendingAccount.getIBAN().equals(receivingAccount.getIBAN())) {
+        if (sendingAccount.getIban().equals(receivingAccount.getIban())) {
             throw new IllegalArgumentException("cant transfer to the same account");
         }
 
@@ -91,9 +91,9 @@ public class TransactionJpa implements TransactionService {
         if (sendingAccount == null || retrievingAccount == null) {
             throw new IllegalArgumentException("account is null");
         }
-        String sendingAccountIBAN = sendingAccount.getIBAN().toString();
-        String retrievingAccountIBAN = retrievingAccount.getIBAN().toString();
-        return sendingAccount.getIBAN().getBankCode().equals(retrievingAccount.getIBAN().getBankCode());
+        String sendingAccountIBAN = sendingAccount.getIban().toString();
+        String retrievingAccountIBAN = retrievingAccount.getIban().toString();
+        return sendingAccount.getIban().getBankCode().equals(retrievingAccount.getIban().getBankCode());
     }
 
     // check the total amount spend by an user
@@ -227,8 +227,8 @@ public class TransactionJpa implements TransactionService {
         transactionDTO.setAmount(model.getAmount());
         transactionDTO.setCreatedAt(model.getCreatedAt());
         transactionDTO.setInitiator(model.getInitiator().getId());
-        transactionDTO.setSender(model.getFromAccount().getIBAN().toString());
-        transactionDTO.setReceiver(model.getToAccount().getIBAN().toString());
+        transactionDTO.setSender(model.getFromAccount().getIban().toString());
+        transactionDTO.setReceiver(model.getToAccount().getIban().toString());
         transactionDTO.setDescription(model.getDescription());
         return transactionDTO;
     }

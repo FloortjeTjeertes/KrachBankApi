@@ -1,9 +1,12 @@
 package com.krachbank.api.filters;
 
+import java.math.BigDecimal;
+
 public class AccountFilter {
     private String IBAN;
-    private double balanceMin;
-    private double balanceMax;
+    private BigDecimal balanceMin;
+    private BigDecimal balanceMax;
+    private String AccountType;
     private int limit;
     private int page;
     
@@ -13,16 +16,16 @@ public class AccountFilter {
     public void setIBAN(String iBAN) {
         IBAN = iBAN;
     }
-    public double getBalanceMin() {
+    public BigDecimal getBalanceMin() {
         return balanceMin;
     }
-    public void setBalanceMin(double balanceMin) {
+    public void setBalanceMin(BigDecimal balanceMin) {
         this.balanceMin = balanceMin;
     }
-    public double getBalanceMax() {
+    public BigDecimal getBalanceMax() {
         return balanceMax;
     }
-    public void setBalanceMax(double balanceMax) {
+    public void setBalanceMax(BigDecimal balanceMax) {
         this.balanceMax = balanceMax;
     }
     public int getLimit() {
@@ -37,5 +40,13 @@ public class AccountFilter {
     public void setPage(int page) {
         this.page = page;
     }
+
+    public String getAccountType() {
+        return AccountType;
+    }
+    public void setAccountType(String accountType) {
+        AccountType = accountType;
+    }
+
 
 }

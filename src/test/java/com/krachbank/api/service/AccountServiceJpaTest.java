@@ -55,7 +55,7 @@ public class AccountServiceJpaTest {
 
         account1 = new Account();
         account1.setId(1L);
-        account1.setIBAN(iban1);
+        account1.setIban(iban1);
         account1.setBalance(BigDecimal.valueOf(1000.0));
         account1.setAbsoluteLimit(BigDecimal.valueOf(100.0));
         account1.setAccountType(AccountType.SAVINGS);
@@ -63,7 +63,7 @@ public class AccountServiceJpaTest {
 
         account2 = new Account();
         account2.setId(2L);
-        account2.setIBAN(iban2);
+        account2.setIban(iban2);
         account2.setBalance(BigDecimal.valueOf( 1500.0));
         account2.setAbsoluteLimit(BigDecimal.valueOf( 200.0));
         account2.setAccountType(AccountType.CHECKING);
@@ -77,7 +77,7 @@ public class AccountServiceJpaTest {
         account1.setAbsoluteLimit(BigDecimal.valueOf(100.0));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
-        account1.setIBAN(iban1);
+        account1.setIban(iban1);
 
         when(accountRepository.save(any(Account.class))).thenReturn(account1);
 
@@ -85,7 +85,7 @@ public class AccountServiceJpaTest {
 
         assertNotNull(savedAccount);
         assertEquals(1L, savedAccount.getId());
-        assertEquals(iban1, savedAccount.getIBAN());
+        assertEquals(iban1, savedAccount.getIban());
         assertEquals(BigDecimal.valueOf(1000.0), savedAccount.getBalance());
         assertEquals(BigDecimal.valueOf(100.0), savedAccount.getAbsoluteLimit());
         assertEquals(AccountType.SAVINGS, savedAccount.getAccountType());
@@ -100,13 +100,13 @@ public class AccountServiceJpaTest {
         account1.setAbsoluteLimit(BigDecimal.valueOf(50.0));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
-        account1.setIBAN(iban1);
+        account1.setIban(iban1);
 
         account2.setBalance(BigDecimal.valueOf(1500.0));
         account2.setAbsoluteLimit(BigDecimal.valueOf(200.0));
         account2.setAccountType(AccountType.CHECKING);
         account2.setUser(user2);
-        account2.setIBAN(iban2);
+        account2.setIban(iban2);
 
         List<Account> accounts = Arrays.asList(account1, account2);
 
@@ -128,7 +128,7 @@ public class AccountServiceJpaTest {
 
     @Test
     void testCreateAccount_NullIBAN_ThrowsException() {
-        account1.setIBAN(null);
+        account1.setIban(null);
         assertThrows(IllegalArgumentException.class, () -> accountService.createAccount(account1));
     }
 

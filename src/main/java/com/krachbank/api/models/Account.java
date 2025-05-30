@@ -26,9 +26,9 @@ public class Account implements Model {
     @GeneratedValue
     private Long id;
     @Convert(converter = IbanConverter.class)
-    private Iban IBAN;
-    private BigDecimal Balance;
-    private BigDecimal AbsoluteLimit;
+    private Iban iban;
+    private BigDecimal balance;
+    private BigDecimal absoluteLimit;
     private AccountType accountType;
     private LocalDateTime createdAt;
 

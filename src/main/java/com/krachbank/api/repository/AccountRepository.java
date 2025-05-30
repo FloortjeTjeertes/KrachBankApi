@@ -4,13 +4,14 @@ import java.util.Optional;
 
 import org.iban4j.Iban;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.krachbank.api.models.Account;
 
 @Repository
-public interface AccountRepository extends JpaRepository<Account, Long> {
-    Optional<Account> findByIBAN(Iban iban);
+public interface AccountRepository extends JpaRepository<Account, Long> , JpaSpecificationExecutor<Account> {
+    Optional<Account> findByIban(Iban iban);
     
 
     

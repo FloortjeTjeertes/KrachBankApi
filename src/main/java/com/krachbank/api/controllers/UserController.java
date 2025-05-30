@@ -1,22 +1,31 @@
 package com.krachbank.api.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.krachbank.api.dto.AccountDTO;
+import com.krachbank.api.dto.ErrorDTO;
 import com.krachbank.api.dto.UserDTO;
+import com.krachbank.api.models.Account;
 import com.krachbank.api.models.User;
+import com.krachbank.api.service.AccountService;
 import com.krachbank.api.service.UserService;
 
 @RestController
 @RequestMapping("/users")
 public class UserController implements Controller<User, UserDTO> {
     private final UserService userService;
+    private final AccountService accountService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, AccountService accountService) {
+        this.accountService = accountService;
         this.userService = userService;
     }
 
@@ -34,6 +43,27 @@ public class UserController implements Controller<User, UserDTO> {
             System.out.println("Error creating user: " + e.getMessage());
             return null; // or throw a custom exception
         }
+    }
+    
+    @GetMapping("/{userId}/accounts")
+    public ResponseEntity<?> getAccountsForUser() {
+        try {
+
+            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (user == null) {
+                throw new Exception("User not found");
+            }
+            List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
+            List<Account> accounts = accountService.getAccountsByUserId(null);
+            for (Account account : accounts) {
+                accountDTOs.add(accountService.toDTO(account));
+            }
+            return ResponseEntity.ok(accountDTOs);
+        } catch (Exception e) {
+            ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+            return ResponseEntity.status(error.getCode()).body(error);
+        }
+
     }
 
     @Override

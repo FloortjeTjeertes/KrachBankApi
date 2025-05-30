@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.krachbank.api.configuration.IBANGenerator;
 import com.krachbank.api.dto.AccountDTO;
 import com.krachbank.api.dto.ErrorDTO;
+import com.krachbank.api.filters.AccountFilter;
+import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
@@ -34,7 +38,7 @@ public class AccountController implements Controller<Account, AccountDTO> {
     public ResponseEntity<?> createAccounts(List<Account> accounts) {
         try {
             for (Account account : accounts) {
-                account.setIBAN(IBANGenerator.generateIBAN());
+                account.setIban(IBANGenerator.generateIBAN());
             }
             List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
             List<Account> returnAccounts = accountService.createAccounts(accounts);
@@ -63,16 +67,38 @@ public class AccountController implements Controller<Account, AccountDTO> {
 
     }
 
+    // @GetMapping()
+    // @PreAuthorize("hasRole('ROLE_USER')")
+    // public ResponseEntity<?> getAccountsForCurrentUser() {
+    //     try {
+
+    //         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    //         if (user == null) {
+    //             throw new Exception("User not found");
+    //         }
+    //         List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
+    //         List<Account> accounts = accountService.getAccountsByUserId(null);
+    //         for (Account account : accounts) {
+    //             accountDTOs.add(accountService.toDTO(account));
+    //         }
+    //         return ResponseEntity.ok(accountDTOs);
+    //     } catch (Exception e) {
+    //         ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
+    //         return ResponseEntity.status(error.getCode()).body(error);
+    //     }
+
+    // }
+
+
+
     @GetMapping()
-    public ResponseEntity<?> getAccountsForUser() {
+    // @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> getAccounts(@ModelAttribute AccountFilter filter) {
         try {
 
-            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            if (user == null) {
-                throw new Exception("User not found");
-            }
+        
             List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
-            List<Account> accounts = accountService.getAccountsByUserId(null);
+            List<Account> accounts = accountService.getAccountsByFilter(filter);
             for (Account account : accounts) {
                 accountDTOs.add(accountService.toDTO(account));
             }

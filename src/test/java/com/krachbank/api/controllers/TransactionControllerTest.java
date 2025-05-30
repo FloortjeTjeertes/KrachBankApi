@@ -52,10 +52,10 @@ public class TransactionControllerTest {
 
         // Create mock accounts
         Account fromAccount = new Account();
-        fromAccount.setIBAN(Iban.valueOf("DE89370400440532013000"));
+        fromAccount.setIban(Iban.valueOf("DE89370400440532013000"));
 
         Account toAccount = new Account();
-        toAccount.setIBAN(Iban.valueOf("DE12500105170648489890"));
+        toAccount.setIban(Iban.valueOf("DE12500105170648489890"));
 
         // Create a full transaction
         fullTransaction = new Transaction();
@@ -76,8 +76,8 @@ public class TransactionControllerTest {
         dto.setAmount(fullTransaction.getAmount());
         dto.setCreatedAt(fullTransaction.getCreatedAt());
         dto.setInitiator(fullTransaction.getInitiator().getId());
-        dto.setSender(fullTransaction.getFromAccount().getIBAN().toString());
-        dto.setReceiver(fullTransaction.getToAccount().getIBAN().toString());
+        dto.setSender(fullTransaction.getFromAccount().getIban().toString());
+        dto.setReceiver(fullTransaction.getToAccount().getIban().toString());
         dto.setDescription(fullTransaction.getDescription());
 
         Transaction transaction = transactionController.toModel(dto);
@@ -89,9 +89,9 @@ public class TransactionControllerTest {
         assertNotNull(transaction.getInitiator());
         assertEquals(fullTransaction.getInitiator().getId(), transaction.getInitiator().getId());
         assertNotNull(transaction.getFromAccount());
-        assertEquals(fullTransaction.getFromAccount().getIBAN(), transaction.getFromAccount().getIBAN());
+        assertEquals(fullTransaction.getFromAccount().getIban(), transaction.getFromAccount().getIban());
         assertNotNull(transaction.getToAccount());
-        assertEquals(fullTransaction.getToAccount().getIBAN(), transaction.getToAccount().getIBAN());
+        assertEquals(fullTransaction.getToAccount().getIban(), transaction.getToAccount().getIban());
     }
 
     @Test

@@ -77,11 +77,11 @@ public class DatabaseSeeder {
         account1.setCreatedAt(LocalDateTime.now());
         account1.setUser(user1);
         account1.setVerifiedBy(user2);
-        account1.setIBAN(Iban.valueOf("DE89370400440532013000"));
+        account1.setIban(Iban.valueOf("DE89370400440532013000"));
         accountRepository.save(account1);
 
         Account account2 = new Account();
-        account2.setIBAN(Iban.valueOf("DE12500105170648489890"));
+        account2.setIban(Iban.valueOf("DE12500105170648489890"));
         account2.setBalance(new BigDecimal("2000.00"));
         account2.setUser(user2);
         account2.setAccountType(AccountType.SAVINGS);
