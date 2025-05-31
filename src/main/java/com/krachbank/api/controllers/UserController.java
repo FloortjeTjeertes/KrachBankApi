@@ -82,7 +82,7 @@ public class UserController implements Controller<User, UserDTO> {
     public User toModel(UserDTO dto) {
         User user = new User();
         user.setId(dto.getId());
-        user.setDailyLimit(dto.getTransferLimit());
+        user.setDailyLimit(dto.getDailyLimit());
         user.setCreatedAt(dto.getCreatedAt());
         user.setVerified(dto.isVerified());
         user.setActive(dto.isActive());

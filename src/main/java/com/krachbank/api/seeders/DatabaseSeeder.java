@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 import org.iban4j.Iban;
 import org.springframework.stereotype.Component;
+
+import com.krachbank.api.configuration.IBANGenerator;
 import com.krachbank.api.controllers.UserController;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.models.Account;
@@ -77,6 +79,7 @@ public class DatabaseSeeder {
         UserDTO savedAdmin = userService.createUser(userService.toDTO(admin));
         // Create accounts
         Account account1 = new Account();
+        account1.setIban(IBANGenerator.generateIBAN());
         account1.setAbsoluteLimit(new BigDecimal(-100));
         account1.setAccountType(AccountType.CHECKING);
         account1.setBalance(new BigDecimal("5000.00"));
@@ -84,11 +87,10 @@ public class DatabaseSeeder {
         account1.setCreatedAt(LocalDateTime.now());
         account1.setUser(userController.toModel(savedUser1));
         account1.setVerifiedBy(userController.toModel(savedAdmin));
-        account1.setIban(Iban.valueOf("DE89370400440532013000"));
         accountRepository.save(account1);
 
         Account account2 = new Account();
-        account2.setIban(Iban.valueOf("DE12500105170648489890"));
+        account2.setIban(IBANGenerator.generateIBAN());
         account2.setBalance(new BigDecimal("2000.00"));
         account2.setUser(userController.toModel(savedUser1));
         account2.setAccountType(AccountType.SAVINGS);
@@ -99,7 +101,7 @@ public class DatabaseSeeder {
         accountRepository.save(account2);
 
         Account account3 = new Account();
-        account3.setIban(Iban.valueOf("DE12500105170648489890"));
+        account3.setIban(IBANGenerator.generateIBAN());
         account3.setBalance(new BigDecimal("2000.00"));
         account3.setUser(userController.toModel(savedUser2));
         account3.setAccountType(AccountType.SAVINGS);
@@ -111,7 +113,7 @@ public class DatabaseSeeder {
 
 
         Account account4 = new Account();
-        account4.setIban(Iban.valueOf("DE12500105170648489890"));
+        account4.setIban(IBANGenerator.generateIBAN());
         account4.setBalance(new BigDecimal("2000.00"));
         account4.setUser(userController.toModel(savedUser2));
         account4.setAccountType(AccountType.CHECKING);

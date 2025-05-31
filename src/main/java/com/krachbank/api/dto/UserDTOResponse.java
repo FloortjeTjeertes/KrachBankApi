@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class UserDTOResponse implements DTO {
 
     private Long id;
-    private BigDecimal transferLimit;
+    private BigDecimal dailyLimit;
     private LocalDateTime createdAt;
     private boolean isVerified;
     private boolean isActive;

@@ -62,7 +62,6 @@ public class AuthenticationServiceJpa implements AuthenticationService {
         newUser.setVerified(false);
         newUser.setActive(true);
         newUser.setDailyLimit(BigDecimal.valueOf(0.0));
-        newUser.setTransferLimit(BigDecimal.valueOf(0.0));
         newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
         User savedUser = authenticationRepository.save(newUser);
