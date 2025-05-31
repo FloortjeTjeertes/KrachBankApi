@@ -12,7 +12,7 @@ public interface UserService {
 
     UserDTO getUserById(Long id);
 
-    DTO verifyUser(User user);
+    DTO verifyUser( Long id);
 
     UserDTO createUser(UserDTO userDTO);
 

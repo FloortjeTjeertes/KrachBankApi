@@ -15,12 +15,13 @@ import org.springframework.http.ResponseEntity;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.User;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UserController implements Controller<User, UserDTOResponse> {
     private final UserService userService;
     private final AccountService accountService;
@@ -36,8 +37,13 @@ public class UserController implements Controller<User, UserDTOResponse> {
     }
 
     @PostMapping("/{id}/verify")
-    public UserDTO verifyUser(@RequestBody User user) {
-        return (UserDTO) userService.verifyUser(user);
+    public UserDTO verifyUser( @PathVariable Long id) {
+      try {
+            return (UserDTO) userService.verifyUser( id);
+        } catch (IllegalArgumentException e) {
+            // Handle the exception and return an appropriate response
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     // ✅ Add this for signup

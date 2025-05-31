@@ -45,11 +45,13 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
-    public DTO verifyUser(User user) {
-        // Basic validation example, adjust as needed for your User fields
-        if (user == null) {
-            throw new IllegalArgumentException("User cannot be null");
+    public DTO verifyUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
+        if (user == null || user.getId() == null || !user.getId().equals(id)) {
+            throw new IllegalArgumentException("User ID mismatch or user is null");
         }
+     
         if (user.getEmail() == null || user.getEmail().isEmpty()) {
             throw new IllegalArgumentException("Email is required");
         }
@@ -63,6 +65,7 @@ public class UserServiceJpa implements UserService {
         if (user.getBSN() <= 0) {
             throw new IllegalArgumentException("BSN must be a positive number");
         }
+        user.setVerified(true);
 
         return toDTO(userRepository.save(user));
     }
