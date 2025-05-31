@@ -4,7 +4,9 @@ import java.util.Random;
 
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
+import org.springframework.stereotype.Component; // <--- Add this import
 
+@Component // <--- Add this annotation
 public class IBANGenerator {
     private static final String BANK_CODE = "KRCH";
 
@@ -21,7 +23,4 @@ public class IBANGenerator {
                 .accountNumber(accountNumber)
                 .build();
     }
-
- 
-
 }
