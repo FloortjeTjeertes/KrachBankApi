@@ -1,25 +1,34 @@
 package com.krachbank.api.service;
 
-import com.krachBank.api.configuration.IBANGenerator;
-import com.krachBank.api.models.Account;
-import com.krachBank.api.models.AccountType;
-import com.krachBank.api.models.User;
-import com.krachBank.api.repository.AccountRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.krachBank.api.service.AccountServiceJpa;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
 import org.iban4j.Iban;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import com.krachbank.api.configuration.IBANGenerator;
+import com.krachbank.api.models.Account;
+import com.krachbank.api.models.AccountType;
+import com.krachbank.api.models.User;
+import com.krachbank.api.repository.AccountRepository;
 
 public class AccountServiceJpaTest {
     private AccountServiceJpa accountService;
     private AccountRepository accountRepository;
+    private TransactionService transactionService;
     private IBANGenerator ibanGenerator;
 
     private User user1;
@@ -33,6 +42,7 @@ public class AccountServiceJpaTest {
     void setUp() {
         accountRepository = mock(AccountRepository.class);
         ibanGenerator = mock(IBANGenerator.class);
+        transactionService = mock(TransactionService.class);
         accountService = new AccountServiceJpa(accountRepository);
 
         user1 = new User();
@@ -45,17 +55,17 @@ public class AccountServiceJpaTest {
 
         account1 = new Account();
         account1.setId(1L);
-        account1.setIBAN(iban1);
-        account1.setBalance(1000.0);
-        account1.setAbsoluteLimit(100.0);
+        account1.setIban(iban1);
+        account1.setBalance(BigDecimal.valueOf(1000.0));
+        account1.setAbsoluteLimit(BigDecimal.valueOf(100.0));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
 
         account2 = new Account();
         account2.setId(2L);
-        account2.setIBAN(iban2);
-        account2.setBalance(1500.0);
-        account2.setAbsoluteLimit(200.0);
+        account2.setIban(iban2);
+        account2.setBalance(BigDecimal.valueOf( 1500.0));
+        account2.setAbsoluteLimit(BigDecimal.valueOf( 200.0));
         account2.setAccountType(AccountType.CHECKING);
         account2.setUser(user2);
     }
@@ -63,11 +73,11 @@ public class AccountServiceJpaTest {
     @Test
     void testCreateAccount() {
         // Change values for this test
-        account1.setBalance(1000.0);
-        account1.setAbsoluteLimit(100.0);
+        account1.setBalance(BigDecimal.valueOf(1000.0));
+        account1.setAbsoluteLimit(BigDecimal.valueOf(100.0));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
-        account1.setIBAN(iban1);
+        account1.setIban(iban1);
 
         when(accountRepository.save(any(Account.class))).thenReturn(account1);
 
@@ -75,9 +85,9 @@ public class AccountServiceJpaTest {
 
         assertNotNull(savedAccount);
         assertEquals(1L, savedAccount.getId());
-        assertEquals(iban1, savedAccount.getIBAN());
-        assertEquals(1000.0, savedAccount.getBalance());
-        assertEquals(100.0, savedAccount.getAbsoluteLimit());
+        assertEquals(iban1, savedAccount.getIban());
+        assertEquals(BigDecimal.valueOf(1000.0), savedAccount.getBalance());
+        assertEquals(BigDecimal.valueOf(100.0), savedAccount.getAbsoluteLimit());
         assertEquals(AccountType.SAVINGS, savedAccount.getAccountType());
         assertEquals(user1, savedAccount.getUser());
         verify(accountRepository, times(1)).save(any(Account.class));
@@ -86,17 +96,17 @@ public class AccountServiceJpaTest {
     @Test
     void testCreateAccounts() {
         // Change values for this test
-        account1.setBalance(500.0);
-        account1.setAbsoluteLimit(50.0);
+        account1.setBalance(BigDecimal.valueOf(500.0));
+        account1.setAbsoluteLimit(BigDecimal.valueOf(50.0));
         account1.setAccountType(AccountType.SAVINGS);
         account1.setUser(user1);
-        account1.setIBAN(iban1);
+        account1.setIban(iban1);
 
-        account2.setBalance(1500.0);
-        account2.setAbsoluteLimit(200.0);
+        account2.setBalance(BigDecimal.valueOf(1500.0));
+        account2.setAbsoluteLimit(BigDecimal.valueOf(200.0));
         account2.setAccountType(AccountType.CHECKING);
         account2.setUser(user2);
-        account2.setIBAN(iban2);
+        account2.setIban(iban2);
 
         List<Account> accounts = Arrays.asList(account1, account2);
 
@@ -118,7 +128,7 @@ public class AccountServiceJpaTest {
 
     @Test
     void testCreateAccount_NullIBAN_ThrowsException() {
-        account1.setIBAN(null);
+        account1.setIban(null);
         assertThrows(IllegalArgumentException.class, () -> accountService.createAccount(account1));
     }
 

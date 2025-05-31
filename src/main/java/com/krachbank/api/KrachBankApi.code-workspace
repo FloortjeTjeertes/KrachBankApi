@@ -1,17 +1,16 @@
 {
 	"folders": [
 		{
-			"path": "."
+			"path": "../../../../../.."
 		}
 	],
 	"settings": {
-		"java.configuration.updateBuildConfiguration": "automatic",
+		"java.compile.nullAnalysis.mode": "automatic",
 		"java.dependency.packagePresentation": "hierarchical",
+		"java.project.explorer.showNonJavaResources": false,
 		"cSpell.words": [
-			"dtos",
 			"IBAN",
 			"krachbank"
-		],
-		"java.compile.nullAnalysis.mode": "automatic"
+		]
 	}
 }
