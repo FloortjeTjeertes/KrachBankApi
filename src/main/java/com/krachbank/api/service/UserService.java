@@ -7,7 +7,7 @@ import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.models.User;
 
-public interface UserService {
+public interface UserService extends Service<UserDTO, User> {
     List<UserDTO> getUsers();
 
     UserDTO getUserById(Long id);

@@ -37,7 +37,7 @@ public class TransactionJpa implements TransactionService {
 
     @Override
     @Transactional
-    public Optional<Transaction> createTransaction(Transaction transaction) throws Exception {
+    public Optional<Transaction> createTransaction(Transaction transaction,String userName) throws Exception {
 
         isValidTransaction(transaction);
         transactionRepository.findById(transaction.getId()).ifPresent(existingTransaction -> {
@@ -57,6 +57,12 @@ public class TransactionJpa implements TransactionService {
         if (sendingAccount.getIban().equals(receivingAccount.getIban())) {
             throw new IllegalArgumentException("cant transfer to the same account");
         }
+
+        //TODO:
+        //TODO:check if the user is an admin
+        //TODO:check if admin user then the transaction has to originate from the users account
+
+
 
         // check if the transaction is to another persons account
         if (!receivingAccount.getUser().equals(sendingAccount.getUser())) {

@@ -22,7 +22,7 @@ import com.krachbank.api.models.User;
 
 @RestController
 @RequestMapping("/users")
-public class UserController implements Controller<User, UserDTOResponse> {
+public class UserController implements Controller<User, UserDTO> {
     private final UserService userService;
     private final AccountService accountService;
 
@@ -79,7 +79,7 @@ public class UserController implements Controller<User, UserDTOResponse> {
     }
 
     @Override
-    public User toModel(UserDTOResponse dto) {
+    public User toModel(UserDTO dto) {
         User user = new User();
         user.setId(dto.getId());
         user.setDailyLimit(dto.getTransferLimit());
