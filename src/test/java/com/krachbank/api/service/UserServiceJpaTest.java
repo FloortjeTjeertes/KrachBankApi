@@ -36,7 +36,7 @@ public class UserServiceJpaTest {
         user1.setLastName("Doe");
         user1.setEmail("john@example.com");
         user1.setPhoneNumber("1234567890");
-        user1.setBsn(123456789);
+        user1.setBSN(123456789);
 
         user2 = new User();
         user2.setId(2L);
@@ -48,7 +48,7 @@ public class UserServiceJpaTest {
         user2.setLastName("Smith");
         user2.setEmail("jane@example.com");
         user2.setPhoneNumber("0987654321");
-        user2.setBsn(987654321);
+        user2.setBSN(987654321);
     }
 
     @Test

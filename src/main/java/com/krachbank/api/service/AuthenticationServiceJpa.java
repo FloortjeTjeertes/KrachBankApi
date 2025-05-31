@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -29,7 +30,6 @@ public class AuthenticationServiceJpa implements AuthenticationService {
     private final JwtService jwtService; // Injected JwtService
     private final AuthenticationManager authenticationManager; // Injected AuthenticationManager
 
-    @Autowired
     public AuthenticationServiceJpa(
             AuthenticationRepository authenticationRepository,
             PasswordEncoder passwordEncoder,
@@ -61,8 +61,8 @@ public class AuthenticationServiceJpa implements AuthenticationService {
         newUser.setCreatedAt(LocalDateTime.now());
         newUser.setVerified(false);
         newUser.setActive(true);
-        newUser.setDailyLimit(0.0);
-        newUser.setTransferLimit(0.0);
+        newUser.setDailyLimit(BigDecimal.valueOf(0.0));
+        newUser.setTransferLimit(BigDecimal.valueOf(0.0));
         newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
         User savedUser = authenticationRepository.save(newUser);

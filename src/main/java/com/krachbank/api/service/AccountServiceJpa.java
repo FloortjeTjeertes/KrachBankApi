@@ -1,6 +1,5 @@
 package com.krachbank.api.service;
 
-import java.nio.file.DirectoryStream.Filter;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +7,6 @@ import java.util.Optional;
 
 import org.iban4j.Iban;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -19,8 +17,8 @@ import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.repository.AccountRepository;
 
-import jakarta.transaction.Transactional;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 
 @Service
 public class AccountServiceJpa implements AccountService {

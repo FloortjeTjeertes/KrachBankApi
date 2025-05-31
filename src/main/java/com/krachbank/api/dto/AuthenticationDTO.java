@@ -1,6 +1,7 @@
 // src/main/java/com/krachbank/api/dto/AuthenticationDTO.java
 package com.krachbank.api.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.krachbank.api.models.User; // Import the User model
@@ -18,11 +19,11 @@ public class AuthenticationDTO implements DTO {
     private String username;
     private String email;
     private String phoneNumber;
-    private String BSN;
+    private int BSN;
     private String firstName;
     private String lastName;
-    private Double dailyLimit;
-    private Double transferLimit;
+    private BigDecimal dailyLimit;
+    private BigDecimal transferLimit;
     private LocalDateTime createdAt;
     private boolean isVerified;
     private boolean isActive;

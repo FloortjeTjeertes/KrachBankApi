@@ -1,13 +1,11 @@
 package com.krachbank.api.dto;
 
-import com.krachbank.api.models.Model;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -34,11 +32,9 @@ public class RegisterRequest implements DTO {
 
     private String phoneNumber;
 
+    //bsn should be a Long or int, depending on your requirements
     @NotBlank(message = "BSN is required")
-    private String BSN; // Business Social Number
+    private int BSN; // Business Social Number
 
-    @Override
-    public Model ToModel() {
-        return null;
-    }
+   
 }

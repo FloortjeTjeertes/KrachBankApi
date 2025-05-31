@@ -1,5 +1,6 @@
 package com.krachbank.api.models;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -40,16 +41,17 @@ public class User implements Model, UserDetails {
 
     private String phoneNumber;
 
+    //maybe a long instead of int?
     @Column(name = "bsn")
-    private String BSN;
+    private int BSN;
 
     private String firstName;
 
     private String lastName;
 
-    private Double dailyLimit;
+    private BigDecimal dailyLimit;
 
-    private Double transferLimit;
+    private BigDecimal transferLimit;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -87,8 +89,5 @@ public class User implements Model, UserDetails {
         return this.active;
     }
 
-    @Override
-    public DTO toDTO() {
-        return null;
-    }
+
 }

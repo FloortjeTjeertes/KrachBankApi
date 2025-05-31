@@ -1,12 +1,10 @@
 // src/main/java/com/krachbank/api/dto/LoginRequest.java
 package com.krachbank.api.dto;
 
-import com.krachbank.api.models.Model;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import jakarta.validation.constraints.NotBlank;
 
 @Data
 @NoArgsConstructor
@@ -19,8 +17,5 @@ public class LoginRequest implements DTO {
     @NotBlank(message = "Password is required")
     private String password;
 
-    @Override
-    public Model ToModel() {
-        return null;
-    }
+  
 }

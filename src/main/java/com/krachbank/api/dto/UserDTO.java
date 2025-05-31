@@ -1,6 +1,7 @@
 // src/main/java/com/krachbank/api/dto/UserDTO.java
 package com.krachbank.api.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.krachbank.api.models.User; // Assuming your User entity
@@ -15,7 +16,8 @@ import lombok.NoArgsConstructor;
 public class UserDTO implements DTO {
 
     private Long id;
-    private String transferLimit;
+    private BigDecimal transferLimit;
+    private BigDecimal dailyLimit; // Assuming this is used for some purpose, otherwise can be removed
     private LocalDateTime createdAt;
     private boolean isVerified;
     private boolean isActive;
@@ -23,21 +25,19 @@ public class UserDTO implements DTO {
     private String lastName;
     private String email;
     private String phoneNumber;
-    private String BSN; // Note: Ensure consistency with 'bsn' property in RegisterRequest/User entity if needed
+    private int BSN; // Note: Ensure consistency with 'bsn' property in RegisterRequest/User entity if needed
     private String password; // Added for registration input
     private String username;
 
 
-    public UserDTO(Long id, String transferLimit, LocalDateTime createdAt, boolean verified, boolean active, String firstName, String lastName, String email, String phoneNumber, String bsn) {
-    }
-
-    @Override
+  
+    
     public User ToModel() {
         User user = new User();
         user.setId(this.id);
         // Note: Check if transferLimit is always convertible to Double.
         // Consider handling potential NumberFormatException.
-        user.setDailyLimit(this.transferLimit != null ? Double.valueOf(this.transferLimit) : null);
+        user.setDailyLimit(this.transferLimit != null ? BigDecimal.ZERO: null);
         user.setCreatedAt(this.createdAt);
         user.setVerified(this.isVerified);
         user.setActive(this.isActive);
@@ -49,21 +49,6 @@ public class UserDTO implements DTO {
         user.setUsername(this.username);
         return user;
     }
-    public static UserDTO fromModel(User user) {
-        UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
-        dto.setTransferLimit(user.getDailyLimit() != null ? String.valueOf(user.getDailyLimit()) : null);
-        dto.setCreatedAt(user.getCreatedAt());
-        dto.setVerified(user.isVerified());
-        dto.setActive(user.isActive());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
-        dto.setEmail(user.getEmail());
-        dto.setPhoneNumber(user.getPhoneNumber());
-        dto.setBSN(user.getBSN());
-        dto.setUsername(user.getUsername()); // Setting username on the DTO from model
-        // dto.setPassword(null); // Explicitly set password to null or omit from fromModel
-        return dto;
-    }
+  
 
 }
