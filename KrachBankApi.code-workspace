@@ -5,8 +5,13 @@
 		}
 	],
 	"settings": {
-		"java.compile.nullAnalysis.mode": "automatic",
-		"java.configuration.updateBuildConfiguration": "interactive",
-		"java.dependency.packagePresentation": "hierarchical"
+		"java.configuration.updateBuildConfiguration": "automatic",
+		"java.dependency.packagePresentation": "hierarchical",
+		"cSpell.words": [
+			"dtos",
+			"IBAN",
+			"krachbank"
+		],
+		"java.compile.nullAnalysis.mode": "automatic"
 	}
 }

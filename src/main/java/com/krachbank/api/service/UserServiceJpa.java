@@ -1,6 +1,7 @@
 // src/main/java/com/krachbank/api/service/UserServiceJpa.java
 package com.krachbank.api.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class UserServiceJpa implements UserService {
     public List<UserDTO> getUsers() {
         // USE UserDTO.fromModel() for consistent conversion
         return userRepository.findAll().stream()
-                .map(UserDTO::fromModel) // <--- CHANGED HERE
+                .map( (user)-> toDTO(user)) 
                 .collect(Collectors.toList());
     }
 
@@ -40,7 +41,7 @@ public class UserServiceJpa implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
         // USE UserDTO.fromModel() for consistent conversion
-        return UserDTO.fromModel(user); // <--- CHANGED HERE
+        return toDTO(user); // <--- CHANGED HERE
     }
 
     @Override
@@ -58,20 +59,12 @@ public class UserServiceJpa implements UserService {
         if (user.getLastName() == null || user.getLastName().isEmpty()) {
             throw new IllegalArgumentException("Last name is required");
         }
-        // Note: Your User model has getBSN() returning String, but your method here parses to int
-        if (user.getBSN() == null || user.getBSN().isEmpty()) {
-            throw new IllegalArgumentException("BSN is required");
-        }
-        try {
-            if (Integer.parseInt(user.getBSN()) <= 0) {
-                throw new IllegalArgumentException("BSN must be a positive number");
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("BSN must be a valid number", e);
+        // Note: If your User model has getBSN() returning int, check for positive value only
+        if (user.getBSN() <= 0) {
+            throw new IllegalArgumentException("BSN must be a positive number");
         }
 
-        // Assuming toDTO() on your User model correctly converts to a DTO (e.g., UserDTO)
-        return userRepository.save(user).toDTO();
+        return toDTO(userRepository.save(user));
     }
 
     @Override
@@ -102,17 +95,16 @@ public class UserServiceJpa implements UserService {
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
         user.setVerified(false);
-        user.setDailyLimit(0.0);
+        user.setDailyLimit(BigDecimal.valueOf( 0.0));
         // user.setTransferLimit(0.0); // Set a default transfer limit, if you have this field in User entity
 
         // --- Save the User entity to the database ---
         User savedUser = userRepository.save(user);
 
         // --- Debugging Print (can remove after successful testing) ---
-        System.out.println("User created successfully: " + savedUser.getEmail() + " (Username: " + savedUser.getUsername() + ")");
 
         // --- Convert the saved User entity back to UserDTO for response ---
-        return UserDTO.fromModel(savedUser);
+        return toDTO(savedUser);
     }
 
     @Override
@@ -135,7 +127,7 @@ public class UserServiceJpa implements UserService {
         User updatedUser = userRepository.save(existingUser);
 
         // USE UserDTO.fromModel() for consistent conversion
-        return UserDTO.fromModel(updatedUser); // <--- CHANGED HERE
+        return toDTO(updatedUser); // <--- CHANGED HERE
     }
 
     @Override
@@ -145,7 +137,7 @@ public class UserServiceJpa implements UserService {
         user.setActive(false);
         User deactivatedUser = userRepository.save(user);
         // USE UserDTO.fromModel() for consistent conversion
-        return UserDTO.fromModel(deactivatedUser); // <--- CHANGED HERE
+        return toDTO(deactivatedUser); // <--- CHANGED HERE
     }
 
     @Override
@@ -153,4 +145,25 @@ public class UserServiceJpa implements UserService {
         // Implement logic to filter users based on parameters
         return getUsers();
     }
+
+    public static UserDTO toDTO(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setEmail(user.getEmail());
+        dto.setBSN(user.getBSN());
+        dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setUsername(user.getUsername());
+        dto.setActive(user.isActive());
+        dto.setVerified(user.isVerified());
+        dto.setDailyLimit(user.getDailyLimit());
+        dto.setCreatedAt(user.getCreatedAt());
+        // Add other fields as needed
+        return dto;
+    }
+
 }

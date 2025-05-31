@@ -2,13 +2,10 @@ package com.krachbank.api.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.krachbank.api.dto.DTO;
 import com.krachbank.api.dto.UserDTO;
-
 import com.krachbank.api.models.User;
-import com.krachbank.api.repository.UserRepository;
 
 public interface UserService {
     List<UserDTO> getUsers();
