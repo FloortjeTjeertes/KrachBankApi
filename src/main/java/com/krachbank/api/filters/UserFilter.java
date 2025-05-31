@@ -1,4 +1,4 @@
-package com.krachbank.api.filters;
+package com.krachBank.api.filters;
 
 public class UserFilter extends BaseFilter {
     private String email;
