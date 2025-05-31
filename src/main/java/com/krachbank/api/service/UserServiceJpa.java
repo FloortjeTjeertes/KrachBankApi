@@ -1,0 +1,108 @@
+package com.krachbank.api.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.krachbank.api.dto.UserDTOResponse;
+import com.krachbank.api.models.User;
+import com.krachbank.api.repository.UserRepository;
+
+@Service
+public class UserServiceJpa implements UserService {
+    private final UserRepository userRepository;
+
+    public UserServiceJpa(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public List<UserDTOResponse> getUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> new UserDTOResponse(
+                        user.getId(),
+                        user.getDailyLimit(),
+                        user.getCreatedAt(),
+                        user.isVerified(),
+                        user.isActive(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getEmail(),
+                        user.getPhoneNumber(),
+                        user.getBsn()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDTOResponse getUserById(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getUserById'");
+    }
+
+    @Override
+    public UserDTOResponse verifyUser(User user) {
+        // Basic validation example, adjust as needed for your User fields
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (user.getFirstName() == null || user.getFirstName().isEmpty()) {
+            throw new IllegalArgumentException("First name is required");
+        }
+        if (user.getLastName() == null || user.getLastName().isEmpty()) {
+            throw new IllegalArgumentException("Last name is required");
+        }
+        if (user.getBsn() <= 0) {
+            throw new IllegalArgumentException("BSN must be a positive number");
+        }
+        return toDTO(userRepository.save(user));
+    }
+
+    @Override
+    public UserDTOResponse updateUser(Long id, User userDTO) {
+
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateUser'");
+    }
+
+    @Override
+    public void removeUser(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'removeUser'");
+    }
+
+ 
+
+    @Override
+    public UserDTOResponse toDTO(User model) {
+        UserDTOResponse userDTO = new UserDTOResponse();
+        userDTO.setId(model.getId());
+        userDTO.setTransferLimit(model.getDailyLimit());
+        userDTO.setCreatedAt(model.getCreatedAt());
+        userDTO.setVerified(model.isVerified());
+        userDTO.setActive(model.isActive());
+        userDTO.setFirstName(model.getFirstName());
+        userDTO.setLastName(model.getLastName());
+        userDTO.setEmail(model.getEmail());
+        userDTO.setPhoneNumber(model.getPhoneNumber());
+        userDTO.setBSN(model.getBsn());
+
+
+        return userDTO;
+    }
+
+    @Override
+    public List<UserDTOResponse> toDTO(List<User> users) {
+
+        List<UserDTOResponse> userDTOs = new ArrayList<>();
+        for (User user : users) {
+            userDTOs.add(toDTO(user));
+        }
+        return userDTOs;
+    }
+
+}

@@ -1,4 +1,4 @@
-package com.krachBank.api.models;
+package com.krachbank.api.models;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

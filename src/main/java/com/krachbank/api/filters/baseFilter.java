@@ -1,4 +1,4 @@
-package com.krachBank.api.filters;
+package com.krachbank.api.filters;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

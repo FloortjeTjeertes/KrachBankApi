@@ -1,4 +1,4 @@
-package com.krachBank.api.configuration;
+package com.krachbank.api.configuration;
 
 import java.util.Random;
 
