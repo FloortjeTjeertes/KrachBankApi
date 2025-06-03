@@ -36,6 +36,16 @@ public class UserController implements Controller<User, UserDTO> {
         return userService.getUsers();
     }
 
+    @GetMapping("/{id}")
+    public UserDTO getUserById(@PathVariable Long id) {
+        try {
+            return userService.getUserById(id);
+        } catch (IllegalArgumentException e) {
+            // Handle the exception and return an appropriate response
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+
     @PostMapping("/{id}/verify")
     public UserDTO verifyUser( @PathVariable Long id) {
       try {
