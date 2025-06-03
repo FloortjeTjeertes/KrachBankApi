@@ -9,7 +9,6 @@ import com.krachbank.api.filters.UserFilter;
 import com.krachbank.api.models.User;
 
 public interface UserService extends Service<UserDTO, User> {
-    List<UserDTO> getUsers();
 
     UserDTO getUserById(Long id);
 

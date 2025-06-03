@@ -155,7 +155,7 @@ public class UserServiceJpa implements UserService {
         Specification<User> specification = makeUserFilterSpecification(params);
         Pageable pageable = filter != null ? filter.toPageAble() : Pageable.unpaged();
         Page<User> users = userRepository.findAll(specification, pageable);
-        return users.stream().map(UserServiceJpa::toDTO).collect(Collectors.toList());
+        return users.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     private Specification<User> makeUserFilterSpecification(Map<String, String> params) {
