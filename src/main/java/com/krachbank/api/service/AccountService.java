@@ -28,7 +28,7 @@ public interface AccountService extends Service<AccountDTOResponse, Account> {
 
     public Optional<Account> getAccountByIBAN(String iban);
 
-    public Page<Account> getAccountsByUserId(Long userId,BaseFilter filter);
+    public Page<Account> getAccountsByUserId(Long userId,AccountFilter filter);
 
 
 }

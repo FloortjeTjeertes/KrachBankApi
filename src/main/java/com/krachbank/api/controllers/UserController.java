@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -49,10 +50,10 @@ public class UserController implements Controller<User, UserDTO> {
     }
 
     @GetMapping("/{id}/accounts")
-    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id, UserFilter filter) {
+    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id,@ModelAttribute UserFilter filter) {
         try {
-            System.out.println("Fetching accounts for user with ID: " + id);
             List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
+            System.out.println("Filter: " + filter);
             Page<Account> accountsPage = accountService.getAccountsByUserId(id, filter);
             List<Account> accounts = accountsPage.getContent();
             for (Account account : accounts) {

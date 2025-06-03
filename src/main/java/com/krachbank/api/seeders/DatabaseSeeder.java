@@ -46,7 +46,7 @@ public class DatabaseSeeder {
         User user1 = new User();
         user1.setFirstName("Alice");
         user1.setLastName("Smith");
-        user1.setUsername("Alice Smith");
+        user1.setUsername("AliceSmith");
         user1.setDailyLimit(new BigDecimal("1000.00"));
         user1.setEmail("alice@example.com");
         user1.setPassword("password123");
