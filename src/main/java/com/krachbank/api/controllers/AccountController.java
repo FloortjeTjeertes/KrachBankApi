@@ -1,5 +1,6 @@
 package com.krachbank.api.controllers;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.krachbank.api.configuration.IBANGenerator;
+import com.krachbank.api.dto.AccountDTORequest;
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
 import com.krachbank.api.filters.AccountFilter;
@@ -29,12 +31,14 @@ public class AccountController implements Controller<Account, AccountDTOResponse
     }
 
     @PostMapping
-    public ResponseEntity<?> createAccounts(List<Account> accounts) {
+    public ResponseEntity<?> createAccounts(List<AccountDTORequest> accountRequests) {
         try {
-            for (Account account : accounts) {
-                account.setIban(IBANGenerator.generateIBAN());
+            for (AccountDTORequest accountRequest : accountRequests) {
+                accountRequest.setIban(IBANGenerator.generateIBAN());
             }
             List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
+            List<Account> accounts = toModelList(accountDTOs);
+
             List<Account> returnAccounts = accountService.createAccounts(accounts);
             for (Account account : returnAccounts) {
                 accountDTOs.add(accountService.toDTO(account));
@@ -112,8 +116,28 @@ public class AccountController implements Controller<Account, AccountDTOResponse
 
     @Override
     public Account toModel(AccountDTOResponse dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("AccountDTOResponse cannot be null");
+        }
+        Account account = new Account();
+        account.setIban(IBANGenerator.generateIBAN());
+        account.setAccountType(dto.getType());
+        account.setBalance(dto.getBalance());
+        account.setAbsoluteLimit(dto.getAbsoluteLimit());
+        account.setTransactionLimit(dto.getTransactionLimit());
+        account.setCreatedAt(LocalDateTime.parse(dto.getCreatedAt()));
 
         return new Account();
     }
+
+    public List<Account> toModelList(List<AccountDTOResponse> dtoList) {
+        List<Account> accounts = new ArrayList<>();
+        for (AccountDTOResponse dto : dtoList) {
+            accounts.add(toModel(dto));
+        }
+        return accounts;
+    }
+
+
 
 }

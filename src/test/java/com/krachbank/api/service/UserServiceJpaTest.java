@@ -1,11 +1,12 @@
 package com.krachbank.api.service;
 
-import com.krachbank.api.configuration.IBANGenerator;
+import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.dto.UserDTOResponse;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.*;
 public class UserServiceJpaTest {
     private UserServiceJpa userService;
     private UserRepository userRepository;
+    private BCryptPasswordEncoder passwordEncoder;
 
     private User user1;
     private User user2;
@@ -25,7 +27,8 @@ public class UserServiceJpaTest {
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        userService = new UserServiceJpa(userRepository, null);
+        passwordEncoder = mock(BCryptPasswordEncoder.class);
+        userService = new UserServiceJpa(userRepository, passwordEncoder);
 
         user1 = new User();
         user1.setId(1L);
@@ -56,7 +59,7 @@ public class UserServiceJpaTest {
     void testGetUsers() {
         when(userRepository.findAll()).thenReturn(Arrays.asList(user1, user2));
 
-        List<UserDTOResponse> users = userService.getUsers();
+        List<UserDTO> users = userService.getUsers();
 
         assertNotNull(users);
         assertEquals(2, users.size());
@@ -76,7 +79,7 @@ public class UserServiceJpaTest {
             return savedUser;
         });
 
-        UserDTOResponse dto = userService.verifyUser(user1);
+        UserDTOResponse dto = (UserDTOResponse) userService.verifyUser(user1.getId());
 
         assertNotNull(dto);
         assertEquals(user1.getId(), dto.getId());

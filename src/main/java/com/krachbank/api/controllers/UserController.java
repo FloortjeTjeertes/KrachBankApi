@@ -16,13 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.User;
 
 @RestController
-@RequestMapping("/api/users")
-public class UserController implements Controller<User, UserDTOResponse> {
+@RequestMapping("/users")
+public class UserController implements Controller<User, UserDTO> {
     private final UserService userService;
     private final AccountService accountService;
 
@@ -32,8 +33,13 @@ public class UserController implements Controller<User, UserDTOResponse> {
     }
 
     @PostMapping("/{id}/verify")
-    public UserDTO verifyUser(@RequestBody User user) {
-        return (UserDTO) userService.verifyUser(user);
+    public UserDTO verifyUser( @PathVariable Long id) {
+      try {
+            return (UserDTO) userService.verifyUser( id);
+        } catch (IllegalArgumentException e) {
+            // Handle the exception and return an appropriate response
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @GetMapping("/{id}/accounts")
@@ -92,10 +98,10 @@ public class UserController implements Controller<User, UserDTOResponse> {
     }
 
     @Override
-    public User toModel(UserDTOResponse dto) {
+    public User toModel(UserDTO dto) {
         User user = new User();
         user.setId(dto.getId());
-        user.setDailyLimit(dto.getTransferLimit());
+        user.setDailyLimit(dto.getDailyLimit());
         user.setCreatedAt(dto.getCreatedAt());
         user.setVerified(dto.isVerified());
         user.setActive(dto.isActive());

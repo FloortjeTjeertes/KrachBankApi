@@ -8,11 +8,12 @@ import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.filters.UserFilter;
 import com.krachbank.api.models.User;
 
-public interface UserService {
+public interface UserService extends Service<UserDTO, User> {
+    List<UserDTO> getUsers();
 
     UserDTO getUserById(Long id);
 
-    DTO verifyUser(User user);
+    DTO verifyUser(Long id);
 
     UserDTO createUser(UserDTO userDTO);
 
