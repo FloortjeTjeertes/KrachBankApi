@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
 import com.krachbank.api.dto.UserDTO;
+import com.krachbank.api.filters.AccountFilter;
 import com.krachbank.api.filters.UserFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.User;
@@ -39,20 +40,12 @@ public class UserController implements Controller<User, UserDTO> {
         this.userService = userService;
     }
 
-    @GetMapping
-    public List<UserDTO> getUsers() {
-        return userService.getUsers();
-    }
+    // @GetMapping
+    // public List<UserDTO> getUsers() {
+    //     return userService.getUsers();
+    // }
 
-    @GetMapping("/{id}")
-    public UserDTO getUserById(@PathVariable Long id) {
-        try {
-            return userService.getUserById(id);
-        } catch (IllegalArgumentException e) {
-            // Handle the exception and return an appropriate response
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
-    }
+    // Removed duplicate getUserById(Long id) method to resolve compilation error.
 
 
     @PostMapping("/{id}/verify")
@@ -66,7 +59,7 @@ public class UserController implements Controller<User, UserDTO> {
     }
 
     @GetMapping("/{id}/accounts")
-    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id,@ModelAttribute UserFilter filter) {
+    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id,@ModelAttribute AccountFilter filter) {
         try {
             List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
             System.out.println("Filter: " + filter);
