@@ -104,14 +104,15 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_ByMinAmount() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setMinAmount(BigDecimal.valueOf(200.0));
+        filter.setMinAmount(BigDecimal.valueOf(100.0));
         List<Transaction> results = transactionRepository.findAll(
                 TransactionJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getAmount());
-            assertEquals(filter.getMinAmount(), transaction.getAmount());
+            // Should be >= minAmount
+            assertEquals(true, transaction.getAmount().compareTo(filter.getMinAmount()) >= 0);
         });
     }
 
@@ -125,28 +126,29 @@ public class TransactionRepositoryTest {
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getAmount());
-            assertEquals(filter.getMaxAmount(), transaction.getAmount());
-
+            // Should be <= maxAmount
+            assertEquals(true, transaction.getAmount().compareTo(filter.getMaxAmount()) <= 0);
         });
     }
 
     @Test
     void testMakeTransactionsSpecification_ByBeforeDate() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setBeforeDate(LocalDateTime.of(2025, 01, 01, 01, 01));
+        filter.setBeforeDate(LocalDateTime.of(2025, 01, 02, 01, 01));
         List<Transaction> results = transactionRepository.findAll(
                 TransactionJpa.MakeTransactionsSpecification(filter));
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getCreatedAt());
-            assertEquals(filter.getBeforeDate(), transaction.getCreatedAt());
+            // Should be < beforeDate
+            assertEquals(true, transaction.getCreatedAt().isBefore(filter.getBeforeDate()));
         });
     }
 
     @Test
     void testMakeTransactionsSpecification_ByAfterDate() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setAfterDate(LocalDateTime.of(2025, 01, 02, 01, 01));
+        filter.setAfterDate(LocalDateTime.of(2025, 01, 01, 01, 01));
 
         List<Transaction> results = transactionRepository.findAll(
                 TransactionJpa.MakeTransactionsSpecification(filter));
@@ -154,7 +156,8 @@ public class TransactionRepositoryTest {
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getCreatedAt());
-            assertEquals(filter.getAfterDate(), transaction.getCreatedAt());
+            // Should be > afterDate
+            assertEquals(true, transaction.getCreatedAt().isAfter(filter.getAfterDate()));
         });
     }
 
