@@ -44,13 +44,6 @@ public class WebSecurityConfiguration {
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
-    // <--- Add this line for CORS configuration Add this new bean to define your
-    // source
-    // // <-- IMPORTANT: Your frontend URL // Allowed HTTP
-    // methods
-    // Allow all headers (including Authorization) // Allow sending cookies/auth
-    // headers // How long the preflight request can be cached // Apply this CORS
-    // config to all paths }
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
