@@ -1,16 +1,10 @@
 // src/main/java/com/krachbank/api/service/AuthenticationServiceJpa.java
 package com.krachbank.api.service;
 
-import com.krachbank.api.dto.AuthenticationDTO;
-import com.krachbank.api.dto.AuthenticationResultDTO;
-import com.krachbank.api.dto.LoginRequest;
-import com.krachbank.api.dto.RegisterRequest;
-import com.krachbank.api.models.User;
-import com.krachbank.api.repository.AuthenticationRepository;
-import com.krachbank.api.exceptions.UserAlreadyExistsException;
-import com.krachbank.api.exceptions.InvalidCredentialsException;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager; // For login
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken; // For login
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,9 +12,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Optional;
+import com.krachbank.api.dto.AuthenticationDTO;
+import com.krachbank.api.dto.AuthenticationResultDTO;
+import com.krachbank.api.dto.LoginRequest;
+import com.krachbank.api.dto.RegisterRequest;
+import com.krachbank.api.exceptions.InvalidCredentialsException;
+import com.krachbank.api.exceptions.UserAlreadyExistsException;
+import com.krachbank.api.models.User;
+import com.krachbank.api.repository.AuthenticationRepository;
 
 @Service
 public class AuthenticationServiceJpa implements AuthenticationService {
@@ -62,7 +61,6 @@ public class AuthenticationServiceJpa implements AuthenticationService {
         newUser.setVerified(false);
         newUser.setActive(true);
         newUser.setDailyLimit(BigDecimal.valueOf(0.0));
-        newUser.setTransferLimit(BigDecimal.valueOf(0.0));
         newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
         User savedUser = authenticationRepository.save(newUser);

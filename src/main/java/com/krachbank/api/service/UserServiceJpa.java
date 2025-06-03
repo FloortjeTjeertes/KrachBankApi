@@ -3,6 +3,7 @@ package com.krachbank.api.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class UserServiceJpa implements UserService {
     public List<UserDTO> getUsers() {
         // USE UserDTO.fromModel() for consistent conversion
         return userRepository.findAll().stream()
-                .map( (user)-> toDTO(user)) 
+                .map((user) -> toDTO(user))
                 .collect(Collectors.toList());
     }
 
@@ -45,11 +46,13 @@ public class UserServiceJpa implements UserService {
     }
 
     @Override
-    public DTO verifyUser(User user) {
-        // Basic validation example, adjust as needed for your User fields
-        if (user == null) {
-            throw new IllegalArgumentException("User cannot be null");
+    public DTO verifyUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
+        if (user == null || user.getId() == null || !user.getId().equals(id)) {
+            throw new IllegalArgumentException("User ID mismatch or user is null");
         }
+
         if (user.getEmail() == null || user.getEmail().isEmpty()) {
             throw new IllegalArgumentException("Email is required");
         }
@@ -59,10 +62,12 @@ public class UserServiceJpa implements UserService {
         if (user.getLastName() == null || user.getLastName().isEmpty()) {
             throw new IllegalArgumentException("Last name is required");
         }
-        // Note: If your User model has getBSN() returning int, check for positive value only
+        // Note: If your User model has getBSN() returning int, check for positive value
+        // only
         if (user.getBSN() <= 0) {
             throw new IllegalArgumentException("BSN must be a positive number");
         }
+        user.setVerified(true);
 
         return toDTO(userRepository.save(user));
     }
@@ -74,7 +79,8 @@ public class UserServiceJpa implements UserService {
             throw new RuntimeException("User with email " + userDTO.getEmail() + " already exists!");
         }
         // This check is important if username is "First Last" and needs to be unique.
-        // It will throw if a user with that exact first and last name combination already exists.
+        // It will throw if a user with that exact first and last name combination
+        // already exists.
         if (userDTO.getUsername() != null && userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
             throw new RuntimeException("User with username " + userDTO.getUsername() + " already exists!");
         }
@@ -95,8 +101,9 @@ public class UserServiceJpa implements UserService {
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
         user.setVerified(false);
-        user.setDailyLimit(BigDecimal.valueOf( 0.0));
-        // user.setTransferLimit(0.0); // Set a default transfer limit, if you have this field in User entity
+        user.setDailyLimit(BigDecimal.valueOf(0.0));
+        // user.setTransferLimit(0.0); // Set a default transfer limit, if you have this
+        // field in User entity
 
         // --- Save the User entity to the database ---
         User savedUser = userRepository.save(user);
@@ -146,7 +153,9 @@ public class UserServiceJpa implements UserService {
         return getUsers();
     }
 
-    public static UserDTO toDTO(User user) {
+    @Override
+
+    public UserDTO toDTO(User user) {
         if (user == null) {
             return null;
         }
@@ -158,12 +167,24 @@ public class UserServiceJpa implements UserService {
         dto.setBSN(user.getBSN());
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setUsername(user.getUsername());
+        dto.setPassword(user.getPassword()); // Note: Password should not be exposed in DTOs, consider removing this
         dto.setActive(user.isActive());
         dto.setVerified(user.isVerified());
         dto.setDailyLimit(user.getDailyLimit());
         dto.setCreatedAt(user.getCreatedAt());
         // Add other fields as needed
         return dto;
+    }
+
+ 
+
+    @Override
+    public List<UserDTO> toDTO(List<User> users) {
+        List<UserDTO> userDTOs = new ArrayList<>();
+        for (User userDTO : users) {
+            userDTOs.add(toDTO(userDTO));
+        }
+        return userDTOs;
     }
 
 }

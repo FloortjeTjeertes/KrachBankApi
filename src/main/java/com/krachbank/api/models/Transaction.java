@@ -36,4 +36,9 @@ public class Transaction implements Model{
 
     private String description;
 
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt == null ? LocalDateTime.now() : createdAt;
+    }
+
 }

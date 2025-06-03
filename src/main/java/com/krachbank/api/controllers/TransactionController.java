@@ -5,9 +5,12 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +22,7 @@ import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
 import com.krachbank.api.service.TransactionService;
+
 
 @RestController
 @RequestMapping("/transactions")
@@ -52,10 +56,12 @@ public class TransactionController implements Controller<Transaction, Transactio
     }
 
     @PostMapping
-    public ResponseEntity<?> createTransaction(TransactionDTOResponse transactionDTO) {
+    public ResponseEntity<?> createTransaction(@RequestBody TransactionDTOResponse transactionDTO) {
         try {
             Transaction transaction = toModel(transactionDTO);
-            Optional<Transaction> createdTransaction = transactionService.createTransaction(transaction);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            Optional<Transaction> createdTransaction = transactionService.createTransaction(transaction,username);
             if (createdTransaction.isPresent()) {
                 return ResponseEntity.ok(transactionService.toDTO(createdTransaction.get()));
 
@@ -74,7 +80,7 @@ public class TransactionController implements Controller<Transaction, Transactio
 
         User initUser = new User();
         initUser.setId(dto.getInitiator());
-
+        
         Optional<Account> fromAccount = accountService.getAccountByIBAN(dto.getSender());
 
         Optional<Account> receivingAccount = accountService.getAccountByIBAN(dto.getReceiver());

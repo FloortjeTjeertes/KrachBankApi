@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountDTO implements DTO {
+public class AccountDTORequest implements DTO {
 
     private Long id;
-    private Iban IBAN;
+    private Iban iban;
     private AccountType accountType;
     private double balance;
     private double absoluteLimit;
