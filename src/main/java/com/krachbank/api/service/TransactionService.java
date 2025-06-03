@@ -17,7 +17,7 @@ import jakarta.transaction.Transactional;
 public interface TransactionService extends Service<TransactionDTOResponse, Transaction> {
 
     @Transactional
-    public Optional<Transaction> createTransaction(Transaction transaction) throws Exception;
+    public Optional<Transaction> createTransaction(Transaction transaction,String UserName) throws Exception;
 
     public Optional<Transaction> getTransactionById(Long id) throws Exception;
 

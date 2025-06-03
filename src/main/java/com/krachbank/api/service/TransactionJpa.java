@@ -19,6 +19,7 @@ import com.krachbank.api.models.AccountType;
 import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.TransactionRepository;
+import com.krachbank.api.repository.UserRepository;
 
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
@@ -30,21 +31,28 @@ public class TransactionJpa implements TransactionService {
 
     private final TransactionRepository transactionRepository;
 
-    public TransactionJpa(TransactionRepository transactionRepository, AccountServiceJpa accountServiceJpa) {
+    private final UserRepository userRepository;
+
+    public TransactionJpa(TransactionRepository transactionRepository, AccountServiceJpa accountServiceJpa,
+            UserRepository userRepository) {
         this.transactionRepository = transactionRepository;
         this.accountServiceJpa = accountServiceJpa;
+        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional
-    public Optional<Transaction> createTransaction(Transaction transaction) throws Exception {
+    public Optional<Transaction> createTransaction(Transaction transaction, String userName) throws Exception {
+
+        // todo: move user validation to a service method
+        Optional<User> user = userRepository.findByUsername(userName);
+        if (user.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+        transaction.setInitiator(user.get());
 
         isValidTransaction(transaction);
-        transactionRepository.findById(transaction.getId()).ifPresent(existingTransaction -> {
-            throw new IllegalArgumentException("Transaction already exists");
-        });
 
-     
         Account sendingAccount = transaction.getFromAccount();
         Account receivingAccount = transaction.getToAccount();
 
@@ -56,6 +64,13 @@ public class TransactionJpa implements TransactionService {
         // check if the transaction is to the same account
         if (sendingAccount.getIban().equals(receivingAccount.getIban())) {
             throw new IllegalArgumentException("cant transfer to the same account");
+        }
+
+        // TODO:check if the user is an admin
+
+        // user can only transfer money from their own accounts
+        if (!sendingAccount.getUser().equals(user.get())) {
+            throw new IllegalArgumentException("sending account is same as the user account");
         }
 
         // check if the transaction is to another persons account
@@ -94,8 +109,11 @@ public class TransactionJpa implements TransactionService {
         if (sendingAccount == null || retrievingAccount == null) {
             throw new IllegalArgumentException("account is null");
         }
-        String sendingAccountIBAN = sendingAccount.getIban().toString();
-        String retrievingAccountIBAN = retrievingAccount.getIban().toString();
+        String sendingAccountBankCode = sendingAccount.getIban().getBankCode();
+        String retrievingAccountBankCode = retrievingAccount.getIban().getBankCode();
+        if (!sendingAccountBankCode.equals(retrievingAccountBankCode)) {
+            throw new IllegalArgumentException("account iban is null");
+        }
         return sendingAccount.getIban().getBankCode().equals(retrievingAccount.getIban().getBankCode());
     }
 
@@ -140,7 +158,7 @@ public class TransactionJpa implements TransactionService {
         }
 
         Pageable pageable = filter.toPageAble();
-      
+
         Specification<Transaction> spec = MakeTransactionsSpecification(filter);
         Page<Transaction> transactionPage = transactionRepository.findAll(spec, pageable);
 
@@ -158,9 +176,8 @@ public class TransactionJpa implements TransactionService {
     @Override
     public Page<Transaction> getAllTransactions(BaseFilter filter) {
         Pageable pageable = filter.toPageAble();
-       
-        Page<Transaction> accountPage = transactionRepository.findAll(pageable);
 
+        Page<Transaction> accountPage = transactionRepository.findAll(pageable);
 
         return accountPage;
 

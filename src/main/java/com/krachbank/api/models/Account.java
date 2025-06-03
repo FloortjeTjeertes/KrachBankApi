@@ -34,7 +34,7 @@ public class Account implements Model {
 
     @ManyToOne
     private User user;
-    @OneToOne()
+    @ManyToOne()
     private User verifiedBy;
 
     @OneToMany(mappedBy = "fromAccount")

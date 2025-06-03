@@ -23,7 +23,6 @@ public class AuthenticationDTO implements DTO {
     private String firstName;
     private String lastName;
     private BigDecimal dailyLimit;
-    private BigDecimal transferLimit;
     private LocalDateTime createdAt;
     private boolean isVerified;
     private boolean isActive;
@@ -38,7 +37,6 @@ public class AuthenticationDTO implements DTO {
         user.setFirstName(this.firstName);
         user.setLastName(this.lastName);
         user.setDailyLimit(this.dailyLimit);
-        user.setTransferLimit(this.transferLimit);
         user.setCreatedAt(this.createdAt);
         user.setVerified(this.isVerified);
         user.setActive(this.isActive);
@@ -56,7 +54,6 @@ public class AuthenticationDTO implements DTO {
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
         dto.setDailyLimit(user.getDailyLimit());
-        dto.setTransferLimit(user.getTransferLimit());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setVerified(user.isVerified());
         dto.setActive(user.isActive());

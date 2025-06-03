@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 public class UserDTO implements DTO {
 
     private Long id;
-    private BigDecimal transferLimit;
     private BigDecimal dailyLimit; // Assuming this is used for some purpose, otherwise can be removed
     private LocalDateTime createdAt;
     private boolean isVerified;
@@ -37,7 +36,7 @@ public class UserDTO implements DTO {
         user.setId(this.id);
         // Note: Check if transferLimit is always convertible to Double.
         // Consider handling potential NumberFormatException.
-        user.setDailyLimit(this.transferLimit != null ? BigDecimal.ZERO: null);
+        user.setDailyLimit(this.dailyLimit != null ? BigDecimal.ZERO: null);
         user.setCreatedAt(this.createdAt);
         user.setVerified(this.isVerified);
         user.setActive(this.isActive);
