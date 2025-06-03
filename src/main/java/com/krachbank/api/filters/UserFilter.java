@@ -6,11 +6,21 @@ public class UserFilter extends BaseFilter {
     private String createdAfter;
     private String isVerified;
     private String isActive;
+    private String userName;
     private String lastName;
     private Integer limit = 100;
     private Integer offset = 0;
 
     // Getters and setters
+
+    public String getUseeName() {
+        return userName;
+    }
+
+    public void setUserName(String firstName) {
+        this.userName = firstName;
+    }
+
     public String getEmail() {
         return email;
     }

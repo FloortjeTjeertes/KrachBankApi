@@ -26,10 +26,6 @@ public class TransactionRepositoryTest {
     @Autowired
     private AccountRepository accountRepository;
 
-
-
-    
-
     private Account fromAccount;
     private Account toAccount;
 
@@ -46,14 +42,14 @@ public class TransactionRepositoryTest {
         Transaction transaction1 = new Transaction();
         transaction1.setId(1L);
         transaction1.setAmount(BigDecimal.valueOf(100.0));
-        transaction1.setCreatedAt(LocalDateTime.of(2025,01, 01,01,01));
+        transaction1.setCreatedAt(LocalDateTime.of(2025, 01, 01, 01, 01));
         transaction1.setFromAccount(fromAccount);
         transaction1.setToAccount(toAccount);
 
         Transaction transaction2 = new Transaction();
         transaction2.setId(2L);
         transaction2.setAmount(BigDecimal.valueOf(200.0));
-        transaction2.setCreatedAt(LocalDateTime.of(2025,01, 02,01,01));
+        transaction2.setCreatedAt(LocalDateTime.of(2025, 01, 02, 01, 01));
         transaction2.setFromAccount(fromAccount);
         transaction2.setToAccount(toAccount);
 
@@ -67,8 +63,7 @@ public class TransactionRepositoryTest {
         filter.setSenderId(1L);
 
         List<Transaction> results = transactionRepository.findAll(
-            TransactionJpa.MakeTransactionsSpecification(filter)
-        );
+                TransactionJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results);
         results.forEach(transaction -> {
@@ -84,8 +79,7 @@ public class TransactionRepositoryTest {
         filter.setSenderId(999L); // Non-existent sender ID
 
         List<Transaction> results = transactionRepository.findAll(
-            TransactionJpa.MakeTransactionsSpecification(filter)
-        );
+                TransactionJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results, "Results should not be null even if no transactions are found");
         assertEquals(0, results.size(), "Expected no transactions to be found for a non-existent sender ID");
@@ -97,8 +91,7 @@ public class TransactionRepositoryTest {
         filter.setReceiverId(2L);
 
         List<Transaction> results = transactionRepository.findAll(
-            TransactionJpa.MakeTransactionsSpecification(filter)
-        );
+                TransactionJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results);
         results.forEach(transaction -> {
@@ -111,11 +104,10 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_ByMinAmount() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setMinAmount(BigDecimal.valueOf( 200.0));
+        filter.setMinAmount(BigDecimal.valueOf(200.0));
         List<Transaction> results = transactionRepository.findAll(
-            TransactionJpa.MakeTransactionsSpecification(filter)
-        );
-       
+                TransactionJpa.MakeTransactionsSpecification(filter));
+
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getAmount());
@@ -128,9 +120,8 @@ public class TransactionRepositoryTest {
         TransactionFilter filter = new TransactionFilter();
         filter.setMaxAmount(BigDecimal.valueOf(100.0));
         List<Transaction> results = transactionRepository.findAll(
-            TransactionJpa.MakeTransactionsSpecification(filter)
-        );
-     
+                TransactionJpa.MakeTransactionsSpecification(filter));
+
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getAmount());
@@ -142,10 +133,9 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_ByBeforeDate() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setBeforeDate(LocalDateTime.of(2025,01, 01,01,01));
+        filter.setBeforeDate(LocalDateTime.of(2025, 01, 01, 01, 01));
         List<Transaction> results = transactionRepository.findAll(
-            TransactionJpa.MakeTransactionsSpecification(filter)
-        );
+                TransactionJpa.MakeTransactionsSpecification(filter));
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getCreatedAt());
@@ -153,15 +143,13 @@ public class TransactionRepositoryTest {
         });
     }
 
-
     @Test
     void testMakeTransactionsSpecification_ByAfterDate() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setAfterDate(LocalDateTime.of(2025,01, 02,01,01));
+        filter.setAfterDate(LocalDateTime.of(2025, 01, 02, 01, 01));
 
         List<Transaction> results = transactionRepository.findAll(
-            TransactionJpa.MakeTransactionsSpecification(filter)
-        );
+                TransactionJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results);
         results.forEach(transaction -> {
@@ -170,6 +158,5 @@ public class TransactionRepositoryTest {
         });
     }
 
-    //TODO:make the tests for when things are not found
+    // TODO:make the tests for when things are not found
 }
-

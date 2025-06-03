@@ -44,7 +44,7 @@ public class UserServiceJpaTest {
 
         user2 = new User();
         user2.setId(2L);
-        user2.setDailyLimit(BigDecimal.valueOf( 2000));
+        user2.setDailyLimit(BigDecimal.valueOf(2000));
         user2.setCreatedAt(LocalDateTime.now());
         user2.setVerified(false);
         user2.setActive(false);

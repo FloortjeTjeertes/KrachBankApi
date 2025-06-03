@@ -41,7 +41,7 @@ public class User implements Model, UserDetails {
 
     private String phoneNumber;
 
-    //maybe a long instead of int?
+    // maybe a long instead of int?
     @Column(name = "bsn")
     private int BSN;
 
@@ -50,7 +50,6 @@ public class User implements Model, UserDetails {
     private String lastName;
 
     private BigDecimal dailyLimit;
-
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -87,6 +86,5 @@ public class User implements Model, UserDetails {
     public boolean isEnabled() {
         return this.active;
     }
-
 
 }

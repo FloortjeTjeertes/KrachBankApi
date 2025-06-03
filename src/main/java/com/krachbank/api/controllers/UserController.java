@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -31,11 +32,6 @@ public class UserController implements Controller<User, UserDTO> {
         this.userService = userService;
     }
 
-    @GetMapping
-    public List<UserDTO> getUsers() {
-        return userService.getUsers();
-    }
-
     @PostMapping("/{id}/verify")
     public UserDTO verifyUser( @PathVariable Long id) {
       try {
@@ -46,21 +42,7 @@ public class UserController implements Controller<User, UserDTO> {
         }
     }
 
-    // ✅ Add this for signup
-    @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
-        try {
-            UserDTO createdUser = userService.createUser(userDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
-   
-
-
-    @GetMapping("{id}/accounts")
+    @GetMapping("/{id}/accounts")
     public ResponseEntity<?> getAccountsForUser(@PathVariable Long id, UserFilter filter) {
         try {
             System.out.println("Fetching accounts for user with ID: " + id);
@@ -76,6 +58,43 @@ public class UserController implements Controller<User, UserDTO> {
             return ResponseEntity.status(error.getCode()).body(error);
         }
 
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        try {
+            UserDTO user = userService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+        try {
+            UserDTO updatedUser = userService.updateUser(id, userDetails);
+            return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<UserDTO> deactivateUser(@PathVariable Long id) {
+        try {
+            UserDTO deactivatedUser = userService.deactivateUser(id);
+            return ResponseEntity.ok(deactivatedUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    // Optional: Get all users with filter params (if needed)
+    @GetMapping()
+    public List<UserDTO> getAllUsers(@RequestParam(required = false) Map<String, String> params) {
+        UserFilter filter = new UserFilter();
+        return userService.getAllUsers(params, filter);
     }
 
     @Override
