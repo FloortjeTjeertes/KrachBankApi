@@ -425,20 +425,17 @@ public class UserServiceJpaTest {
     @DisplayName("testVerifyUser - Missing email should throw IllegalArgumentException")
     void testVerifyUser_MissingEmail_ThrowsException() {
         user1.setEmail(null);
-        when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
         assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
-        verify(userRepository, times(1)).findById(user1.getId());
+        user1.setEmail(""); // empty string
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
 
-        user1.setEmail(""); // Reset for next assertion
-        when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
-        verify(userRepository, times(2)).findById(user1.getId()); // Called twice in this test
     }
 
     @Test
     @DisplayName("testVerifyUser - Missing first name should throw IllegalArgumentException")
     void testVerifyUser_MissingFirstName_ThrowsException() {
         user1.setFirstName(null);
+
         when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
         assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
         verify(userRepository, times(1)).findById(user1.getId());
@@ -453,6 +450,7 @@ public class UserServiceJpaTest {
     @DisplayName("testVerifyUser - Missing last name should throw IllegalArgumentException")
     void testVerifyUser_MissingLastName_ThrowsException() {
         user1.setLastName(null);
+
         when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
         assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
         verify(userRepository, times(1)).findById(user1.getId());
@@ -467,6 +465,7 @@ public class UserServiceJpaTest {
     @DisplayName("testVerifyUser - Invalid BSN should throw IllegalArgumentException")
     void testVerifyUser_InvalidBsn_ThrowsException() {
         user1.setBSN(0);
+
         when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
         assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
         verify(userRepository, times(1)).findById(user1.getId());

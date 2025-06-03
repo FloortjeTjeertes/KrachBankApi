@@ -37,8 +37,7 @@ public class UserServiceJpa implements UserService {
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
-        // USE UserDTO.fromModel() for consistent conversion
-        return toDTO(user); // <--- CHANGED HERE
+        return toDTO(user); 
     }
 
     @Override
