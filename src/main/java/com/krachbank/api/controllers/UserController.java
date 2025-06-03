@@ -85,7 +85,7 @@ public class UserController implements Controller<User, UserDTOResponse> {
     }
 
     // Optional: Get all users with filter params (if needed)
-    @GetMapping("/all")
+    @GetMapping()
     public List<UserDTO> getAllUsers(@RequestParam(required = false) Map<String, String> params) {
         UserFilter filter = new UserFilter();
         return userService.getAllUsers(params, filter);
