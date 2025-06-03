@@ -1,6 +1,5 @@
 package com.krachbank.api.controllers;
 
-import java.io.Console;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +22,6 @@ import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
 import com.krachbank.api.service.TransactionService;
-import com.krachbank.api.service.UserService;
 
 
 @RestController

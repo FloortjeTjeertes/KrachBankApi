@@ -53,6 +53,7 @@ public class DatabaseSeeder {
         user1.setPassword("password123");
         user1.setPhoneNumber("+491234567890");
         user1.setCreatedAt(LocalDateTime.now());
+        user1.setVerified(true); // Assuming users are not verified by default
         UserDTO savedUser1 = userService.createUser(userService.toDTO(user1));
 
         User user2 = new User();
@@ -64,6 +65,7 @@ public class DatabaseSeeder {
         user2.setPassword("password123");
         user2.setPhoneNumber("+491234567891");
         user2.setCreatedAt(LocalDateTime.now());
+        user2.setVerified(true); // Assuming users are not verified by default
         UserDTO savedUser2 = userService.createUser(userService.toDTO(user2));
         
 
@@ -76,6 +78,7 @@ public class DatabaseSeeder {
         admin.setPassword("adminpass");
         admin.setPhoneNumber("+491234567892");
         admin.setCreatedAt(LocalDateTime.now());
+        admin.setVerified(true); // Assuming admins are verified by default
         UserDTO savedAdmin = userService.createUser(userService.toDTO(admin));
         // Create accounts
         Account account1 = new Account();
