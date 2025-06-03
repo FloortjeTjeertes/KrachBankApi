@@ -96,32 +96,32 @@ public class UserServiceJpaTest {
     @Test
     void testVerifyUser_MissingEmail_ThrowsException() {
         user1.setEmail(null);
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
         user1.setEmail(""); // empty string
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
     }
 
     @Test
     void testVerifyUser_MissingFirstName_ThrowsException() {
         user1.setFirstName(null);
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
         user1.setFirstName(""); // empty string
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
     }
 
     @Test
     void testVerifyUser_MissingLastName_ThrowsException() {
         user1.setLastName(null);
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
         user1.setLastName(""); // empty string
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
     }
 
     @Test
     void testVerifyUser_InvalidBsn_ThrowsException() {
-        user1.setBsn(0);
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
-        user1.setBsn(-1);
-        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1));
+        user1.setBSN(0);
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
+        user1.setBSN(-1);
+        assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
     }
 }
