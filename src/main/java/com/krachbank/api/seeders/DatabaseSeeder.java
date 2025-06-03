@@ -3,7 +3,6 @@ package com.krachbank.api.seeders;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import org.iban4j.Iban;
 import org.springframework.stereotype.Component;
 
 import com.krachbank.api.configuration.IBANGenerator;
