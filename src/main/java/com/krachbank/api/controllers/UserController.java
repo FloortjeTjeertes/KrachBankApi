@@ -40,9 +40,9 @@ public class UserController implements Controller<User, UserDTO> {
     }
 
     @PostMapping("/{id}/verify")
-    public UserDTO verifyUser( @PathVariable Long id) {
-      try {
-            return (UserDTO) userService.verifyUser( id);
+    public UserDTO verifyUser(@PathVariable Long id) {
+        try {
+            return (UserDTO) userService.verifyUser(id);
         } catch (IllegalArgumentException e) {
             // Handle the exception and return an appropriate response
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

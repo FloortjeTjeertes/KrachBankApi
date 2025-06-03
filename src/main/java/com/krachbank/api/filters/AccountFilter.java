@@ -27,7 +27,7 @@ public class AccountFilter extends BaseFilter {
     public void setBalanceMax(BigDecimal balanceMax) {
         this.balanceMax = balanceMax;
     }
-   
+
 
     public String getAccountType() {
         return AccountType;

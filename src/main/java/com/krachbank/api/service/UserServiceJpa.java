@@ -158,17 +158,18 @@ public class UserServiceJpa implements UserService {
         return users.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    private Specification<User> makeUserFilterSpecification(Map<String, String> params) {
+    public Specification<User> makeUserFilterSpecification(Map<String, String> params) {
         if (params == null || params.isEmpty()) {
             return null;
         }
         return (root, query, cb) -> {
             List<Predicate> predicates = new java.util.ArrayList<>();
             if (params.containsKey("email")) {
-                predicates.add(cb.equal(cb.lower(root.get("email")), params.get("email").toLowerCase()));
+                predicates.add(cb.like(cb.lower(root.get("email")), "%" + params.get("email").toLowerCase() + "%"));
             }
-            if (params.containsKey("userName")) {
-                predicates.add(cb.equal(cb.lower(root.get("firstName")), params.get("firstName").toLowerCase()));
+            if (params.containsKey("firstName")) {
+                predicates.add(
+                        cb.like(cb.lower(root.get("firstName")), "%" + params.get("firstName").toLowerCase() + "%"));
             }
             if (params.containsKey("createdBefore")) {
                 LocalDateTime createBefore = LocalDateTime.parse(params.get("createdBefore"));
@@ -179,7 +180,8 @@ public class UserServiceJpa implements UserService {
                 predicates.add(cb.greaterThan(root.get("createdAt"), createAfter));
             }
             if (params.containsKey("lastName")) {
-                predicates.add(cb.equal(cb.lower(root.get("lastName")), params.get("lastName").toLowerCase()));
+                predicates
+                        .add(cb.like(cb.lower(root.get("lastName")), "%" + params.get("lastName").toLowerCase() + "%"));
             }
             if (params.containsKey("active")) {
                 boolean active = Boolean.parseBoolean(params.get("active"));
