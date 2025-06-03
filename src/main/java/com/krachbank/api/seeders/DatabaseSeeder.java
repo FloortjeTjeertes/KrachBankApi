@@ -46,7 +46,7 @@ public class DatabaseSeeder {
         User user1 = new User();
         user1.setFirstName("Alice");
         user1.setLastName("Smith");
-        user1.setUsername("Alice Smith");
+        user1.setUsername("AliceSmith");
         user1.setDailyLimit(new BigDecimal("1000.00"));
         user1.setEmail("alice@example.com");
         user1.setPassword("password123");
@@ -66,7 +66,18 @@ public class DatabaseSeeder {
         user2.setCreatedAt(LocalDateTime.now());
         user2.setVerified(true); // Assuming users are not verified by default
         UserDTO savedUser2 = userService.createUser(userService.toDTO(user2));
-        
+
+        User ATM = new User();
+        ATM.setFirstName("ATM");
+        ATM.setLastName("User");
+        ATM.setUsername("ATM User");
+        ATM.setDailyLimit(new BigDecimal("2000.00"));
+        ATM.setEmail("ATM@ATM.com");
+        ATM.setPassword("password");
+        ATM.setPhoneNumber("+66666666666");
+        ATM.setCreatedAt(LocalDateTime.now());
+        ATM.setVerified(true);
+        UserDTO savedATM = userService.createUser(userService.toDTO(ATM));
 
         User admin = new User();
         admin.setFirstName("Admin");
@@ -125,7 +136,16 @@ public class DatabaseSeeder {
         account4.setVerifiedBy(userController.toModel(savedAdmin));
         accountRepository.save(account4);
 
-
+        Account ATMAccount = new Account();
+        ATMAccount.setIban(IBANGenerator.generateIBAN());
+        ATMAccount.setBalance(new BigDecimal("10000.00"));
+        ATMAccount.setUser(userController.toModel(savedATM));
+        ATMAccount.setAccountType(AccountType.CHECKING);
+        ATMAccount.setAbsoluteLimit(new BigDecimal(0));
+        ATMAccount.setTransactionLimit(new BigDecimal(2000));
+        ATMAccount.setCreatedAt(LocalDateTime.now());
+        ATMAccount.setVerifiedBy(userController.toModel(savedAdmin));
+        accountRepository.save(ATMAccount);
 
         // make an test Transaction
         Transaction transaction = new com.krachbank.api.models.Transaction();

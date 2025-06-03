@@ -191,7 +191,11 @@ public class AccountServiceJpa implements AccountService {
 
     // add pagination filter to this method
     @Override
-    public Page<Account> getAccountsByUserId(Long userId, BaseFilter filter) {
+    public Page<Account> getAccountsByUserId(Long userId, AccountFilter filter) {
+        if (filter == null) {
+            throw new IllegalArgumentException("Filter cannot be null");
+        }
+        Specification<Account> specification = makeAccountFilterSpecification(filter);
         Pageable pageable = filter.toPageAble();
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
