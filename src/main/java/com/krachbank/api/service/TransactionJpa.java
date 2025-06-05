@@ -26,6 +26,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class TransactionJpa implements TransactionService {
+    private static final String ATM_IBAN_CONSTANT = "NL52KRCH1742057447"; // Add this line
 
     private final AccountServiceJpa accountServiceJpa;
 
