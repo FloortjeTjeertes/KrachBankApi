@@ -157,6 +157,12 @@ public class UserServiceJpa implements UserService {
         return users.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    @Override
+    public List<UserDTO> getUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
     public Specification<User> makeUserFilterSpecification(Map<String, String> params) {
         if (params == null || params.isEmpty()) {
             return null;

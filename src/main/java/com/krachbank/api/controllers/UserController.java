@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.krachbank.api.filters.AccountFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,16 +45,6 @@ public class UserController implements Controller<User, UserDTO> {
         return userService.getUsers();
     }
 
-    @GetMapping("/{id}")
-    public UserDTO getUserById(@PathVariable Long id) {
-        try {
-            return userService.getUserById(id);
-        } catch (IllegalArgumentException e) {
-            // Handle the exception and return an appropriate response
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
-    }
-
 
     @PostMapping("/{id}/verify")
     public UserDTO verifyUser(@PathVariable Long id) {
@@ -66,7 +57,7 @@ public class UserController implements Controller<User, UserDTO> {
     }
 
     @GetMapping("/{id}/accounts")
-    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id,@ModelAttribute UserFilter filter) {
+    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id, @ModelAttribute AccountFilter filter) {
         try {
             List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
             System.out.println("Filter: " + filter);

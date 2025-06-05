@@ -22,4 +22,5 @@ public interface UserService extends Service<UserDTO, User> {
 
     List<UserDTO> getAllUsers(Map<String, String> params, UserFilter filter);
 
+    List<UserDTO> getUsers();
 }
