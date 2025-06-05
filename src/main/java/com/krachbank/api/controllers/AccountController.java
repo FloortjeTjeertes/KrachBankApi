@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,7 +54,12 @@ public class AccountController implements Controller<Account, AccountDTOResponse
 
     @GetMapping("/{iban}")
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         try {
+            if(){
+
+            }
 
             accountService.getAccountByIBAN(iban);
 
