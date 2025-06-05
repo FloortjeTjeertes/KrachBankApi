@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -245,6 +246,24 @@ public class TransactionJpa implements TransactionService {
 
         // TODO: should i validate the description field?
         return true;
+    }
+
+    @Override
+    public List<TransactionDTOResponse> getUserTransactions(Long userId, Map<String, String> params) {
+        // Get all transactions where the user is either the sender or receiver
+        List<Transaction> sentTransactions = transactionRepository.findByFromAccountIdOrderByCreatedAtAsc(userId);
+        List<Transaction> receivedTransactions = transactionRepository.findByToAccountIdOrderByCreatedAtAsc(userId);
+
+        List<Transaction> allTransactions = new ArrayList<>();
+        allTransactions.addAll(sentTransactions);
+        allTransactions.addAll(receivedTransactions);
+
+        // Remove duplicates if any (e.g., if user sent money to themselves)
+        List<Transaction> uniqueTransactions = allTransactions.stream()
+                .distinct()
+                .toList();
+
+        return toDTO(uniqueTransactions);
     }
 
     @Override

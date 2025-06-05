@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.krachbank.api.dto.DTO;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.filters.UserFilter;
+import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 
 public interface UserService extends Service<UserDTO, User> {

@@ -2,10 +2,12 @@ package com.krachbank.api.controllers;
 
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.dto.UserDTOResponse;
 import com.krachbank.api.filters.UserFilter;
 import com.krachbank.api.service.AccountService;
+import com.krachbank.api.service.TransactionService;
 import com.krachbank.api.service.UserService;
 
 import org.springframework.data.domain.Page;
@@ -26,16 +28,19 @@ import com.krachbank.api.models.User;
 public class UserController implements Controller<User, UserDTO> {
     private final UserService userService;
     private final AccountService accountService;
+    private final TransactionService transactionsService;
 
-    public UserController(UserService userService, AccountService accountService) {
+    public UserController(UserService userService, AccountService accountService,
+            TransactionService transactionService) {
+        this.transactionsService = transactionService;
         this.accountService = accountService;
         this.userService = userService;
     }
 
     @PostMapping("/{id}/verify")
-    public UserDTO verifyUser( @PathVariable Long id) {
-      try {
-            return (UserDTO) userService.verifyUser( id);
+    public UserDTO verifyUser(@PathVariable Long id) {
+        try {
+            return (UserDTO) userService.verifyUser(id);
         } catch (IllegalArgumentException e) {
             // Handle the exception and return an appropriate response
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -58,6 +63,17 @@ public class UserController implements Controller<User, UserDTO> {
             return ResponseEntity.status(error.getCode()).body(error);
         }
 
+    }
+
+    @GetMapping("/{id}/transactions")
+    public ResponseEntity<?> getTransactionsForUser(@PathVariable Long id, @RequestParam Map<String, String> params) {
+        try {
+            List<TransactionDTOResponse> userTransactions = transactionsService.getUserTransactions(id, params);
+            return ResponseEntity.ok(userTransactions);
+        } catch (Exception e) {
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
+            return ResponseEntity.status(error.getCode()).body(error);
+        }
     }
 
     @GetMapping("/{id}")

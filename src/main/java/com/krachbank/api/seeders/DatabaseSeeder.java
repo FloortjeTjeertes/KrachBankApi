@@ -31,7 +31,7 @@ public class DatabaseSeeder {
     private final UserService userService;
 
     public DatabaseSeeder(UserRepository userRepository, AccountRepository accountRepository,
-                          TransactionRepository transactionRepository,UserService userService, UserController userController) {
+            TransactionRepository transactionRepository, UserService userService, UserController userController) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
@@ -54,6 +54,7 @@ public class DatabaseSeeder {
         user1.setPhoneNumber("+491234567890");
         user1.setCreatedAt(LocalDateTime.now());
         user1.setVerified(true); // Assuming users are not verified by default
+        user1.setBSN(123456789); // <-- Add this line
         UserDTO savedUser1 = userService.createUser(userService.toDTO(user1));
 
         User user2 = new User();
@@ -66,8 +67,8 @@ public class DatabaseSeeder {
         user2.setPhoneNumber("+491234567891");
         user2.setCreatedAt(LocalDateTime.now());
         user2.setVerified(true); // Assuming users are not verified by default
+        user2.setBSN(987654321); // <-- Add this line
         UserDTO savedUser2 = userService.createUser(userService.toDTO(user2));
-        
 
         User admin = new User();
         admin.setFirstName("Admin");
@@ -79,6 +80,7 @@ public class DatabaseSeeder {
         admin.setPhoneNumber("+491234567892");
         admin.setCreatedAt(LocalDateTime.now());
         admin.setVerified(true); // Assuming admins are verified by default
+        admin.setBSN(111222333); // <-- Add this line
         UserDTO savedAdmin = userService.createUser(userService.toDTO(admin));
         // Create accounts
         Account account1 = new Account();
@@ -114,7 +116,6 @@ public class DatabaseSeeder {
         account3.setVerifiedBy(userController.toModel(savedAdmin));
         accountRepository.save(account3);
 
-
         Account account4 = new Account();
         account4.setIban(IBANGenerator.generateIBAN());
         account4.setBalance(new BigDecimal("2000.00"));
@@ -125,8 +126,6 @@ public class DatabaseSeeder {
         account4.setCreatedAt(LocalDateTime.now());
         account4.setVerifiedBy(userController.toModel(savedAdmin));
         accountRepository.save(account4);
-
-
 
         // make an test Transaction
         Transaction transaction = new com.krachbank.api.models.Transaction();
