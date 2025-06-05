@@ -41,6 +41,7 @@ public class AuthenticationController {
             userDTO.setLastName(registerRequest.getLastName());
             userDTO.setBSN(registerRequest.getBSN());
             userDTO.setPhoneNumber(registerRequest.getPhoneNumber());
+            userDTO.setIsAdmin(false);
             // userDTO.setPhoneNumber(registerRequest.getPhoneNumber()); // Uncomment if RegisterRequest has phoneNumber
 
             // Map first name + last name to username
