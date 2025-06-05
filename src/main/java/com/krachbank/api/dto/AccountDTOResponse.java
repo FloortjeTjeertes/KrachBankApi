@@ -20,5 +20,6 @@ public class AccountDTOResponse implements DTO {
     private AccountType type;
     private BigDecimal transactionLimit;
     private String createdAt;
+    private boolean isActive;
 
 }

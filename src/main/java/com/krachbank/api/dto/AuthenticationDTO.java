@@ -26,6 +26,7 @@ public class AuthenticationDTO implements DTO {
     private LocalDateTime createdAt;
     private boolean isVerified;
     private boolean isActive;
+    private boolean isAdmin;
 
     public User ToModel() {
         User user = new User();
@@ -40,6 +41,7 @@ public class AuthenticationDTO implements DTO {
         user.setCreatedAt(this.createdAt);
         user.setVerified(this.isVerified);
         user.setActive(this.isActive);
+        user.setAdmin(this.isAdmin);
         // Password is NOT set here. Handled by service.
         return user;
     }
@@ -57,6 +59,7 @@ public class AuthenticationDTO implements DTO {
         dto.setCreatedAt(user.getCreatedAt());
         dto.setVerified(user.isVerified());
         dto.setActive(user.isActive());
+        dto.setAdmin(user.isAdmin());
         return dto;
     }
 }

@@ -41,7 +41,6 @@ public class User implements Model, UserDetails {
 
     private String phoneNumber;
 
-    // maybe a long instead of int?
     @Column(name = "bsn")
     private int BSN;
 
@@ -59,6 +58,9 @@ public class User implements Model, UserDetails {
 
     @Column(name = "is_active", nullable = false)
     private boolean active;
+
+    @Column(name = "is_admin", nullable = false)
+    private boolean admin;
 
     // --- UserDetails interface methods ---
 
