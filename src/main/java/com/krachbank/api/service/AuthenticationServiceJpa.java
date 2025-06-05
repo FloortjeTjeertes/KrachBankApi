@@ -1,4 +1,3 @@
-// src/main/java/com/krachbank/api/service/AuthenticationServiceJpa.java
 package com.krachbank.api.service;
 
 import java.math.BigDecimal;
