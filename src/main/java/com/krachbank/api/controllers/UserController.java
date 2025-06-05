@@ -31,13 +31,15 @@ import com.krachbank.api.service.UserService;
 
 @RestController
 @RequestMapping("/users")
-public class UserController implements Controller<User, UserDTO> {
+public class UserController implements Controller<User, UserDTO, UserDTO> {
     private final UserService userService;
     private final AccountService accountService;
+    private final AccountController accountController ;
 
-    public UserController(UserService userService, AccountService accountService) {
+    public UserController(UserService userService, AccountService accountService, AccountController accountController) {
         this.accountService = accountService;
         this.userService = userService;
+        this.accountController = accountController;
     }
 
     // @GetMapping
@@ -66,7 +68,7 @@ public class UserController implements Controller<User, UserDTO> {
             Page<Account> accountsPage = accountService.getAccountsByUserId(id, filter);
             List<Account> accounts = accountsPage.getContent();
             for (Account account : accounts) {
-                accountDTOs.add(accountService.toDTO(account));
+                accountDTOs.add(accountController.toResponse(account));
             }
             return ResponseEntity.ok(accountDTOs);
         } catch (Exception e) {
@@ -127,5 +129,11 @@ public class UserController implements Controller<User, UserDTO> {
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setBSN(dto.getBSN());
         return user;
+    }
+
+    @Override
+    public UserDTO toResponse(User dto) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toResponse'");
     }
 }

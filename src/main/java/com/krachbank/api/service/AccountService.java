@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.filters.AccountFilter;
-import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.models.Account;
 
 import jakarta.transaction.Transactional;

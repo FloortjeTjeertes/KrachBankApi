@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.filters.AccountFilter;
-import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.repository.AccountRepository;
 
@@ -152,7 +151,6 @@ public class AccountServiceJpa implements AccountService {
     @Override
     public AccountDTOResponse toDTO(Account model) {
         AccountDTOResponse accountDTO = new AccountDTOResponse();
-        accountDTO.setIBAN(model.getIban().toString());
         accountDTO.setType(model.getAccountType());
         accountDTO.setBalance(model.getBalance());
         accountDTO.setAbsoluteLimit(model.getAbsoluteLimit());
