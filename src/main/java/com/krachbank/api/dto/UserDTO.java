@@ -27,6 +27,7 @@ public class UserDTO implements DTO {
     private int BSN; // Note: Ensure consistency with 'bsn' property in RegisterRequest/User entity if needed
     private String password; // Added for registration input
     private String username;
+    private Boolean isAdmin;
 
 
   
@@ -46,6 +47,7 @@ public class UserDTO implements DTO {
         user.setPhoneNumber(this.phoneNumber);
         user.setBSN(this.BSN);
         user.setUsername(this.username);
+        user.setAdmin(this.isAdmin);
         return user;
     }
   

@@ -40,9 +40,6 @@ public class DatabaseSeeder {
 
     @PostConstruct
     public void seed() {
-        // Create users
-        // TODO: passwords need to be hashed acording to the security and authentication
-        // methods
         User user1 = new User();
         user1.setFirstName("Alice");
         user1.setLastName("Smith");
@@ -52,7 +49,8 @@ public class DatabaseSeeder {
         user1.setPassword("password123");
         user1.setPhoneNumber("+491234567890");
         user1.setCreatedAt(LocalDateTime.now());
-        user1.setVerified(true); // Assuming users are not verified by default
+        user1.setVerified(true);
+        user1.setAdmin(true);
         UserDTO savedUser1 = userService.createUser(userService.toDTO(user1));
 
         User user2 = new User();

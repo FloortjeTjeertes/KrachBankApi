@@ -40,10 +40,10 @@ public class UserController implements Controller<User, UserDTO> {
         this.userService = userService;
     }
 
-    @GetMapping
-    public List<UserDTO> getUsers() {
-        return userService.getUsers();
-    }
+//    @GetMapping
+//    public List<UserDTO> getUsers() {
+//        return userService.getUsers();
+//    }
 
 
     @PostMapping("/{id}/verify")
@@ -104,7 +104,6 @@ public class UserController implements Controller<User, UserDTO> {
         }
     }
 
-    // Optional: Get all users with filter params (if needed)
     @GetMapping()
     public List<UserDTO> getAllUsers(@RequestParam(required = false) Map<String, String> params) {
         UserFilter filter = new UserFilter();
@@ -124,6 +123,7 @@ public class UserController implements Controller<User, UserDTO> {
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setBSN(dto.getBSN());
+        user.setAdmin(dto.getIsAdmin() != null ? dto.getIsAdmin() : false); // Fix here
         return user;
     }
 }
