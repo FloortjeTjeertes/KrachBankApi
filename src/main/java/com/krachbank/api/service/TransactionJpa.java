@@ -26,7 +26,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class TransactionJpa implements TransactionService {
-    private static final String ATM_IBAN_CONSTANT = "NL52KRCH1742057447"; // Add this line
+    private static final Long ATM_USER_ID = 3L; // Add this line - assuming ATM's owner ID is 3
 
     private final AccountServiceJpa accountServiceJpa;
 
@@ -45,7 +45,6 @@ public class TransactionJpa implements TransactionService {
     @Transactional
     public Optional<Transaction> createTransaction(Transaction transaction, String userName) throws Exception {
 
-        // todo: move user validation to a service method
         Optional<User> user = userRepository.findByUsername(userName);
         if (user.isEmpty()) {
             throw new IllegalArgumentException("User not found");
@@ -59,36 +58,36 @@ public class TransactionJpa implements TransactionService {
 
         // validate if accounts are from our bank
         if (!IsInternalTransaction(sendingAccount, receivingAccount)) {
-            throw new Exception("this transaction is not whit accounts from our bank");
+            throw new Exception("This transaction is not with accounts from our bank.");
         }
 
-        // check if the transaction is to the same account
+        // Check if the transaction is to the same account
         if (sendingAccount.getIban().equals(receivingAccount.getIban())) {
-            throw new IllegalArgumentException("cant transfer to the same account");
+            throw new IllegalArgumentException("Can't transfer to the same account.");
         }
 
-        // TODO:check if the user is an admin
+        // TODO: check if the user is an admin - This is still relevant.
 
-        // user can only transfer money from their own accounts
-        if (!sendingAccount.getUser().equals(user.get())) {
-            throw new IllegalArgumentException("sending account is same as the user account");
+        if (!sendingAccount.getUser().getId().equals(ATM_USER_ID) && !sendingAccount.getUser().equals(user.get())) {
+            throw new IllegalArgumentException("You can only transfer money from your own accounts or the ATM account.");
         }
+
 
         // check if the transaction is to another persons account
         if (!receivingAccount.getUser().equals(sendingAccount.getUser())) {
-            // check if the transaction is to another persons savings account
             if (receivingAccount.getAccountType() == AccountType.SAVINGS
                     || sendingAccount.getAccountType() == AccountType.SAVINGS) {
-                throw new IllegalArgumentException("cant transfer money to or from another persons saving account");
+                throw new IllegalArgumentException("Can't transfer money to or from another person's saving account.");
             }
 
         }
-        // check if account reached the absolute limit
+        // check if account reached the absolute limit (for sender)
         reachedAbsoluteLimit(sendingAccount, transaction.getAmount());
 
-        // check if the transaction is below then the daily limit
-        reachedDailyTransferLimit(sendingAccount.getUser(), transaction.getAmount(), LocalDateTime.now());
-        // check if the transaction is bigger then the transfer limit
+        // check if the transaction is below the daily limit (for initiator/user)
+        reachedDailyTransferLimit(user.get(), transaction.getAmount(), LocalDateTime.now());
+
+        // check if the transaction is bigger than the transfer limit (for sender)
         transferAmountBiggerThenTransferLimit(sendingAccount, transaction.getAmount());
 
         // update account balance
@@ -96,13 +95,12 @@ public class TransactionJpa implements TransactionService {
         receivingAccount.setBalance(receivingAccount.getBalance().add(transaction.getAmount()));
 
         // save the transaction
-        accountServiceJpa.createAccount(sendingAccount);
+        accountServiceJpa.createAccount(sendingAccount); // Assuming createAccount also handles updates
         accountServiceJpa.createAccount(receivingAccount);
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
         return Optional.of(savedTransaction);
-
     }
 
     // check if the transaction is whit local accounts
