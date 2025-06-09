@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionDTORequest  implements DTO {
+public class TransactionDTORequest  extends TransactionDTO {
     private BigDecimal amount;
     private String receiver;
     private String sender;

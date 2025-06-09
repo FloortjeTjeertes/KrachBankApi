@@ -79,6 +79,8 @@ public class UserServiceJpa implements UserService {
             throw new RuntimeException("User with username " + userDTO.getUsername() + " already exists!");
         }
 
+
+        //TODO: use fromModel in controller
         // --- Convert UserDTO to User entity ---
         User user = new User();
         user.setFirstName(userDTO.getFirstName());
@@ -92,11 +94,10 @@ public class UserServiceJpa implements UserService {
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
-        user.setVerified(userDTO.isVerified());
-        user.setDailyLimit(BigDecimal.valueOf(0.0));
-        user.setDailyLimit(BigDecimal.valueOf(0.0));
-        // field in User entity
-        user.setAdmin(userDTO.getIsAdmin());
+
+        user.setVerified(false);
+        user.setDailyLimit(userDTO.getDailyLimit());
+     
         // --- Save the User entity to the database ---
         User savedUser = userRepository.save(user);
         return toDTO(savedUser);

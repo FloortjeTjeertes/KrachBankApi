@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
 import com.krachbank.api.dto.UserDTO;
+import com.krachbank.api.filters.AccountFilter;
 import com.krachbank.api.filters.UserFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.User;
@@ -31,19 +32,19 @@ import com.krachbank.api.service.UserService;
 
 @RestController
 @RequestMapping("/users")
-public class UserController implements Controller<User, UserDTO> {
+public class UserController implements Controller<User, UserDTO, UserDTO> {
     private final UserService userService;
     private final AccountService accountService;
+    private final AccountController accountController ;
 
-    public UserController(UserService userService, AccountService accountService) {
+    public UserController(UserService userService, AccountService accountService, AccountController accountController) {
         this.accountService = accountService;
         this.userService = userService;
+        this.accountController = accountController;
     }
 
-//    @GetMapping
-//    public List<UserDTO> getUsers() {
-//        return userService.getUsers();
-//    }
+
+ 
 
 
     @PostMapping("/{id}/verify")
@@ -58,13 +59,14 @@ public class UserController implements Controller<User, UserDTO> {
 
     @GetMapping("/{id}/accounts")
     public ResponseEntity<?> getAccountsForUser(@PathVariable Long id, @ModelAttribute AccountFilter filter) {
+
         try {
             List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
             System.out.println("Filter: " + filter);
             Page<Account> accountsPage = accountService.getAccountsByUserId(id, filter);
             List<Account> accounts = accountsPage.getContent();
             for (Account account : accounts) {
-                accountDTOs.add(accountService.toDTO(account));
+                accountDTOs.add(accountController.toResponse(account));
             }
             return ResponseEntity.ok(accountDTOs);
         } catch (Exception e) {
@@ -125,5 +127,11 @@ public class UserController implements Controller<User, UserDTO> {
         user.setBSN(dto.getBSN());
         user.setAdmin(dto.getIsAdmin() != null ? dto.getIsAdmin() : false); // Fix here
         return user;
+    }
+
+    @Override
+    public UserDTO toResponse(User dto) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toResponse'");
     }
 }

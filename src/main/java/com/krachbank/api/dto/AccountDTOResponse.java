@@ -11,14 +11,14 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountDTOResponse implements DTO {
+public class AccountDTOResponse extends AccountDTO {
 
-    private String IBAN;
+    private String Iban;
     private BigDecimal balance;
-    private String owner;
+    private long owner;
     private BigDecimal absoluteLimit;
-    private AccountType type;
     private BigDecimal transactionLimit;
+    private AccountType type;
     private String createdAt;
     private boolean isActive;
 

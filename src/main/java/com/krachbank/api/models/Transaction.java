@@ -6,8 +6,10 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne; // Keep this import
-// import jakarta.persistence.OneToOne; // You can remove this import if you don't use it elsewhere
+
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 
 @Entity
@@ -24,8 +26,8 @@ public class Transaction implements Model{
 
     private LocalDateTime createdAt;
 
-    @ManyToOne // <--- CHANGE THIS FROM @OneToOne
-    private User initiator; // This will map to initiator_id (or similar FK name) in the DB
+    @ManyToOne
+    private User initiator;
 
     @ManyToOne
     private Account fromAccount;
