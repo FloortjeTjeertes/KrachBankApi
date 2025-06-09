@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -16,11 +17,12 @@ import lombok.Data;
 public class Transaction implements Model{
 
     @Id
-    @GeneratedValue
+    @GeneratedValue // Defaults to GenerationType.AUTO, which is often fine.
+    // For explicit IDENTITY generation (DB handles ID, like H2, MySQL AUTO_INCREMENT)
+    // you might use @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private BigDecimal amount;
-
 
     private LocalDateTime createdAt;
 
@@ -32,11 +34,8 @@ public class Transaction implements Model{
 
     @ManyToOne
     private Account toAccount;
-    
-     
 
     private String description;
-
 
     public LocalDateTime getCreatedAt() {
         return createdAt == null ? LocalDateTime.now() : createdAt;

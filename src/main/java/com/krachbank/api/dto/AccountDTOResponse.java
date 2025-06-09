@@ -20,5 +20,6 @@ public class AccountDTOResponse extends AccountDTO {
     private BigDecimal transactionLimit;
     private AccountType type;
     private String createdAt;
+    private boolean isActive;
 
 }

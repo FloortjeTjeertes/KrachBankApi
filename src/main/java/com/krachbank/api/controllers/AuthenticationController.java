@@ -41,6 +41,7 @@ public class AuthenticationController {
             userDTO.setLastName(registerRequest.getLastName());
             userDTO.setBSN(registerRequest.getBSN());
             userDTO.setPhoneNumber(registerRequest.getPhoneNumber());
+            userDTO.setIsAdmin(false);
             // userDTO.setPhoneNumber(registerRequest.getPhoneNumber()); // Uncomment if RegisterRequest has phoneNumber
 
             // Map first name + last name to username
@@ -63,15 +64,11 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResultDTO> authenticateUser(@RequestBody LoginRequest loginRequest) {
         try {
-            // Delegate the login logic to your AuthenticationService
             AuthenticationResultDTO result = authenticationService.login(loginRequest);
             return ResponseEntity.ok(result); // Return the full AuthenticationResultDTO
         } catch (InvalidCredentialsException e) {
-            // Catch custom exception and return 401 Unauthorized or 403 Forbidden
-            // As discussed, 401 is more appropriate for invalid credentials.
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); // Or return an error DTO
         } catch (Exception e) {
-            // Catch any other unexpected exceptions
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

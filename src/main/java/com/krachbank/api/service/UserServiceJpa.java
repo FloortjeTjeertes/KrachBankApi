@@ -75,11 +75,6 @@ public class UserServiceJpa implements UserService {
         if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
             throw new RuntimeException("User with email " + userDTO.getEmail() + " already exists!");
         }
-        // This check is important if username is "First Last" and needs to be unique.
-        // It will throw if a user with that exact first and last name combination
-        // already exists.
-        // It will throw if a user with that exact first and last name combination
-        // already exists.
         if (userDTO.getUsername() != null && userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
             throw new RuntimeException("User with username " + userDTO.getUsername() + " already exists!");
         }
@@ -97,19 +92,14 @@ public class UserServiceJpa implements UserService {
 
         // --- Encode the password ---
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-
-        // --- Set default properties for the new user ---
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
+
         user.setVerified(false);
         user.setDailyLimit(userDTO.getDailyLimit());
      
         // --- Save the User entity to the database ---
         User savedUser = userRepository.save(user);
-
-        // --- Debugging Print (can remove after successful testing) ---
-
-        // --- Convert the saved User entity back to UserDTO for response ---
         return toDTO(savedUser);
     }
 
@@ -153,6 +143,12 @@ public class UserServiceJpa implements UserService {
         Page<User> users = userRepository.findAll(specification, pageable);
         return users.stream().map(this::toDTO).collect(Collectors.toList());
     }
+
+//    @Override
+//    public List<UserDTO> getUsers() {
+//        List<User> users = userRepository.findAll();
+//        return users.stream().map(this::toDTO).collect(Collectors.toList());
+//    }
 
     public Specification<User> makeUserFilterSpecification(Map<String, String> params) {
         if (params == null || params.isEmpty()) {
@@ -211,7 +207,7 @@ public class UserServiceJpa implements UserService {
         dto.setVerified(user.isVerified());
         dto.setDailyLimit(user.getDailyLimit());
         dto.setCreatedAt(user.getCreatedAt());
-        // Add other fields as needed
+        dto.setIsAdmin(user.isAdmin());
         return dto;
     }
 

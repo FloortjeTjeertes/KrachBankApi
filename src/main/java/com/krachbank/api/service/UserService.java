@@ -21,5 +21,4 @@ public interface UserService extends Service<UserDTO, User> {
     UserDTO deactivateUser(Long id);
 
     List<UserDTO> getAllUsers(Map<String, String> params, UserFilter filter);
-
 }

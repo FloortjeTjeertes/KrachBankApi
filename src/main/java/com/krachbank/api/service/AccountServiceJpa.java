@@ -38,7 +38,6 @@ public class AccountServiceJpa implements AccountService {
         Page<Account> accountPage = accountRepository.findAll(specification, pageable);
         return accountPage;
     }
-
     @Override
     public Optional<Account> getAccountById(Long id) throws Exception {
 

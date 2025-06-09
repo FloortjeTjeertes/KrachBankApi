@@ -1,4 +1,3 @@
-// src/main/java/com/krachbank/api/service/AuthenticationService.java
 package com.krachbank.api.service;
 
 import com.krachbank.api.dto.AuthenticationResultDTO;

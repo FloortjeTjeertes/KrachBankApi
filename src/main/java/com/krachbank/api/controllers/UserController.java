@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.krachbank.api.filters.AccountFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,12 +43,8 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
         this.accountController = accountController;
     }
 
-    // @GetMapping
-    // public List<UserDTO> getUsers() {
-    //     return userService.getUsers();
-    // }
 
-    // Removed duplicate getUserById(Long id) method to resolve compilation error.
+ 
 
 
     @PostMapping("/{id}/verify")
@@ -61,7 +58,8 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
     }
 
     @GetMapping("/{id}/accounts")
-    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id,@ModelAttribute AccountFilter filter) {
+    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id, @ModelAttribute AccountFilter filter) {
+
         try {
             List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
             System.out.println("Filter: " + filter);
@@ -108,7 +106,6 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
         }
     }
 
-    // Optional: Get all users with filter params (if needed)
     @GetMapping()
     public List<UserDTO> getAllUsers(@RequestParam(required = false) Map<String, String> params) {
         UserFilter filter = new UserFilter();
@@ -128,6 +125,7 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setBSN(dto.getBSN());
+        user.setAdmin(dto.getIsAdmin() != null ? dto.getIsAdmin() : false); // Fix here
         return user;
     }
 
