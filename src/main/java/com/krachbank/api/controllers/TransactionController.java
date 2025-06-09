@@ -95,6 +95,7 @@ public class TransactionController implements Controller<Transaction, Transactio
         transaction.setInitiator(initUser);
         transaction.setCreatedAt(LocalDateTime.now());
         transaction.setDescription(dto.getDescription());
+        transaction.setAmount(dto.getAmount());
         return transaction;
 
     }

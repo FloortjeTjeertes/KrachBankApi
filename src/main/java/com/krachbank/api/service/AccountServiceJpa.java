@@ -155,7 +155,7 @@ public class AccountServiceJpa implements AccountService {
         accountDTO.setBalance(model.getBalance());
         accountDTO.setAbsoluteLimit(model.getAbsoluteLimit());
         accountDTO.setTransactionLimit(model.getTransactionLimit());
-        accountDTO.setOwner(model.getUser().getId().toString());
+        accountDTO.setOwner(model.getUser().getId());
         accountDTO.setCreatedAt(model.getCreatedAt().toString());
         return accountDTO;
     }

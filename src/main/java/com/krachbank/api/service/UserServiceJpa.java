@@ -84,6 +84,8 @@ public class UserServiceJpa implements UserService {
             throw new RuntimeException("User with username " + userDTO.getUsername() + " already exists!");
         }
 
+
+        //TODO: use fromModel in controller
         // --- Convert UserDTO to User entity ---
         User user = new User();
         user.setFirstName(userDTO.getFirstName());
@@ -100,13 +102,8 @@ public class UserServiceJpa implements UserService {
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
         user.setVerified(false);
-        user.setDailyLimit(BigDecimal.valueOf(0.0));
-        // user.setTransferLimit(0.0); // Set a default transfer limit, if you have this
-        // field in User entity
-        user.setDailyLimit(BigDecimal.valueOf(0.0));
-        // user.setTransferLimit(0.0); // Set a default transfer limit, if you have this
-        // field in User entity
-
+        user.setDailyLimit(userDTO.getDailyLimit());
+     
         // --- Save the User entity to the database ---
         User savedUser = userRepository.save(user);
 

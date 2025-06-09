@@ -282,7 +282,7 @@ public class TransactionJpa implements TransactionService {
     public Boolean reachedDailyTransferLimit(User user, BigDecimal amount, LocalDateTime today) throws Exception {
 
         BigDecimal totalSpendBeforeToday = getUserTotalAmountSpendAtDate(user, today); // total
-                                                                                       // amount of
+                                                                                         // amount of
                                                                                        // money spend
         // today
         BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
