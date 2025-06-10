@@ -40,10 +40,8 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
     private final TransactionService transactionsService;
     private final AccountController accountController;
 
-    public UserController(UserService userService, AccountService accountService, AccountController accountController) {
-
-    public UserController(UserService userService, AccountService accountService,
-            TransactionService transactionService) {
+    public UserController(UserService userService, AccountService accountService, AccountController accountController,
+                          TransactionService transactionService) {
         this.transactionsService = transactionService;
         this.accountService = accountService;
         this.userService = userService;

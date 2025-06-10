@@ -149,7 +149,7 @@ public class AccountController implements Controller<Account, AccountDTOResponse
             if (accounts == null || accounts.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }
-            List<AccountDTOResponse> accountDTOs = toResponseList(accounts);
+            accountDTOs = toResponseList(accounts);
 
             return ResponseEntity.ok(accountDTOs);
         } catch (Exception e) {
