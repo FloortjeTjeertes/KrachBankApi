@@ -10,13 +10,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data // Lombok annotation to generate getters, setters, equals, hashCode, and toString
+@Data // Lombok annotation to generate getters, setters, equals, hashCode, and
+      // toString
 @AllArgsConstructor // Lombok annotation to generate a constructor with all fields
 @NoArgsConstructor // Lombok annotation to generate a no-argument constructor
 public class UserDTO implements DTO {
 
     private Long id;
     private BigDecimal dailyLimit; // Assuming this is used for some purpose, otherwise can be removed
+    private BigDecimal transferLimit; // Assuming this is used for some purpose, otherwise can be removed
     private LocalDateTime createdAt;
     private boolean isVerified;
     private boolean isActive;
@@ -24,19 +26,18 @@ public class UserDTO implements DTO {
     private String lastName;
     private String email;
     private String phoneNumber;
-    private int BSN; // Note: Ensure consistency with 'bsn' property in RegisterRequest/User entity if needed
+    private int BSN; // Note: Ensure consistency with 'bsn' property in RegisterRequest/User entity
+                     // if needed
     private String password; // Added for registration input
     private String username;
 
-
-  
-    
     public User ToModel() {
         User user = new User();
         user.setId(this.id);
         // Note: Check if transferLimit is always convertible to Double.
         // Consider handling potential NumberFormatException.
-        user.setDailyLimit(this.dailyLimit != null ? BigDecimal.ZERO: null);
+        user.setDailyLimit(this.dailyLimit != null ? BigDecimal.ZERO : null);
+        user.setTransferLimit(this.transferLimit != null ? BigDecimal.ZERO : null);
         user.setCreatedAt(this.createdAt);
         user.setVerified(this.isVerified);
         user.setActive(this.isActive);
@@ -48,6 +49,5 @@ public class UserDTO implements DTO {
         user.setUsername(this.username);
         return user;
     }
-  
 
 }

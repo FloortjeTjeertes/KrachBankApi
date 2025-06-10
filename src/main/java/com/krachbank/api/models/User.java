@@ -51,6 +51,8 @@ public class User implements Model, UserDetails {
 
     private BigDecimal dailyLimit;
 
+    private BigDecimal transferLimit;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

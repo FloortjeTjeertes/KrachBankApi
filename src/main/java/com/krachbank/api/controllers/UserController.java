@@ -4,7 +4,6 @@ import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.dto.UserDTO;
-import com.krachbank.api.dto.UserDTOResponse;
 import com.krachbank.api.filters.UserFilter;
 import com.krachbank.api.service.AccountService;
 import com.krachbank.api.service.TransactionService;

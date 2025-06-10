@@ -101,7 +101,13 @@ public class UserServiceJpa implements UserService {
         user.setEmail(userDTO.getEmail());
         user.setBSN(userDTO.getBSN());
         user.setPhoneNumber(userDTO.getPhoneNumber());
-        user.setUsername(userDTO.getUsername()); // Set the username (e.g., "First Last")
+
+        // Set username from DTO or combine first and last name if not set
+        if (userDTO.getUsername() != null && !userDTO.getUsername().isEmpty()) {
+            user.setUsername(userDTO.getUsername());
+        } else {
+            user.setUsername(userDTO.getFirstName() + " " + userDTO.getLastName());
+        }
 
         // --- Encode the password ---
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
@@ -110,12 +116,18 @@ public class UserServiceJpa implements UserService {
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
         user.setVerified(false);
-        user.setDailyLimit(BigDecimal.valueOf(0.0));
-        // user.setTransferLimit(0.0); // Set a default transfer limit, if you have this
-        // field in User entity
-        user.setDailyLimit(BigDecimal.valueOf(0.0));
-        // user.setTransferLimit(0.0); // Set a default transfer limit, if you have this
-        // field in User entity
+
+        // Set dailyLimit and transferLimit from DTO if present, else default to 0.0
+        if (userDTO.getDailyLimit() != null) {
+            user.setDailyLimit(userDTO.getDailyLimit());
+        } else {
+            user.setDailyLimit(BigDecimal.valueOf(0.0));
+        }
+        if (userDTO.getTransferLimit() != null) {
+            user.setTransferLimit(userDTO.getTransferLimit());
+        } else {
+            user.setTransferLimit(BigDecimal.valueOf(0.0));
+        }
 
         // --- Save the User entity to the database ---
         User savedUser = userRepository.save(user);
@@ -137,10 +149,12 @@ public class UserServiceJpa implements UserService {
         existingUser.setEmail(userDetails.getEmail());
         existingUser.setPhoneNumber(userDetails.getPhoneNumber());
         existingUser.setDailyLimit(userDetails.getDailyLimit());
+        existingUser.setTransferLimit(userDetails.getTransferLimit());
         existingUser.setBSN(userDetails.getBSN()); // Ensure this maps correctly from userDetails
         existingUser.setVerified(userDetails.isVerified());
         existingUser.setActive(userDetails.isActive());
-        existingUser.setUsername(userDetails.getUsername()); // <--- Ensure username is updated if passed
+        // existingUser.setUsername(userDetails.getUsername()); // <--- Ensure username
+        // is updated if passed
 
         // Save the updated entity
         User updatedUser = userRepository.save(existingUser);
@@ -164,8 +178,15 @@ public class UserServiceJpa implements UserService {
         Specification<User> specification = makeUserFilterSpecification(params);
         Pageable pageable = filter != null ? filter.toPageAble() : Pageable.unpaged();
         Page<User> users;
+
         try {
-            users = userRepository.findAll(specification, pageable);
+            if (specification == null) {
+                // No filter params: return all users
+                users = userRepository.findAll(pageable);
+            } else {
+                // Filter params present: return filtered users
+                users = userRepository.findAll(specification, pageable);
+            }
         } catch (Exception e) {
             users = null;
         }
@@ -183,10 +204,11 @@ public class UserServiceJpa implements UserService {
         return (root, query, cb) -> {
             List<Predicate> predicates = new java.util.ArrayList<>();
             if (params.containsKey("email")) {
-                predicates.add(cb.equal(cb.lower(root.get("email")), params.get("email").toLowerCase()));
+                predicates.add(cb.like(cb.lower(root.get("email")), "%" + params.get("email").toLowerCase() + "%"));
             }
-            if (params.containsKey("userName")) {
-                predicates.add(cb.equal(cb.lower(root.get("firstName")), params.get("firstName").toLowerCase()));
+            if (params.containsKey("firstName")) {
+                predicates.add(
+                        cb.like(cb.lower(root.get("firstName")), "%" + params.get("firstName").toLowerCase() + "%"));
             }
             if (params.containsKey("createdBefore")) {
                 LocalDateTime createBefore = LocalDateTime.parse(params.get("createdBefore"));
@@ -197,7 +219,8 @@ public class UserServiceJpa implements UserService {
                 predicates.add(cb.greaterThan(root.get("createdAt"), createAfter));
             }
             if (params.containsKey("lastName")) {
-                predicates.add(cb.equal(cb.lower(root.get("lastName")), params.get("lastName").toLowerCase()));
+                predicates
+                        .add(cb.like(cb.lower(root.get("lastName")), "%" + params.get("lastName").toLowerCase() + "%"));
             }
             if (params.containsKey("active")) {
                 boolean active = Boolean.parseBoolean(params.get("active"));
@@ -230,6 +253,7 @@ public class UserServiceJpa implements UserService {
         dto.setActive(user.isActive());
         dto.setVerified(user.isVerified());
         dto.setDailyLimit(user.getDailyLimit());
+        dto.setTransferLimit(user.getTransferLimit());
         dto.setCreatedAt(user.getCreatedAt());
         // Add other fields as needed
         return dto;

@@ -49,6 +49,8 @@ public class DatabaseSeeder {
         user1.setLastName("Smith");
         user1.setUsername("Alice Smith");
         user1.setDailyLimit(new BigDecimal("1000.00"));
+        user1.setTransferLimit(new BigDecimal("500.00"));
+
         user1.setEmail("alice@example.com");
         user1.setPassword("password123");
         user1.setPhoneNumber("+491234567890");
@@ -62,6 +64,8 @@ public class DatabaseSeeder {
         user2.setLastName("Johnson");
         user2.setUsername("Bob Johnson");
         user2.setDailyLimit(new BigDecimal("500.00"));
+        user2.setTransferLimit(new BigDecimal("250.00")); // <-- Add this!
+
         user2.setEmail("bob@example.com");
         user2.setPassword("password123");
         user2.setPhoneNumber("+491234567891");
@@ -74,7 +78,7 @@ public class DatabaseSeeder {
         admin.setFirstName("Admin");
         admin.setLastName("User");
         admin.setUsername("Admin User");
-        admin.setDailyLimit(new BigDecimal("200.00"));
+
         admin.setEmail("admin@example.com");
         admin.setPassword("adminpass");
         admin.setPhoneNumber("+491234567892");
