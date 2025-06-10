@@ -113,8 +113,8 @@ public class UserServiceJpa implements UserService {
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
-
-        user.setVerified(false);
+        user.setVerified(userDTO.isVerified());
+        user.setAdmin(userDTO.getIsAdmin() != null ? userDTO.getIsAdmin() : false); 
 
         // Set dailyLimit and transferLimit from DTO if present, else default to 0.0
         if (userDTO.getDailyLimit() != null) {
