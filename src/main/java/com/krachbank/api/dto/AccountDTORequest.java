@@ -21,7 +21,7 @@ public class AccountDTORequest extends AccountDTO {
     private BigDecimal balance;
     private BigDecimal absoluteLimit;
     private BigDecimal transactionLimit;
-    private String userId;
+    private Long userId;
     private boolean isActive;
 
 }

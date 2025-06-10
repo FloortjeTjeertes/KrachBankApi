@@ -48,17 +48,20 @@ public class AccountController implements Controller<Account, AccountDTOResponse
                 account.setIban(IBANGenerator.generateIBAN());
                 account.setCreatedAt(LocalDateTime.now());
                 account.setBalance(
-                        accountRequest.getBalance() != 0
-                                ? java.math.BigDecimal.valueOf(accountRequest.getBalance())
-                                : java.math.BigDecimal.valueOf(0.0));
+                        accountRequest.getBalance() != null
+                                && accountRequest.getBalance().compareTo(java.math.BigDecimal.ZERO) != 0
+                                        ? accountRequest.getBalance()
+                                        : java.math.BigDecimal.ZERO);
                 account.setAbsoluteLimit(
-                        accountRequest.getAbsoluteLimit() != 0
-                                ? java.math.BigDecimal.valueOf(accountRequest.getAbsoluteLimit())
-                                : java.math.BigDecimal.valueOf(0.0));
+                        accountRequest.getAbsoluteLimit() != null
+                                && accountRequest.getAbsoluteLimit().compareTo(java.math.BigDecimal.ZERO) != 0
+                                        ? accountRequest.getAbsoluteLimit()
+                                        : java.math.BigDecimal.ZERO);
                 account.setTransactionLimit(
-                        accountRequest.getTransactionLimit() != 0
-                                ? java.math.BigDecimal.valueOf(accountRequest.getTransactionLimit())
-                                : java.math.BigDecimal.valueOf(0.0));
+                        accountRequest.getTransactionLimit() != null
+                                && accountRequest.getTransactionLimit().compareTo(java.math.BigDecimal.ZERO) != 0
+                                        ? accountRequest.getTransactionLimit()
+                                        : java.math.BigDecimal.ZERO);
                 // Set account type: first is CHECKINGS, second is SAVINGS
                 if (i == 0) {
                     account.setAccountType(com.krachbank.api.models.AccountType.CHECKING);
