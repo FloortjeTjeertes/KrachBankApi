@@ -1,7 +1,6 @@
 package com.krachbank.api.repository;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,39 +27,37 @@ public class TransactionRepositoryTest {
 
     private Account fromAccount;
     private Account toAccount;
+    private Transaction transaction1;
+    private Transaction transaction2;
 
     @BeforeEach
     void setUp() {
         fromAccount = new Account();
-        fromAccount.setId(1L);
         toAccount = new Account();
-        toAccount.setId(2L);
 
-        accountRepository.save(fromAccount);
-        accountRepository.save(toAccount);
+        fromAccount = accountRepository.save(fromAccount);
+        toAccount = accountRepository.save(toAccount);
 
-        Transaction transaction1 = new Transaction();
-        transaction1.setId(1L);
+        transaction1 = new Transaction();
         transaction1.setAmount(BigDecimal.valueOf(100.0));
-        transaction1.setCreatedAt(LocalDateTime.of(2025, 01, 01, 01, 01));
+        transaction1.setCreatedAt(LocalDateTime.of(2025, 1, 1, 1, 1));
         transaction1.setFromAccount(fromAccount);
         transaction1.setToAccount(toAccount);
 
-        Transaction transaction2 = new Transaction();
-        transaction2.setId(2L);
+        transaction2 = new Transaction();
         transaction2.setAmount(BigDecimal.valueOf(200.0));
-        transaction2.setCreatedAt(LocalDateTime.of(2025, 01, 02, 01, 01));
+        transaction2.setCreatedAt(LocalDateTime.of(2025, 1, 2, 1, 1));
         transaction2.setFromAccount(fromAccount);
         transaction2.setToAccount(toAccount);
 
-        transactionRepository.save(transaction1);
-        transactionRepository.save(transaction2);
+        transaction1 = transactionRepository.save(transaction1);
+        transaction2 = transactionRepository.save(transaction2);
     }
 
     @Test
     void testMakeTransactionsSpecification_BySenderId() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setSenderId(1L);
+        filter.setSenderId(fromAccount.getId());
 
         List<Transaction> results = transactionRepository.findAll(
                 TransactionJpa.MakeTransactionsSpecification(filter));
@@ -76,7 +73,7 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_SenderIdNotFound() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setSenderId(999L); // Non-existent sender ID
+        filter.setSenderId(999L);
 
         List<Transaction> results = transactionRepository.findAll(
                 TransactionJpa.MakeTransactionsSpecification(filter));
@@ -88,7 +85,7 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_ByReceiverId() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setReceiverId(2L);
+        filter.setReceiverId(toAccount.getId());
 
         List<Transaction> results = transactionRepository.findAll(
                 TransactionJpa.MakeTransactionsSpecification(filter));
@@ -104,14 +101,14 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_ByMinAmount() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setMinAmount(BigDecimal.valueOf(200.0));
+        filter.setMinAmount(BigDecimal.valueOf(100.0));
         List<Transaction> results = transactionRepository.findAll(
                 TransactionJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getAmount());
-            assertEquals(filter.getMinAmount(), transaction.getAmount());
+            assertTrue(transaction.getAmount().compareTo(filter.getMinAmount()) >= 0);
         });
     }
 
@@ -125,28 +122,27 @@ public class TransactionRepositoryTest {
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getAmount());
-            assertEquals(filter.getMaxAmount(), transaction.getAmount());
-
+            assertTrue(transaction.getAmount().compareTo(filter.getMaxAmount()) <= 0);
         });
     }
 
     @Test
     void testMakeTransactionsSpecification_ByBeforeDate() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setBeforeDate(LocalDateTime.of(2025, 01, 01, 01, 01));
+        filter.setBeforeDate(LocalDateTime.of(2025, 1, 2, 1, 1));
         List<Transaction> results = transactionRepository.findAll(
                 TransactionJpa.MakeTransactionsSpecification(filter));
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getCreatedAt());
-            assertEquals(filter.getBeforeDate(), transaction.getCreatedAt());
+            assertTrue(transaction.getCreatedAt().isBefore(filter.getBeforeDate()));
         });
     }
 
     @Test
     void testMakeTransactionsSpecification_ByAfterDate() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setAfterDate(LocalDateTime.of(2025, 01, 02, 01, 01));
+        filter.setAfterDate(LocalDateTime.of(2025, 1, 1, 1, 1));
 
         List<Transaction> results = transactionRepository.findAll(
                 TransactionJpa.MakeTransactionsSpecification(filter));
@@ -154,7 +150,7 @@ public class TransactionRepositoryTest {
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getCreatedAt());
-            assertEquals(filter.getAfterDate(), transaction.getCreatedAt());
+            assertTrue(transaction.getCreatedAt().isAfter(filter.getAfterDate()));
         });
     }
 

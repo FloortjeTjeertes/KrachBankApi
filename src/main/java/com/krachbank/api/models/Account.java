@@ -15,6 +15,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 
 @Entity
@@ -25,6 +27,7 @@ public class Account implements Model {
     @GeneratedValue
     private Long id;
     @Convert(converter = IbanConverter.class)
+    @jakarta.persistence.Column(unique = true)
     private Iban iban;
     private BigDecimal balance;
     private BigDecimal absoluteLimit;
@@ -44,13 +47,10 @@ public class Account implements Model {
 
     private BigDecimal transactionLimit;
 
-
-    public List<Transaction>  getTransactions(){
+    public List<Transaction> getTransactions() {
         List<Transaction> transactions = Stream.concat(this.transactionsFrom.stream(), this.transactionsTo.stream())
                 .collect(java.util.stream.Collectors.toList());
         return transactions;
     }
-
-
 
 }

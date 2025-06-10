@@ -24,5 +24,4 @@ public class AccountDTORequest extends AccountDTO {
     private String userId;
     private boolean isActive;
 
-
 }

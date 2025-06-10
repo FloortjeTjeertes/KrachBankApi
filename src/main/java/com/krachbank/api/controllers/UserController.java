@@ -22,12 +22,14 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.filters.AccountFilter;
 import com.krachbank.api.filters.UserFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
+import com.krachbank.api.service.TransactionService;
 import com.krachbank.api.service.UserService;
 
 @RestController
@@ -35,17 +37,18 @@ import com.krachbank.api.service.UserService;
 public class UserController implements Controller<User, UserDTO, UserDTO> {
     private final UserService userService;
     private final AccountService accountService;
-    private final AccountController accountController ;
+    private final TransactionService transactionsService;
+    private final AccountController accountController;
 
     public UserController(UserService userService, AccountService accountService, AccountController accountController) {
+
+    public UserController(UserService userService, AccountService accountService,
+            TransactionService transactionService) {
+        this.transactionsService = transactionService;
         this.accountService = accountService;
         this.userService = userService;
         this.accountController = accountController;
     }
-
-
- 
-
 
     @PostMapping("/{id}/verify")
     public UserDTO verifyUser(@PathVariable Long id) {
@@ -74,6 +77,17 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
             return ResponseEntity.status(error.getCode()).body(error);
         }
 
+    }
+
+    @GetMapping("/{id}/transactions")
+    public ResponseEntity<?> getTransactionsForUser(@PathVariable Long id, @RequestParam Map<String, String> params) {
+        try {
+            List<TransactionDTOResponse> userTransactions = transactionsService.getUserTransactions(id, params);
+            return ResponseEntity.ok(userTransactions);
+        } catch (Exception e) {
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
+            return ResponseEntity.status(error.getCode()).body(error);
+        }
     }
 
     @GetMapping("/{id}")

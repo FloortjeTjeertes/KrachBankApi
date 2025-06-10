@@ -6,11 +6,12 @@ import java.time.LocalDateTime;
 public class TransactionFilter extends BaseFilter {
     private Long senderId;
     private Long receiverId;
+    private Long initiatorId;
+
     private BigDecimal minAmount;
     private BigDecimal maxAmount;
     private LocalDateTime beforeDate;
     private LocalDateTime afterDate;
-
 
     public Long getSenderId() {
         return senderId;
@@ -26,6 +27,14 @@ public class TransactionFilter extends BaseFilter {
 
     public void setReceiverId(Long receiverId) {
         this.receiverId = receiverId;
+    }
+
+    public Long getInitiatorId() {
+        return initiatorId;
+    }
+
+    public void setInitiatorId(Long initiatorId) {
+        this.initiatorId = initiatorId;
     }
 
     public BigDecimal getMinAmount() {
@@ -59,7 +68,5 @@ public class TransactionFilter extends BaseFilter {
     public void setAfterDate(LocalDateTime afterDate) {
         this.afterDate = afterDate;
     }
-
-   
 
 }
