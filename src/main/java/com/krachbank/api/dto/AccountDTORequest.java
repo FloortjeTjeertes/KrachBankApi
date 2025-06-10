@@ -18,7 +18,7 @@ public class AccountDTORequest implements DTO {
     private AccountType accountType;
     private double balance;
     private double absoluteLimit;
-    private String userId;
-
+    private double transactionLimit;
+    private Long userId;
 
 }
