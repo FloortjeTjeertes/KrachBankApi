@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.filters.AccountFilter;
-import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.models.Account;
 
 import jakarta.transaction.Transactional;
@@ -28,7 +27,7 @@ public interface AccountService extends Service<AccountDTOResponse, Account> {
 
     public Optional<Account> getAccountByIBAN(String iban);
 
-    public Page<Account> getAccountsByUserId(Long userId,BaseFilter filter);
+    public Page<Account> getAccountsByUserId(Long userId,AccountFilter filter);
 
 
 }

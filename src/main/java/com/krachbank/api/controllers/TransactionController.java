@@ -1,5 +1,7 @@
 package com.krachbank.api.controllers;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.krachbank.api.dto.ErrorDTOResponse;
+import com.krachbank.api.dto.TransactionDTORequest;
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
@@ -26,7 +29,7 @@ import com.krachbank.api.service.TransactionService;
 
 @RestController
 @RequestMapping("/transactions")
-public class TransactionController implements Controller<Transaction, TransactionDTOResponse> {
+public class TransactionController implements Controller<Transaction, TransactionDTOResponse, TransactionDTORequest> {
 
     private final TransactionService transactionService;
     private final AccountService accountService;
@@ -45,8 +48,8 @@ public class TransactionController implements Controller<Transaction, Transactio
             if (transaction.isEmpty()) {
                 return null;
             }
-
-            return ResponseEntity.ok(transactionService.toDTO(transaction));
+            List<TransactionDTOResponse> transactionDTOs = toResponseList(transaction);
+            return ResponseEntity.ok(transactionDTOs);
 
         } catch (Exception e) {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
@@ -56,14 +59,16 @@ public class TransactionController implements Controller<Transaction, Transactio
     }
 
     @PostMapping
-    public ResponseEntity<?> createTransaction(@RequestBody TransactionDTOResponse transactionDTO) {
+    public ResponseEntity<?> createTransaction(@RequestBody TransactionDTORequest transactionDTO) {
         try {
             Transaction transaction = toModel(transactionDTO);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
             Optional<Transaction> createdTransaction = transactionService.createTransaction(transaction,username);
+
+
             if (createdTransaction.isPresent()) {
-                return ResponseEntity.ok(transactionService.toDTO(createdTransaction.get()));
+                return ResponseEntity.ok(toResponse(createdTransaction.get()));
 
             } else {
                 throw new Exception("transaction did not safe right");
@@ -74,9 +79,8 @@ public class TransactionController implements Controller<Transaction, Transactio
         }
     }
 
-    //TODO: transfer tomodel behaviour to the Transaction Mapper
     @Override
-    public Transaction toModel(TransactionDTOResponse dto) {
+    public Transaction toModel(TransactionDTORequest dto) {
 
         User initUser = new User();
         initUser.setId(dto.getInitiator());
@@ -86,13 +90,47 @@ public class TransactionController implements Controller<Transaction, Transactio
         Optional<Account> receivingAccount = accountService.getAccountByIBAN(dto.getReceiver());
 
         Transaction transaction = new Transaction();
-        transaction.setAmount(dto.getAmount());
         transaction.setFromAccount(fromAccount.get());
         transaction.setToAccount(receivingAccount.get());
         transaction.setInitiator(initUser);
-        transaction.setCreatedAt(dto.getCreatedAt());
+        transaction.setCreatedAt(LocalDateTime.now());
         transaction.setDescription(dto.getDescription());
+        transaction.setAmount(dto.getAmount());
         return transaction;
 
     }
+    public List<TransactionDTOResponse> toResponseList(List<Transaction> models) {
+        List<TransactionDTOResponse> dtos = new ArrayList<>();
+        for (Transaction model : models) {
+            dtos.add(toResponse(model));
+        }
+        return dtos;
+    }
+    public List<Transaction> toModelList(List<TransactionDTORequest> dtoList) {
+        List<Transaction> accounts = new ArrayList<>();
+        for (TransactionDTORequest dto : dtoList) {
+            accounts.add(toModel(dto));
+        }
+        return accounts;
+    }
+    @Override
+    public TransactionDTOResponse toResponse(Transaction model) {
+        TransactionDTOResponse response = new TransactionDTOResponse();
+        response.setAmount(model.getAmount());
+        response.setReceiver(model.getToAccount().getIban().toString());
+        response.setSender(model.getFromAccount().getIban().toString());
+        response.setDescription(model.getDescription());
+        response.setInitiator(model.getInitiator().getId());
+        response.setCreatedAt(model.getCreatedAt());
+
+        return response;
+        
+
+    }
+
+   
+
+ 
+
+   
 }

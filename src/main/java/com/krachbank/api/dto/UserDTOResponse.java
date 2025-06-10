@@ -23,5 +23,6 @@ public class UserDTOResponse implements DTO {
     private String email;
     private String phoneNumber;
     private int BSN;
+    private boolean isAdmin;
 
 }

@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
 
+import com.krachbank.api.dto.TransactionDTORequest;
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
@@ -61,9 +62,8 @@ public class TransactionControllerTest {
 
     @Test
     void testToModelWithValidDTO() {
-        TransactionDTOResponse dto = new TransactionDTOResponse();
+        TransactionDTORequest dto = new TransactionDTORequest();
         dto.setAmount(fullTransaction.getAmount());
-        dto.setCreatedAt(fullTransaction.getCreatedAt());
         dto.setInitiator(fullTransaction.getInitiator().getId());
         dto.setSender(fullTransaction.getFromAccount().getIban().toString());
         dto.setReceiver(fullTransaction.getToAccount().getIban().toString());
@@ -85,7 +85,8 @@ public class TransactionControllerTest {
 
     @Test
     void testToModelWithNullFields() {
-        TransactionDTOResponse dto = new TransactionDTOResponse();
+        TransactionDTORequest dto = new TransactionDTORequest();
+        // Only set initiator from setup
         assertThrows(Iban4jException.class, () -> transactionController.toModel(dto));
     }
 

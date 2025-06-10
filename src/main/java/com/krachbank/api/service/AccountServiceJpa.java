@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.filters.AccountFilter;
-import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.repository.AccountRepository;
 
@@ -39,7 +38,6 @@ public class AccountServiceJpa implements AccountService {
         Page<Account> accountPage = accountRepository.findAll(specification, pageable);
         return accountPage;
     }
-
     @Override
     public Optional<Account> getAccountById(Long id) throws Exception {
 
@@ -152,12 +150,11 @@ public class AccountServiceJpa implements AccountService {
     @Override
     public AccountDTOResponse toDTO(Account model) {
         AccountDTOResponse accountDTO = new AccountDTOResponse();
-        accountDTO.setIBAN(model.getIban().toString());
         accountDTO.setType(model.getAccountType());
         accountDTO.setBalance(model.getBalance());
         accountDTO.setAbsoluteLimit(model.getAbsoluteLimit());
         accountDTO.setTransactionLimit(model.getTransactionLimit());
-        accountDTO.setOwner(model.getUser().getId().toString());
+        accountDTO.setOwner(model.getUser().getId());
         accountDTO.setCreatedAt(model.getCreatedAt().toString());
         return accountDTO;
     }
@@ -191,7 +188,11 @@ public class AccountServiceJpa implements AccountService {
 
     // add pagination filter to this method
     @Override
-    public Page<Account> getAccountsByUserId(Long userId, BaseFilter filter) {
+    public Page<Account> getAccountsByUserId(Long userId, AccountFilter filter) {
+        if (filter == null) {
+            throw new IllegalArgumentException("Filter cannot be null");
+        }
+        Specification<Account> specification = makeAccountFilterSpecification(filter);
         Pageable pageable = filter.toPageAble();
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");

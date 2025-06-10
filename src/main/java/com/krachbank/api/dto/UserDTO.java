@@ -30,6 +30,7 @@ public class UserDTO implements DTO {
                      // if needed
     private String password; // Added for registration input
     private String username;
+    private Boolean isAdmin;
 
     public User ToModel() {
         User user = new User();
@@ -47,6 +48,7 @@ public class UserDTO implements DTO {
         user.setPhoneNumber(this.phoneNumber);
         user.setBSN(this.BSN);
         user.setUsername(this.username);
+        user.setAdmin(this.isAdmin);
         return user;
     }
 

@@ -39,8 +39,7 @@ public class UserServiceJpa implements UserService {
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
-        // USE UserDTO.fromModel() for consistent conversion
-        return toDTO(user); // <--- CHANGED HERE
+        return toDTO(user);
     }
 
     @Override
@@ -94,6 +93,7 @@ public class UserServiceJpa implements UserService {
             throw new RuntimeException("User with username " + userDTO.getUsername() + " already exists!");
         }
 
+        // TODO: use fromModel in controller
         // --- Convert UserDTO to User entity ---
         User user = new User();
         user.setFirstName(userDTO.getFirstName());
@@ -111,10 +111,9 @@ public class UserServiceJpa implements UserService {
 
         // --- Encode the password ---
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-
-        // --- Set default properties for the new user ---
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
+
         user.setVerified(false);
 
         // Set dailyLimit and transferLimit from DTO if present, else default to 0.0
@@ -131,10 +130,6 @@ public class UserServiceJpa implements UserService {
 
         // --- Save the User entity to the database ---
         User savedUser = userRepository.save(user);
-
-        // --- Debugging Print (can remove after successful testing) ---
-
-        // --- Convert the saved User entity back to UserDTO for response ---
         return toDTO(savedUser);
     }
 
@@ -196,6 +191,12 @@ public class UserServiceJpa implements UserService {
         return users.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    // @Override
+    // public List<UserDTO> getUsers() {
+    // List<User> users = userRepository.findAll();
+    // return users.stream().map(this::toDTO).collect(Collectors.toList());
+    // }
+
     public Specification<User> makeUserFilterSpecification(Map<String, String> params) {
         if (params == null || params.isEmpty()) {
             // Return null if params is null or empty, as expected by the test
@@ -255,7 +256,7 @@ public class UserServiceJpa implements UserService {
         dto.setDailyLimit(user.getDailyLimit());
         dto.setTransferLimit(user.getTransferLimit());
         dto.setCreatedAt(user.getCreatedAt());
-        // Add other fields as needed
+        dto.setIsAdmin(user.isAdmin());
         return dto;
     }
 

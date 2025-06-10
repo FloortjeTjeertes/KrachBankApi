@@ -1,39 +1,53 @@
 package com.krachbank.api.controllers;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.krachbank.api.filters.AccountFilter;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.dto.UserDTO;
+import com.krachbank.api.filters.AccountFilter;
 import com.krachbank.api.filters.UserFilter;
+import com.krachbank.api.models.Account;
+import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
 import com.krachbank.api.service.TransactionService;
 import com.krachbank.api.service.UserService;
 
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import com.krachbank.api.models.Account;
-import com.krachbank.api.models.User;
-
 @RestController
 @RequestMapping("/users")
-public class UserController implements Controller<User, UserDTO> {
+public class UserController implements Controller<User, UserDTO, UserDTO> {
     private final UserService userService;
     private final AccountService accountService;
     private final TransactionService transactionsService;
+    private final AccountController accountController;
+
+    public UserController(UserService userService, AccountService accountService, AccountController accountController) {
 
     public UserController(UserService userService, AccountService accountService,
             TransactionService transactionService) {
         this.transactionsService = transactionService;
         this.accountService = accountService;
         this.userService = userService;
+        this.accountController = accountController;
     }
 
     @PostMapping("/{id}/verify")
@@ -47,14 +61,15 @@ public class UserController implements Controller<User, UserDTO> {
     }
 
     @GetMapping("/{id}/accounts")
-    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id, UserFilter filter) {
+    public ResponseEntity<?> getAccountsForUser(@PathVariable Long id, @ModelAttribute AccountFilter filter) {
+
         try {
-            System.out.println("Fetching accounts for user with ID: " + id);
             List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
+            System.out.println("Filter: " + filter);
             Page<Account> accountsPage = accountService.getAccountsByUserId(id, filter);
             List<Account> accounts = accountsPage.getContent();
             for (Account account : accounts) {
-                accountDTOs.add(accountService.toDTO(account));
+                accountDTOs.add(accountController.toResponse(account));
             }
             return ResponseEntity.ok(accountDTOs);
         } catch (Exception e) {
@@ -105,7 +120,6 @@ public class UserController implements Controller<User, UserDTO> {
         }
     }
 
-    // Optional: Get all users with filter params (if needed)
     @GetMapping()
     public List<UserDTO> getAllUsers(@RequestParam(required = false) Map<String, String> params) {
         UserFilter filter = new UserFilter();
@@ -125,6 +139,13 @@ public class UserController implements Controller<User, UserDTO> {
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setBSN(dto.getBSN());
+        user.setAdmin(dto.getIsAdmin() != null ? dto.getIsAdmin() : false); // Fix here
         return user;
+    }
+
+    @Override
+    public UserDTO toResponse(User dto) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toResponse'");
     }
 }

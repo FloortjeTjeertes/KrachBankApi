@@ -6,10 +6,12 @@ public class UserFilter extends BaseFilter {
     private String createdAfter;
     private String isVerified;
     private String isActive;
+    private String role;
     private String userName;
     private String lastName;
     private Integer limit = 100;
     private Integer offset = 0;
+
 
     // Getters and setters
 
@@ -51,6 +53,13 @@ public class UserFilter extends BaseFilter {
 
     public void setIsVerified(String isVerified) {
         this.isVerified = isVerified;
+    }
+
+    public String getRole() {
+        return role;
+    }
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getIsActive() {

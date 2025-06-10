@@ -44,27 +44,7 @@ public class WebSecurityConfiguration {
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
-    // <--- Add this line for CORS configuration Add this new bean to define your
-    // source
-    // // <-- IMPORTANT: Your frontend URL // Allowed HTTP
-    // methods
-    // Allow all headers (including Authorization) // Allow sending cookies/auth
-    // headers // How long the preflight request can be cached // Apply this CORS
-    // config to all paths }
-
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173") // Vue dev server
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // <--- ENSURE 'OPTIONS' IS HERE
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
-            }
-        };
-    }
+    //removed because of double cors configuration
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -88,7 +68,8 @@ public class WebSecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        //.requestMatchers("/users").permitAll() //TODO: use roles to secure this endpoint
+                        // .requestMatchers("/users").permitAll() //TODO: use roles to secure this
+                        // endpoint
                         .requestMatchers("/auth/register").permitAll()
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers(
@@ -108,7 +89,9 @@ public class WebSecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173",
+                "https://floortjetjeertes.github.io"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
