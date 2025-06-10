@@ -68,7 +68,7 @@ public class DatabaseSeeder {
                 user2.setPhoneNumber("+491234567891");
                 user2.setCreatedAt(LocalDateTime.now());
                 user2.setVerified(true); // Assuming users are not verified by default
-                user2.setBSN(987654321); // <-- Add this line
+                user2.setBSN(234567891); // <-- Positieve waarde
                 UserDTO savedUser2 = userService.createUser(userService.toDTO(user2));
 
                 User ATM = new User();
@@ -81,6 +81,7 @@ public class DatabaseSeeder {
                 ATM.setPhoneNumber("+66666666666");
                 ATM.setCreatedAt(LocalDateTime.now());
                 ATM.setVerified(true);
+                ATM.setBSN(456789123); // <-- Voeg een positieve BSN toe
                 UserDTO savedATM = userService.createUser(userService.toDTO(ATM));
 
                 User admin = new User();
@@ -93,7 +94,7 @@ public class DatabaseSeeder {
                 admin.setPhoneNumber("+491234567892");
                 admin.setCreatedAt(LocalDateTime.now());
                 admin.setVerified(true); // Assuming admins are verified by default
-                admin.setBSN(111222333); // <-- Add this line
+                admin.setBSN(345678912); // <-- Positieve waarde
                 admin.setAdmin(true);
                 UserDTO savedAdmin = userService.createUser(userService.toDTO(admin));
                 // Create accounts
