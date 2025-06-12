@@ -14,7 +14,7 @@ public class JwtResponse {
         return token;
     }
 
-    // Setter for the token (optional, but good practice)
+    // Setter for the token (optional)
     public void setToken(String token) {
         this.token = token;
     }

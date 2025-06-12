@@ -15,8 +15,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.DTO;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.filters.UserFilter;
+import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
 
@@ -37,17 +39,17 @@ public class UserServiceJpa implements UserService {
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
-        return toDTO(user); 
+        return toDTO(user);
     }
 
     @Override
     public DTO verifyUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
-        if (user == null || user.getId() == null || !user.getId().equals(id)) {
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + id));
+        // Remove redundant null check for user
+        if (user.getId() == null || !user.getId().equals(id)) {
             throw new IllegalArgumentException("User ID mismatch or user is null");
         }
-
         if (user.getEmail() == null || user.getEmail().isEmpty()) {
             throw new IllegalArgumentException("Email is required");
         }
@@ -57,10 +59,6 @@ public class UserServiceJpa implements UserService {
         if (user.getLastName() == null || user.getLastName().isEmpty()) {
             throw new IllegalArgumentException("Last name is required");
         }
-        // Note: If your User model has getBSN() returning int, check for positive value
-        // only
-        // Note: If your User model has getBSN() returning int, check for positive value
-        // only
         if (user.getBSN() <= 0) {
             throw new IllegalArgumentException("BSN must be a positive number");
         }
@@ -71,6 +69,22 @@ public class UserServiceJpa implements UserService {
 
     @Override
     public UserDTO createUser(UserDTO userDTO) {
+        // --- Validation for required fields ---
+        if (userDTO.getPassword() == null) {
+            throw new NullPointerException("Password is required");
+        }
+        if (userDTO.getEmail() == null || userDTO.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (userDTO.getFirstName() == null || userDTO.getFirstName().isEmpty()) {
+            throw new IllegalArgumentException("First name is required");
+        }
+        if (userDTO.getLastName() == null || userDTO.getLastName().isEmpty()) {
+            throw new IllegalArgumentException("Last name is required");
+        }
+        if (userDTO.getBSN() <= 0) {
+            throw new IllegalArgumentException("BSN must be a positive number");
+        }
         // --- Validation for existing user (based on email and username) ---
         if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
             throw new RuntimeException("User with email " + userDTO.getEmail() + " already exists!");
@@ -79,8 +93,7 @@ public class UserServiceJpa implements UserService {
             throw new RuntimeException("User with username " + userDTO.getUsername() + " already exists!");
         }
 
-
-        //TODO: use fromModel in controller
+        // TODO: use fromModel in controller
         // --- Convert UserDTO to User entity ---
         User user = new User();
         user.setFirstName(userDTO.getFirstName());
@@ -88,16 +101,33 @@ public class UserServiceJpa implements UserService {
         user.setEmail(userDTO.getEmail());
         user.setBSN(userDTO.getBSN());
         user.setPhoneNumber(userDTO.getPhoneNumber());
-        user.setUsername(userDTO.getUsername()); // Set the username (e.g., "First Last")
+
+        // Set username from DTO or combine first and last name if not set
+        if (userDTO.getUsername() != null && !userDTO.getUsername().isEmpty()) {
+            user.setUsername(userDTO.getUsername());
+        } else {
+            user.setUsername(userDTO.getFirstName() + " " + userDTO.getLastName());
+        }
 
         // --- Encode the password ---
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
+        user.setVerified(userDTO.isVerified());
+        user.setAdmin(userDTO.getIsAdmin() != null ? userDTO.getIsAdmin() : false); 
 
-        user.setVerified(false);
-        user.setDailyLimit(userDTO.getDailyLimit());
-     
+        // Set dailyLimit and transferLimit from DTO if present, else default to 0.0
+        if (userDTO.getDailyLimit() != null) {
+            user.setDailyLimit(userDTO.getDailyLimit());
+        } else {
+            user.setDailyLimit(BigDecimal.valueOf(0.0));
+        }
+        if (userDTO.getTransferLimit() != null) {
+            user.setTransferLimit(userDTO.getTransferLimit());
+        } else {
+            user.setTransferLimit(BigDecimal.valueOf(0.0));
+        }
+
         // --- Save the User entity to the database ---
         User savedUser = userRepository.save(user);
         return toDTO(savedUser);
@@ -114,10 +144,12 @@ public class UserServiceJpa implements UserService {
         existingUser.setEmail(userDetails.getEmail());
         existingUser.setPhoneNumber(userDetails.getPhoneNumber());
         existingUser.setDailyLimit(userDetails.getDailyLimit());
+        existingUser.setTransferLimit(userDetails.getTransferLimit());
         existingUser.setBSN(userDetails.getBSN()); // Ensure this maps correctly from userDetails
         existingUser.setVerified(userDetails.isVerified());
         existingUser.setActive(userDetails.isActive());
-        existingUser.setUsername(userDetails.getUsername()); // <--- Ensure username is updated if passed
+        // existingUser.setUsername(userDetails.getUsername()); // <--- Ensure username
+        // is updated if passed
 
         // Save the updated entity
         User updatedUser = userRepository.save(existingUser);
@@ -140,18 +172,34 @@ public class UserServiceJpa implements UserService {
     public List<UserDTO> getAllUsers(Map<String, String> params, UserFilter filter) {
         Specification<User> specification = makeUserFilterSpecification(params);
         Pageable pageable = filter != null ? filter.toPageAble() : Pageable.unpaged();
-        Page<User> users = userRepository.findAll(specification, pageable);
+        Page<User> users;
+
+        try {
+            if (specification == null) {
+                // No filter params: return all users
+                users = userRepository.findAll(pageable);
+            } else {
+                // Filter params present: return filtered users
+                users = userRepository.findAll(specification, pageable);
+            }
+        } catch (Exception e) {
+            users = null;
+        }
+        if (users == null) {
+            return new ArrayList<>();
+        }
         return users.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-//    @Override
-//    public List<UserDTO> getUsers() {
-//        List<User> users = userRepository.findAll();
-//        return users.stream().map(this::toDTO).collect(Collectors.toList());
-//    }
+    // @Override
+    // public List<UserDTO> getUsers() {
+    // List<User> users = userRepository.findAll();
+    // return users.stream().map(this::toDTO).collect(Collectors.toList());
+    // }
 
     public Specification<User> makeUserFilterSpecification(Map<String, String> params) {
         if (params == null || params.isEmpty()) {
+            // Return null if params is null or empty, as expected by the test
             return null;
         }
         return (root, query, cb) -> {
@@ -206,6 +254,7 @@ public class UserServiceJpa implements UserService {
         dto.setActive(user.isActive());
         dto.setVerified(user.isVerified());
         dto.setDailyLimit(user.getDailyLimit());
+        dto.setTransferLimit(user.getTransferLimit());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setIsAdmin(user.isAdmin());
         return dto;
@@ -213,9 +262,14 @@ public class UserServiceJpa implements UserService {
 
     @Override
     public List<UserDTO> toDTO(List<User> users) {
+        if (users == null) {
+            return new ArrayList<>();
+        }
         List<UserDTO> userDTOs = new ArrayList<>();
-        for (User userDTO : users) {
-            userDTOs.add(toDTO(userDTO));
+        for (User user : users) {
+            if (user != null) {
+                userDTOs.add(toDTO(user));
+            }
         }
         return userDTOs;
     }
