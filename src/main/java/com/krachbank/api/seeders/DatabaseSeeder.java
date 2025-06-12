@@ -55,7 +55,7 @@ public class DatabaseSeeder {
         User user2 = new User();
         user2.setFirstName("Bob");
         user2.setLastName("Johnson");
-        user2.setUsername("Bob Johnson");
+        user2.setUsername("BobJohnson");
         user2.setDailyLimit(new BigDecimal("500.00"));
         user2.setEmail("bob@example.com");
         user2.setPassword("password123");
@@ -67,7 +67,7 @@ public class DatabaseSeeder {
         User ATM = new User();
         ATM.setFirstName("ATM");
         ATM.setLastName("User");
-        ATM.setUsername("ATM User");
+        ATM.setUsername("ATMUser");
         ATM.setDailyLimit(new BigDecimal("2000.00"));
         ATM.setEmail("ATM@ATM.com");
         ATM.setPassword("password");
@@ -79,7 +79,7 @@ public class DatabaseSeeder {
         User admin = new User();
         admin.setFirstName("Admin");
         admin.setLastName("User");
-        admin.setUsername("Admin User");
+        admin.setUsername("AdminUser");
         admin.setDailyLimit(new BigDecimal("200.00"));
         admin.setEmail("admin@example.com");
         admin.setPassword("adminpass");
