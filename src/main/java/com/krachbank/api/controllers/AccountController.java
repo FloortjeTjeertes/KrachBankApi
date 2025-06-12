@@ -102,9 +102,7 @@ public class AccountController implements Controller<Account, AccountDTOResponse
     @GetMapping("/{iban}")
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            boolean isAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+       
 
             accountService.getAccountByIBAN(iban);
 
@@ -116,31 +114,7 @@ public class AccountController implements Controller<Account, AccountDTOResponse
 
     }
 
-    // @GetMapping()
-    // @PreAuthorize("hasRole('ROLE_USER')")
-    // public ResponseEntity<?> getAccountsForCurrentUser() {
-    // try {
-
-    // User user = (User)
-    // SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    // if (user == null) {
-    // throw new Exception("User not found");
-    // }
-    // List<AccountDTO> accountDTOs = new ArrayList<AccountDTO>();
-    // List<Account> accounts = accountService.getAccountsByUserId(null);
-    // for (Account account : accounts) {
-    // accountDTOs.add(accountService.toDTO(account));
-    // }
-    // return ResponseEntity.ok(accountDTOs);
-    // } catch (Exception e) {
-    // ErrorDTO error = new ErrorDTO(e.getMessage(), 500);
-    // return ResponseEntity.status(error.getCode()).body(error);
-    // }
-
-    // }
-
     @GetMapping()
-    // @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> getAccounts(@ModelAttribute AccountFilter filter) {
         try {
 
