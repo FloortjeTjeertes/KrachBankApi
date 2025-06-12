@@ -13,5 +13,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
 
     List<Transaction> findByInitiatorIdOrderByCreatedAtAsc(Long initiatorId);
 
+    List<Transaction> findByFromAccountIdOrderByCreatedAtAsc(Long fromAccountId);
 
+    List<Transaction> findByToAccountIdOrderByCreatedAtAsc(Long toAccountId);
 }
