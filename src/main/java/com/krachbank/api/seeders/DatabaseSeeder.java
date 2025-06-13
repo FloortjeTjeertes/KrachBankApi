@@ -93,28 +93,7 @@ public class DatabaseSeeder {
                 admin.setAdmin(true);
                 UserDTO savedAdmin = userService.createUser(userService.toDTO(admin));
                 // Create accounts
-                Account account1 = new Account();
-                account1.setIban(IBANGenerator.generateIBAN());
-                account1.setAbsoluteLimit(new BigDecimal(-100));
-                account1.setAccountType(AccountType.CHECKING);
-                account1.setBalance(new BigDecimal("5000.00"));
-                account1.setTransactionLimit(new BigDecimal(1000));
-                account1.setCreatedAt(LocalDateTime.now());
-                account1.setUser(userController.toModel(savedUser1));
-                account1.setVerifiedBy(userController.toModel(savedAdmin));
-                accountRepository.save(account1);                
-
-                Account account2 = new Account();
-                account2.setIban(IBANGenerator.generateIBAN());
-                account2.setBalance(new BigDecimal("2000.00"));
-                account2.setUser(userController.toModel(savedUser1));
-                account2.setAccountType(AccountType.SAVINGS);
-                account2.setAbsoluteLimit(new BigDecimal(-100));
-                account2.setTransactionLimit(new BigDecimal(1000));
-                account2.setCreatedAt(LocalDateTime.now());
-                account2.setVerifiedBy(userController.toModel(savedAdmin));
-                accountRepository.save(account2);
-
+  
                 Account account3 = new Account();
                 account3.setIban(IBANGenerator.generateIBAN());
                 account3.setBalance(new BigDecimal("2000.00"));
@@ -152,9 +131,9 @@ public class DatabaseSeeder {
                 Transaction transaction = new com.krachbank.api.models.Transaction();
                 transaction.setAmount(new BigDecimal("250.00"));
                 transaction.setCreatedAt(LocalDateTime.now());
-                transaction.setFromAccount(account1);
+                transaction.setFromAccount(account3);
                 transaction.setInitiator(userController.toModel(savedUser1));
-                transaction.setToAccount(account2);
+                transaction.setToAccount(account4);
                 transaction.setDescription("Test transaction from Alice to Bob");
 
                 // Assuming you have a TransactionRepository and it's injected similarly
