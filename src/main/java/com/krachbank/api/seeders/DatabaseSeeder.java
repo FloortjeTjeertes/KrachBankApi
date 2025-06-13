@@ -42,7 +42,13 @@ public class DatabaseSeeder {
                 user1.setFirstName("Alice");
                 user1.setLastName("Smith");
                 user1.setUsername("AliceSmith");
+                user1.setEmail("Alice@example.com");
+                user1.setBSN(123456789);
                 user1.setDailyLimit(new BigDecimal("1000.00"));
+                user1.setPassword("password123");
+                user1.setPhoneNumber("+491234567890");
+                user1.setCreatedAt(LocalDateTime.now());
+                user1.setVerified(false); // Assuming users are not verified by default
                 user1.setTransferLimit(new BigDecimal("500.00"));
                 UserDTO savedUser1 = userService.createUser(userService.toDTO(user1));
 
@@ -50,18 +56,21 @@ public class DatabaseSeeder {
                 user2.setFirstName("Bob");
                 user2.setLastName("Johnson");
                 user2.setUsername("BobJohnson");
+                user2.setBSN(987654321);
                 user2.setDailyLimit(new BigDecimal("500.00"));
                 user2.setEmail("bob@example.com");
                 user2.setPassword("password123");
                 user2.setPhoneNumber("+491234567891");
                 user2.setCreatedAt(LocalDateTime.now());
                 user2.setVerified(true); // Assuming users are not verified by default
+                user2.setTransferLimit(new BigDecimal("300.00"));
                 UserDTO savedUser2 = userService.createUser(userService.toDTO(user2));
 
                 User ATM = new User();
                 ATM.setFirstName("ATM");
                 ATM.setLastName("User");
                 ATM.setUsername("ATMUser");
+                ATM.setBSN(111223344);
                 ATM.setDailyLimit(new BigDecimal("2000.00"));
                 ATM.setEmail("ATM@ATM.com");
                 ATM.setPassword("password");
@@ -74,6 +83,7 @@ public class DatabaseSeeder {
                 admin.setFirstName("Admin");
                 admin.setLastName("User");
                 admin.setUsername("AdminUser");
+                admin.setBSN(112233445);
                 admin.setDailyLimit(new BigDecimal("200.00"));
                 admin.setEmail("admin@example.com");
                 admin.setPassword("adminpass");
