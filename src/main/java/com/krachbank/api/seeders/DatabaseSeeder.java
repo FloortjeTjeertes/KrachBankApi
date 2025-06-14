@@ -128,11 +128,11 @@ public class DatabaseSeeder {
                 accountRepository.save(ATMAccount);
 
                 // make an test Transaction
-                Transaction transaction = new com.krachbank.api.models.Transaction();
+                Transaction transaction = new Transaction();
                 transaction.setAmount(new BigDecimal("250.00"));
                 transaction.setCreatedAt(LocalDateTime.now());
                 transaction.setFromAccount(account3);
-                transaction.setInitiator(userController.toModel(savedUser1));
+                transaction.setInitiator(userController.toModel(savedAdmin));
                 transaction.setToAccount(account4);
                 transaction.setDescription("Test transaction from Alice to Bob");
 

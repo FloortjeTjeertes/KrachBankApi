@@ -15,10 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.DTO;
-import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.filters.UserFilter;
-import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.UserRepository;
 

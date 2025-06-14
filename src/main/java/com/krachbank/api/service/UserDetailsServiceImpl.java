@@ -1,12 +1,12 @@
 package com.krachbank.api.service;
 
-import com.krachbank.api.models.User;
-import com.krachbank.api.repository.AuthenticationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import com.krachbank.api.models.User;
+import com.krachbank.api.repository.AuthenticationRepository;
 
 
 @Service
@@ -14,7 +14,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final AuthenticationRepository authenticationRepository;
 
-    @Autowired
     public UserDetailsServiceImpl(AuthenticationRepository authenticationRepository) {
         this.authenticationRepository = authenticationRepository;
     }

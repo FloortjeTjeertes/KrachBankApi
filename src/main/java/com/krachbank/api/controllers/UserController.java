@@ -41,7 +41,7 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
     private final AccountController accountController;
 
     public UserController(UserService userService, AccountService accountService, AccountController accountController,
-                          TransactionService transactionService) {
+            TransactionService transactionService) {
         this.transactionsService = transactionService;
         this.accountService = accountService;
         this.userService = userService;
@@ -63,7 +63,7 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
 
         try {
             List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
-            System.out.println("Filter: " + filter);
+           
             Page<Account> accountsPage = accountService.getAccountsByUserId(id, filter);
             List<Account> accounts = accountsPage.getContent();
             for (Account account : accounts) {

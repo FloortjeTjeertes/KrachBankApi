@@ -5,17 +5,18 @@ import java.math.BigDecimal;
 import com.krachbank.api.models.AccountType;
 
 public class AccountFilter extends BaseFilter {
-    private String IBAN;
+    private String iban;
     private BigDecimal balanceMin;
     private BigDecimal balanceMax;
     private String accountType;
+    private Long userId;
   
     
-    public String getIBAN() {
-        return IBAN;
+    public String getIban() {
+        return iban;
     }
-    public void setIBAN(String iBAN) {
-        IBAN = iBAN;
+    public void setIban(String iBAN) {
+        iban = iBAN;
     }
     public BigDecimal getBalanceMin() {
         return balanceMin;
@@ -29,6 +30,13 @@ public class AccountFilter extends BaseFilter {
     public void setBalanceMax(BigDecimal balanceMax) {
         this.balanceMax = balanceMax;
     }
+    public Long getUserId() {
+        return userId;
+    }
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+    
 
 
     public AccountType getAccountType() {

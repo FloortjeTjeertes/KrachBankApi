@@ -192,12 +192,14 @@ public class AccountServiceJpa implements AccountService {
         if (filter == null) {
             throw new IllegalArgumentException("Filter cannot be null");
         }
+     
+        filter.setUserId(userId);
         Specification<Account> specification = makeAccountFilterSpecification(filter);
         Pageable pageable = filter.toPageAble();
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
-        Page<Account> accounts = accountRepository.findByUserId(userId, pageable);
+        Page<Account> accounts = accountRepository.findAll( specification,pageable);
 
         return accounts;
     }
@@ -207,8 +209,9 @@ public class AccountServiceJpa implements AccountService {
             List<Predicate> predicate = new ArrayList<>();
 
             if (filter != null) {
-                if (filter.getIBAN() != null && !filter.getIBAN().isEmpty()) {
-                    predicate.add(cb.equal(root.get("iban"), filter.getIBAN()));
+                System.out.println("Filter: " + filter.getIban());
+                if (filter.getIban() != null && !filter.getIban().isEmpty()) {
+                    predicate.add(cb.equal(root.get("iban"), filter.getIban()));
                 }
 
                 if (filter.getAccountType() != null) {
@@ -220,6 +223,10 @@ public class AccountServiceJpa implements AccountService {
                 if (filter.getBalanceMax() != null) {
                     predicate.add(cb.lessThanOrEqualTo(root.get("balance"), filter.getBalanceMax()));
                 }
+                if (filter.getUserId() != null) {
+                    predicate.add(cb.equal(root.get("user").get("id"), filter.getUserId()));
+                }
+             
             }
             return cb.and(predicate.toArray(new Predicate[0]));
         };
