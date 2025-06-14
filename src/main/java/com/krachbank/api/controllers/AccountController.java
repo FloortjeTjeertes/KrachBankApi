@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,9 +21,9 @@ import com.krachbank.api.dto.ErrorDTOResponse;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.filters.AccountFilter;
 import com.krachbank.api.models.Account;
+import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
 import com.krachbank.api.service.UserService;
-import com.krachbank.api.models.User;
 
 @RestController
 @RequestMapping("/accounts")

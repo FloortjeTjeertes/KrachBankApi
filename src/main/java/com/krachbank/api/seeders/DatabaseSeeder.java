@@ -14,7 +14,6 @@ import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.AccountRepository;
 import com.krachbank.api.repository.TransactionRepository;
-import com.krachbank.api.repository.UserRepository;
 import com.krachbank.api.service.UserService;
 
 import jakarta.annotation.PostConstruct;
@@ -24,15 +23,13 @@ public class DatabaseSeeder {
 
         private final UserController userController;
 
-        private final UserRepository userRepository;
         private final AccountRepository accountRepository;
         private final TransactionRepository transactionRepository;
         private final UserService userService;
 
-        public DatabaseSeeder(UserRepository userRepository, AccountRepository accountRepository,
+        public DatabaseSeeder(AccountRepository accountRepository,
                         TransactionRepository transactionRepository, UserService userService,
                         UserController userController) {
-                this.userRepository = userRepository;
                 this.accountRepository = accountRepository;
                 this.transactionRepository = transactionRepository;
                 this.userService = userService;
@@ -45,81 +42,58 @@ public class DatabaseSeeder {
                 user1.setFirstName("Alice");
                 user1.setLastName("Smith");
                 user1.setUsername("AliceSmith");
+                user1.setEmail("Alice@example.com");
+                user1.setBSN(123456789);
                 user1.setDailyLimit(new BigDecimal("1000.00"));
-                user1.setTransferLimit(new BigDecimal("500.00"));
-
-                user1.setEmail("alice@example.com");
                 user1.setPassword("password123");
                 user1.setPhoneNumber("+491234567890");
                 user1.setCreatedAt(LocalDateTime.now());
-                user1.setVerified(true); // Assuming users are not verified by default
-                user1.setBSN(123456789); // <-- Add this line
+                user1.setVerified(false); // Assuming users are not verified by default
+                user1.setTransferLimit(new BigDecimal("500.00"));
                 UserDTO savedUser1 = userService.createUser(userService.toDTO(user1));
 
                 User user2 = new User();
                 user2.setFirstName("Bob");
                 user2.setLastName("Johnson");
-                user2.setUsername("Bob Johnson");
+                user2.setUsername("BobJohnson");
+                user2.setBSN(987654321);
                 user2.setDailyLimit(new BigDecimal("500.00"));
-                user2.setTransferLimit(new BigDecimal("250.00")); // <-- Add this!
-
                 user2.setEmail("bob@example.com");
                 user2.setPassword("password123");
                 user2.setPhoneNumber("+491234567891");
                 user2.setCreatedAt(LocalDateTime.now());
                 user2.setVerified(true); // Assuming users are not verified by default
-                user2.setBSN(234567891); // <-- Positieve waarde
+                user2.setTransferLimit(new BigDecimal("300.00"));
                 UserDTO savedUser2 = userService.createUser(userService.toDTO(user2));
 
                 User ATM = new User();
                 ATM.setFirstName("ATM");
                 ATM.setLastName("User");
-                ATM.setUsername("ATM User");
+                ATM.setUsername("ATMUser");
+                ATM.setBSN(111223344);
                 ATM.setDailyLimit(new BigDecimal("2000.00"));
                 ATM.setEmail("ATM@ATM.com");
                 ATM.setPassword("password");
                 ATM.setPhoneNumber("+66666666666");
                 ATM.setCreatedAt(LocalDateTime.now());
                 ATM.setVerified(true);
-                ATM.setBSN(456789123); // <-- Voeg een positieve BSN toe
                 UserDTO savedATM = userService.createUser(userService.toDTO(ATM));
 
                 User admin = new User();
                 admin.setFirstName("Admin");
                 admin.setLastName("User");
-                admin.setUsername("Admin User");
-
+                admin.setUsername("AdminUser");
+                admin.setBSN(112233445);
+                admin.setDailyLimit(new BigDecimal("200.00"));
                 admin.setEmail("admin@example.com");
                 admin.setPassword("adminpass");
                 admin.setPhoneNumber("+491234567892");
                 admin.setCreatedAt(LocalDateTime.now());
                 admin.setVerified(true); // Assuming admins are verified by default
-                admin.setBSN(345678912); // <-- Positieve waarde
                 admin.setAdmin(true);
                 UserDTO savedAdmin = userService.createUser(userService.toDTO(admin));
                 // Create accounts
-                Account account1 = new Account();
-                account1.setIban(IBANGenerator.generateIBAN());
-                account1.setAbsoluteLimit(new BigDecimal(-100));
-                account1.setAccountType(AccountType.CHECKING);
-                account1.setBalance(new BigDecimal("5000.00"));
-                account1.setTransactionLimit(new BigDecimal(1000));
-                account1.setCreatedAt(LocalDateTime.now());
-                account1.setUser(userController.toModel(savedUser1));
-                account1.setVerifiedBy(userController.toModel(savedAdmin));
-                accountRepository.save(account1);
-
-                Account account2 = new Account();
-                account2.setIban(IBANGenerator.generateIBAN());
-                account2.setBalance(new BigDecimal("2000.00"));
-                account2.setUser(userController.toModel(savedUser1));
-                account2.setAccountType(AccountType.SAVINGS);
-                account2.setAbsoluteLimit(new BigDecimal(-100));
-                account2.setTransactionLimit(new BigDecimal(1000));
-                account2.setCreatedAt(LocalDateTime.now());
-                account2.setVerifiedBy(userController.toModel(savedAdmin));
-                accountRepository.save(account2);
-
+  
                 Account account3 = new Account();
                 account3.setIban(IBANGenerator.generateIBAN());
                 account3.setBalance(new BigDecimal("2000.00"));
@@ -157,9 +131,9 @@ public class DatabaseSeeder {
                 Transaction transaction = new com.krachbank.api.models.Transaction();
                 transaction.setAmount(new BigDecimal("250.00"));
                 transaction.setCreatedAt(LocalDateTime.now());
-                transaction.setFromAccount(account1);
+                transaction.setFromAccount(account3);
                 transaction.setInitiator(userController.toModel(savedUser1));
-                transaction.setToAccount(account2);
+                transaction.setToAccount(account4);
                 transaction.setDescription("Test transaction from Alice to Bob");
 
                 // Assuming you have a TransactionRepository and it's injected similarly
