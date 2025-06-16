@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Component;
 
 import com.krachbank.api.configuration.IBANGenerator;
-import com.krachbank.api.controllers.UserController;
 import com.krachbank.api.dto.UserDTO;
+import com.krachbank.api.mappers.UserMapper;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.AccountType;
 import com.krachbank.api.models.Transaction;
@@ -21,19 +21,19 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class DatabaseSeeder {
 
-        private final UserController userController;
 
         private final AccountRepository accountRepository;
         private final TransactionRepository transactionRepository;
         private final UserService userService;
+        private final UserMapper userMapper;
 
         public DatabaseSeeder(AccountRepository accountRepository,
                         TransactionRepository transactionRepository, UserService userService,
-                        UserController userController) {
+                         UserMapper userMapper) {
                 this.accountRepository = accountRepository;
                 this.transactionRepository = transactionRepository;
                 this.userService = userService;
-                this.userController = userController;
+                this.userMapper = userMapper;
         }
 
         @PostConstruct
@@ -97,34 +97,34 @@ public class DatabaseSeeder {
                 Account account3 = new Account();
                 account3.setIban(IBANGenerator.generateIBAN());
                 account3.setBalance(new BigDecimal("2000.00"));
-                account3.setUser(userController.toModel(savedUser2));
+                account3.setUser(userMapper.toModel(savedUser2));
                 account3.setAccountType(AccountType.SAVINGS);
                 account3.setAbsoluteLimit(new BigDecimal(-100));
                 account3.setTransactionLimit(new BigDecimal(1000));
                 account3.setCreatedAt(LocalDateTime.now());
-                account3.setVerifiedBy(userController.toModel(savedAdmin));
+                account3.setVerifiedBy(userMapper.toModel(savedAdmin));
                 accountRepository.save(account3);
 
                 Account account4 = new Account();
                 account4.setIban(IBANGenerator.generateIBAN());
                 account4.setBalance(new BigDecimal("2000.00"));
-                account4.setUser(userController.toModel(savedUser2));
+                account4.setUser(userMapper.toModel(savedUser2));
                 account4.setAccountType(AccountType.CHECKING);
                 account4.setAbsoluteLimit(new BigDecimal(-100));
                 account4.setTransactionLimit(new BigDecimal(1000));
                 account4.setCreatedAt(LocalDateTime.now());
-                account4.setVerifiedBy(userController.toModel(savedAdmin));
+                account4.setVerifiedBy(userMapper.toModel(savedAdmin));
                 accountRepository.save(account4);
 
                 Account ATMAccount = new Account();
                 ATMAccount.setIban(IBANGenerator.generateIBAN());
                 ATMAccount.setBalance(new BigDecimal("10000.00"));
-                ATMAccount.setUser(userController.toModel(savedATM));
+                ATMAccount.setUser(userMapper.toModel(savedATM));
                 ATMAccount.setAccountType(AccountType.CHECKING);
                 ATMAccount.setAbsoluteLimit(new BigDecimal(0));
                 ATMAccount.setTransactionLimit(new BigDecimal(2000));
                 ATMAccount.setCreatedAt(LocalDateTime.now());
-                ATMAccount.setVerifiedBy(userController.toModel(savedAdmin));
+                ATMAccount.setVerifiedBy(userMapper.toModel(savedAdmin));
                 accountRepository.save(ATMAccount);
 
                 // make an test Transaction
@@ -132,7 +132,7 @@ public class DatabaseSeeder {
                 transaction.setAmount(new BigDecimal("250.00"));
                 transaction.setCreatedAt(LocalDateTime.now());
                 transaction.setFromAccount(account3);
-                transaction.setInitiator(userController.toModel(savedAdmin));
+                transaction.setInitiator(userMapper.toModel(savedAdmin));
                 transaction.setToAccount(account4);
                 transaction.setDescription("Test transaction from Alice to Bob");
 

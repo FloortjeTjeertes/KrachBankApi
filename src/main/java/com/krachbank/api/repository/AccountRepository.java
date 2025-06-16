@@ -3,7 +3,6 @@ package com.krachbank.api.repository;
 import java.util.Optional;
 
 import org.iban4j.Iban;
-import org.springframework.boot.autoconfigure.rsocket.RSocketProperties.Server.Spec;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

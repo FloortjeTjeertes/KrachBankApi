@@ -1,10 +1,8 @@
 package com.krachbank.api.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.krachbank.api.filters.AccountFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +20,16 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
+import com.krachbank.api.dto.PaginatedResponseDTO;
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.filters.AccountFilter;
+import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.filters.UserFilter;
+import com.krachbank.api.mappers.AccountMapper;
+import com.krachbank.api.mappers.TransactionMapper;
 import com.krachbank.api.models.Account;
+import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
 import com.krachbank.api.service.TransactionService;
@@ -34,18 +37,21 @@ import com.krachbank.api.service.UserService;
 
 @RestController
 @RequestMapping("/users")
-public class UserController implements Controller<User, UserDTO, UserDTO> {
+public class UserController {
     private final UserService userService;
     private final AccountService accountService;
     private final TransactionService transactionsService;
-    private final AccountController accountController;
+    private final AccountMapper accountMapper;
+    private final TransactionMapper transactionMapper;
 
-    public UserController(UserService userService, AccountService accountService, AccountController accountController,
-            TransactionService transactionService) {
+    public UserController(UserService userService, AccountService accountService,
+            TransactionService transactionService, AccountMapper accountMapper, TransactionMapper transactionMapper) {
         this.transactionsService = transactionService;
         this.accountService = accountService;
         this.userService = userService;
-        this.accountController = accountController;
+        this.accountMapper = accountMapper;
+        this.transactionMapper =  transactionMapper;
+
     }
 
     @PostMapping("/{id}/verify")
@@ -62,14 +68,24 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
     public ResponseEntity<?> getAccountsForUser(@PathVariable Long id, @ModelAttribute AccountFilter filter) {
 
         try {
-            List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
-           
-            Page<Account> accountsPage = accountService.getAccountsByUserId(id, filter);
-            List<Account> accounts = accountsPage.getContent();
-            for (Account account : accounts) {
-                accountDTOs.add(accountController.toResponse(account));
+
+            if (id == null) {
+                ErrorDTOResponse error = new ErrorDTOResponse("User ID cannot be null", 400);
+                return ResponseEntity.status(error.getCode()).body(error);
             }
-            return ResponseEntity.ok(accountDTOs);
+            if (filter == null) {
+                filter = new AccountFilter();
+            }
+
+            Page<Account> accountsPage = accountService.getAccountsByUserId(id, filter);
+            int size = accountsPage.getSize();
+            if (size == 0) {
+                ErrorDTOResponse error = new ErrorDTOResponse("No accounts found for user with ID: " + id, 404);
+                return ResponseEntity.status(error.getCode()).body(error);
+            }
+            PaginatedResponseDTO<AccountDTOResponse> paginatedResponse = accountMapper
+                    .toPaginatedResponse(accountsPage);
+            return ResponseEntity.ok(paginatedResponse);
         } catch (Exception e) {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
@@ -78,10 +94,26 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
     }
 
     @GetMapping("/{id}/transactions")
-    public ResponseEntity<?> getTransactionsForUser(@PathVariable Long id, @RequestParam Map<String, String> params) {
+    public ResponseEntity<?> getTransactionsForUser(@PathVariable Long id, @ModelAttribute TransactionFilter params) {
         try {
-            List<TransactionDTOResponse> userTransactions = transactionsService.getUserTransactions(id, params);
-            return ResponseEntity.ok(userTransactions);
+            if (id == null) {
+                ErrorDTOResponse error = new ErrorDTOResponse("User ID cannot be null", 400);
+                return ResponseEntity.status(error.getCode()).body(error);
+            }
+            if (params == null) {
+                params = new TransactionFilter();
+            }
+
+            Page<Transaction> userTransactions = transactionsService.getUserTransactions(id, params);
+            if (userTransactions.getSize() == 0) {
+                ErrorDTOResponse error = new ErrorDTOResponse("No transactions found for user with ID: " + id, 404);
+                return ResponseEntity.status(error.getCode()).body(error);
+            }
+
+            PaginatedResponseDTO<TransactionDTOResponse> paginatedResponse = transactionMapper
+                    .toPaginatedResponse(userTransactions);
+
+            return ResponseEntity.ok(paginatedResponse);
         } catch (Exception e) {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
@@ -124,26 +156,4 @@ public class UserController implements Controller<User, UserDTO, UserDTO> {
         return userService.getAllUsers(params, filter);
     }
 
-    @Override
-    public User toModel(UserDTO dto) {
-        User user = new User();
-        user.setId(dto.getId());
-        user.setDailyLimit(dto.getDailyLimit());
-        user.setCreatedAt(dto.getCreatedAt());
-        user.setVerified(dto.isVerified());
-        user.setActive(dto.isActive());
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhoneNumber());
-        user.setBSN(dto.getBSN());
-        user.setAdmin(dto.getIsAdmin() != null ? dto.getIsAdmin() : false); // Fix here
-        return user;
-    }
-
-    @Override
-    public UserDTO toResponse(User dto) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'toResponse'");
-    }
 }

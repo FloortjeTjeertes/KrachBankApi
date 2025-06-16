@@ -186,7 +186,6 @@ public class AccountServiceJpa implements AccountService {
         return account;
     }
 
-    // add pagination filter to this method
     @Override
     public Page<Account> getAccountsByUserId(Long userId, AccountFilter filter) {
         if (filter == null) {

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 
+
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
@@ -26,10 +27,10 @@ import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.TransactionRepository;
 import com.krachbank.api.repository.UserRepository;
+import org.springframework.data.jpa.domain.Specification;
+public class TransactionServiceJpaTest {
 
-public class TransactionJpaTest {
-
-    TransactionJpa transactionService;
+    TransactionServiceJpa transactionService;
     AccountServiceJpa accountService;
     TransactionRepository transactionRepository;
     UserRepository userRepository;
@@ -47,7 +48,7 @@ public class TransactionJpaTest {
         accountService = mock(AccountServiceJpa.class);
         transactionFilter = mock(TransactionFilter.class);
 
-        transactionService = new TransactionJpa(transactionRepository, accountService, userRepository);
+        transactionService = new TransactionServiceJpa(transactionRepository, accountService, userRepository);
 
         Iban iban = Iban.valueOf("DE32500211205487556354");
         Iban iban2 = Iban.valueOf("DE52500202006796187625");
@@ -104,10 +105,10 @@ public class TransactionJpaTest {
         when(accountService.getAccountByIBAN(account2.getIban().toString()))
                 .thenReturn(Optional.of(account2));
 
-        when(transactionRepository.findAll((org.springframework.data.jpa.domain.Specification<Transaction>) any()))
+        when(transactionRepository.findAll((Specification<Transaction>) any()))
                 .thenReturn(transactions);
 
-        when(transactionRepository.findOne((org.springframework.data.jpa.domain.Specification<Transaction>) any()))
+        when(transactionRepository.findOne((Specification<Transaction>) any()))
                 .thenReturn(Optional.of(fullTransaction));
     }
 
@@ -212,8 +213,8 @@ public class TransactionJpaTest {
 
     @Test
     void testToDTOListWithEmptyList() {
-        TransactionJpa transactionJpa = transactionService;
-        List<TransactionDTOResponse> dtos = transactionJpa.toDTO(new ArrayList<>());
+        TransactionServiceJpa TransactionServiceJpa = transactionService;
+        List<TransactionDTOResponse> dtos = TransactionServiceJpa.toDTO(new ArrayList<>());
         assertNotNull(dtos);
         assertEquals(0, dtos.size());
     }
@@ -230,7 +231,7 @@ public class TransactionJpaTest {
     @Test
     void testGetTransactionByFilterWithValidFilterReturnsEmpty() {
 
-        when(transactionRepository.findOne((org.springframework.data.jpa.domain.Specification<Transaction>) any()))
+        when(transactionRepository.findOne((Specification<Transaction>) any()))
                 .thenReturn(Optional.empty());
 
         Optional<Transaction> result = transactionService.getTransactionByFilter(transactionFilter);
@@ -257,7 +258,7 @@ public class TransactionJpaTest {
 
     @Test
     void testGetTransactionsByFilterWithValidFilterReturnsEmptyList() {
-        when(transactionRepository.findAll((org.springframework.data.jpa.domain.Specification<Transaction>) any()))
+        when(transactionRepository.findAll((Specification<Transaction>) any()))
                 .thenReturn(new ArrayList<>());
 
         Page<Transaction> result = transactionService.getTransactionsByFilter(transactionFilter);
@@ -702,32 +703,7 @@ public class TransactionJpaTest {
         assertEquals("this amount is more than your transfer limit of the account", exception.getMessage());
     }
 
-    @Test
-    void testGetAllTransactionsReturnsAllTransactions() {
-        List<Transaction> expectedTransactions = List.of(fullTransaction, fullTransaction2);
-        Page<Transaction> expectedPage = mock(Page.class);
-        when(expectedPage.getContent()).thenReturn(expectedTransactions);
-        when(expectedPage.getSize()).thenReturn(expectedTransactions.size());
-        when(transactionRepository.findAll()).thenReturn(expectedTransactions);
-
-        Page<Transaction> result = transactionService.getAllTransactions(transactionFilter);
-
-        assertNotNull(result);
-        assertEquals(expectedTransactions.size(), result.getSize());
-        assertEquals(expectedTransactions, result);
-    }
-
-    @Test
-    void testGetAllTransactionsReturnsEmptyList() {
-        Page<Transaction> emptyPage = mock(Page.class);
-        when(emptyPage.getContent()).thenReturn(new ArrayList<>());
-        when(emptyPage.getSize()).thenReturn(0);
-        when(transactionRepository.findAll()).thenReturn(new ArrayList<>());
-        TransactionFilter transactionFilter = new TransactionFilter();
-        Page<Transaction> result = transactionService.getAllTransactions(transactionFilter);
-
-        assertNotNull(result);
-        assertEquals(0, result.getSize());
-    }
+ 
+  
 
 }

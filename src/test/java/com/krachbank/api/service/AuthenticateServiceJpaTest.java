@@ -1,12 +1,20 @@
 package com.krachbank.api.service;
 
-import com.krachbank.api.dto.AuthenticationResultDTO;
-import com.krachbank.api.dto.LoginRequest;
-import com.krachbank.api.dto.RegisterRequest;
-import com.krachbank.api.exceptions.InvalidCredentialsException;
-import com.krachbank.api.exceptions.UserAlreadyExistsException;
-import com.krachbank.api.models.User;
-import com.krachbank.api.repository.AuthenticationRepository;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,22 +25,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.krachbank.api.dto.AuthenticationResultDTO;
+import com.krachbank.api.dto.LoginRequest;
+import com.krachbank.api.dto.RegisterRequest;
+import com.krachbank.api.exceptions.InvalidCredentialsException;
+import com.krachbank.api.exceptions.UserAlreadyExistsException;
+import com.krachbank.api.models.User;
+import com.krachbank.api.repository.AuthenticationRepository;
 
 class AuthenticationServiceJpaTest {
 

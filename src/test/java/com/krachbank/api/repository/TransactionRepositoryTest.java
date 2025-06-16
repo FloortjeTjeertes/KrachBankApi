@@ -13,7 +13,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.Transaction;
-import com.krachbank.api.service.TransactionJpa;
+import com.krachbank.api.service.TransactionServiceJpa;
 import com.krachbank.api.filters.TransactionFilter;
 
 @DataJpaTest
@@ -60,7 +60,7 @@ public class TransactionRepositoryTest {
         filter.setSenderId(fromAccount.getId());
 
         List<Transaction> results = transactionRepository.findAll(
-                TransactionJpa.MakeTransactionsSpecification(filter));
+                TransactionServiceJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results);
         results.forEach(transaction -> {
@@ -76,7 +76,7 @@ public class TransactionRepositoryTest {
         filter.setSenderId(999L);
 
         List<Transaction> results = transactionRepository.findAll(
-                TransactionJpa.MakeTransactionsSpecification(filter));
+                TransactionServiceJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results, "Results should not be null even if no transactions are found");
         assertEquals(0, results.size(), "Expected no transactions to be found for a non-existent sender ID");
@@ -88,7 +88,7 @@ public class TransactionRepositoryTest {
         filter.setReceiverId(toAccount.getId());
 
         List<Transaction> results = transactionRepository.findAll(
-                TransactionJpa.MakeTransactionsSpecification(filter));
+                TransactionServiceJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results);
         results.forEach(transaction -> {
@@ -103,7 +103,7 @@ public class TransactionRepositoryTest {
         TransactionFilter filter = new TransactionFilter();
         filter.setMinAmount(BigDecimal.valueOf(100.0));
         List<Transaction> results = transactionRepository.findAll(
-                TransactionJpa.MakeTransactionsSpecification(filter));
+                TransactionServiceJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results);
         results.forEach(transaction -> {
@@ -117,7 +117,7 @@ public class TransactionRepositoryTest {
         TransactionFilter filter = new TransactionFilter();
         filter.setMaxAmount(BigDecimal.valueOf(100.0));
         List<Transaction> results = transactionRepository.findAll(
-                TransactionJpa.MakeTransactionsSpecification(filter));
+                TransactionServiceJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results);
         results.forEach(transaction -> {
@@ -131,7 +131,7 @@ public class TransactionRepositoryTest {
         TransactionFilter filter = new TransactionFilter();
         filter.setBeforeDate(LocalDateTime.of(2025, 1, 2, 1, 1));
         List<Transaction> results = transactionRepository.findAll(
-                TransactionJpa.MakeTransactionsSpecification(filter));
+                TransactionServiceJpa.MakeTransactionsSpecification(filter));
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getCreatedAt());
@@ -145,7 +145,7 @@ public class TransactionRepositoryTest {
         filter.setAfterDate(LocalDateTime.of(2025, 1, 1, 1, 1));
 
         List<Transaction> results = transactionRepository.findAll(
-                TransactionJpa.MakeTransactionsSpecification(filter));
+                TransactionServiceJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results);
         results.forEach(transaction -> {

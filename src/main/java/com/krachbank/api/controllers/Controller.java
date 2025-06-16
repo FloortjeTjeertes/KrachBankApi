@@ -11,4 +11,7 @@ public interface Controller<M extends Model ,  Res extends DTO,Req extends DTO >
     M toModel(Req model);
 
     Res toResponse(M model);
+
+
+
 } 
