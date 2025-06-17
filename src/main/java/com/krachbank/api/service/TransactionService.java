@@ -25,6 +25,7 @@ public interface TransactionService extends Service<TransactionDTOResponse, Tran
 
     public Page<Transaction> getTransactionsByFilter(TransactionFilter filter);
 
+    public Page<Transaction> getTransactionsByIBAN(String iban, TransactionFilter filter);
 
     @Transactional
     public Optional<Transaction> updateTransaction(Long id, Transaction transaction) throws Exception;

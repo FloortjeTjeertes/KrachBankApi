@@ -19,26 +19,38 @@ import com.krachbank.api.dto.AccountDTORequest;
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
 import com.krachbank.api.dto.PaginatedResponseDTO;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.filters.AccountFilter;
+import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.mappers.AccountMapper;
+import com.krachbank.api.mappers.TransactionMapper;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.AccountType;
+import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
+import com.krachbank.api.service.TransactionService;
 import com.krachbank.api.service.UserService;
+
 
 @RestController
 @RequestMapping("/accounts")
 public class AccountController {
     private final AccountService accountService;
     private final UserService userService;
-    private AccountMapper accountMapper;
+    private final TransactionService transactionService;
+    private final AccountMapper accountMapper;
+    private final TransactionMapper transactionMapper;
 
-    public AccountController(AccountService accountService, UserService userService, AccountMapper accountMapper) {
+
+    public AccountController(AccountService accountService, UserService userService, AccountMapper accountMapper,
+            TransactionService transactionService, TransactionMapper transactionMapper) {
         this.accountService = accountService;
         this.userService = userService;
         this.accountMapper = accountMapper;
+        this.transactionService = transactionService;
+        this.transactionMapper = transactionMapper;
     }
 
     @PostMapping
@@ -105,7 +117,10 @@ public class AccountController {
     @GetMapping("/{iban}")
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
-
+            if (iban == null || iban.isEmpty()) {
+                ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
+                return ResponseEntity.status(error.getCode()).body(error);
+            }
             accountService.getAccountByIBAN(iban);
 
             return ResponseEntity.ok(accountMapper.toResponse(accountService.getAccountByIBAN(iban).get()));
@@ -115,6 +130,32 @@ public class AccountController {
         }
 
     }
+
+    @GetMapping("/{iban}/transactions")
+    public ResponseEntity<?> getTransactionsForAccount(@PathVariable String iban,@ModelAttribute TransactionFilter filter) {
+        try {
+            if (iban == null || iban.isEmpty()) {
+                ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
+                return ResponseEntity.status(error.getCode()).body(error);
+            }
+            if (filter == null) {
+                filter = new TransactionFilter();
+            }
+            Page<Transaction> transactionsPage = transactionService.getTransactionsByIBAN(iban, filter);
+            if (transactionsPage.getSize() < 0) {
+                ErrorDTOResponse error = new ErrorDTOResponse("No transactions found for this account", 404);
+                return ResponseEntity.status(error.getCode()).body(error);
+            }
+
+            PaginatedResponseDTO<TransactionDTOResponse> paginatedResponse = transactionMapper.toPaginatedResponse(transactionsPage);
+
+            return ResponseEntity.ok(paginatedResponse);
+        } catch (Exception e) {
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
+            return ResponseEntity.status(error.getCode()).body(error);
+        }
+    }
+    
 
     @GetMapping()
     public ResponseEntity<?> getAccounts(@ModelAttribute AccountFilter filter) {
@@ -138,5 +179,6 @@ public class AccountController {
         }
 
     }
+
 
 }

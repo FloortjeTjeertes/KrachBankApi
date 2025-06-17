@@ -202,19 +202,17 @@ public class TransactionServiceJpa implements TransactionService {
         if (filter == null) {
             filter = new TransactionFilter();
         }
-        
+
         Specification<Transaction> filterSpecification = toAndOrFromAccountBelongsToUser(userId);
 
-        // If the filter has other criteria, combine them with the user ID filter (note: combining whit null value has no negative effect)
-        // if (filter != null ) {
-        //     filterSpecification = filterSpecification.and(MakeTransactionsSpecification(filter));
-        // }
+        // If the filter has other criteria, combine them with the user ID filter (note:
+        // combining whit null value has no negative effect)
+        if (filter != null) {
+            filterSpecification = filterSpecification.and(MakeTransactionsSpecification(filter));
+        }
 
         Page<Transaction> allTransactions = transactionRepository
                 .findAll(filterSpecification, filter.toPageAble());
-
-        
-        
 
         return allTransactions;
     }
@@ -238,6 +236,22 @@ public class TransactionServiceJpa implements TransactionService {
             transactionDTOs.add(toDTO(transaction));
         }
         return transactionDTOs;
+    }
+
+    @Override
+    public Page<Transaction> getTransactionsByIBAN(String iban, TransactionFilter filter) {
+        if (iban == null || iban.isEmpty()) {
+            throw new IllegalArgumentException("invalid iban given");
+        }
+        if (filter == null) {
+            filter = new TransactionFilter();
+        }
+        Specification<Transaction> spec = MakeTransactionsSpecification(filter);
+        spec = spec.and(toAndOrFromAccount(iban));
+
+        Page<Transaction> transactionPage = transactionRepository.findAll(spec, filter.toPageAble());
+
+        return transactionPage;
     }
 
     // TODO: maybe move this to an helper class
@@ -303,15 +317,23 @@ public class TransactionServiceJpa implements TransactionService {
 
     }
 
-    public static Specification<Transaction> toAndOrFromAccountBelongsToUser(Long accountId) {
+    public static Specification<Transaction> toAndOrFromAccountBelongsToUser(Long userID) {
 
-        if (accountId == null || accountId <= 0) {
+        if (userID == null || userID <= 0) {
             throw new IllegalArgumentException("Account ID cannot be null or negative");
         }
         return (root, query, cb) -> cb.or(
-                cb.equal(root.get("fromAccount").get("user").get("id"), accountId),
-                cb.equal(root.get("toAccount").get("user").get("id"), accountId)
-        );
+                cb.equal(root.get("fromAccount").get("user").get("id"), userID),
+                cb.equal(root.get("toAccount").get("user").get("id"), userID));
+    }
+
+    public static Specification<Transaction> toAndOrFromAccount(String iban) {
+        if (iban == null || iban.isEmpty()) {
+            throw new IllegalArgumentException("iban cannot be null or empty");
+        }
+        return (root, query, cb) -> cb.or(
+                cb.equal(root.get("fromAccount").get("iban"), iban),
+                cb.equal(root.get("toAccount").get("iban"), iban));
     }
 
     public boolean isValidTransaction(Transaction transaction) {

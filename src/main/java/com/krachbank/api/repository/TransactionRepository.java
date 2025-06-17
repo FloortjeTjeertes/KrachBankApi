@@ -12,6 +12,7 @@ import com.krachbank.api.models.Transaction;
 public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
 
     List<Transaction> findByInitiatorIdOrderByCreatedAtAsc(Long initiatorId);
+    
 
 
 
