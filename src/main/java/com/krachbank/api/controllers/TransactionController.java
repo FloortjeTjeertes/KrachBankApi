@@ -51,7 +51,7 @@ public class TransactionController {
 
         } catch (Exception e) {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
-            return ResponseEntity.status(error.getCode()).body(error.getMessage());
+            return ResponseEntity.status(error.getCode()).body(error);
         }
 
     }
@@ -73,7 +73,7 @@ public class TransactionController {
             }
         } catch (Exception e) {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
-            return ResponseEntity.status(error.getCode()).body(error.getMessage());
+            return ResponseEntity.status(error.getCode()).body(error);
         }
     }
 
