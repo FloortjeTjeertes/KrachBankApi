@@ -57,7 +57,7 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_BySenderId() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setSenderId(fromAccount.getId());
+        filter.setSenderIban(fromAccount.getIban().toString());
 
         List<Transaction> results = transactionRepository.findAll(
                 TransactionServiceJpa.MakeTransactionsSpecification(filter));
@@ -66,14 +66,14 @@ public class TransactionRepositoryTest {
         results.forEach(transaction -> {
             assertNotNull(transaction.getFromAccount());
             assertNotNull(transaction.getFromAccount().getId());
-            assertEquals(filter.getSenderId(), transaction.getFromAccount().getId());
+            assertEquals(filter.getSenderIban(), transaction.getFromAccount().getId());
         });
     }
 
     @Test
     void testMakeTransactionsSpecification_SenderIdNotFound() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setSenderId(999L);
+        filter.setSenderIban(null); // Non-existent sender ID
 
         List<Transaction> results = transactionRepository.findAll(
                 TransactionServiceJpa.MakeTransactionsSpecification(filter));
@@ -85,7 +85,7 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_ByReceiverId() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setReceiverId(toAccount.getId());
+        filter.setReceiverIban(toAccount.getIban().toString());
 
         List<Transaction> results = transactionRepository.findAll(
                 TransactionServiceJpa.MakeTransactionsSpecification(filter));
@@ -94,7 +94,7 @@ public class TransactionRepositoryTest {
         results.forEach(transaction -> {
             assertNotNull(transaction.getToAccount());
             assertNotNull(transaction.getToAccount().getId());
-            assertEquals(filter.getReceiverId(), transaction.getToAccount().getId());
+            assertEquals(filter.getReceiverIban(), transaction.getToAccount().getId());
         });
     }
 
@@ -129,7 +129,7 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_ByBeforeDate() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setBeforeDate(LocalDateTime.of(2025, 1, 2, 1, 1));
+        filter.setBeforeDate(LocalDateTime.of(2025, 1, 2, 1, 1).toString());
         List<Transaction> results = transactionRepository.findAll(
                 TransactionServiceJpa.MakeTransactionsSpecification(filter));
         assertNotNull(results);
@@ -142,7 +142,7 @@ public class TransactionRepositoryTest {
     @Test
     void testMakeTransactionsSpecification_ByAfterDate() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setAfterDate(LocalDateTime.of(2025, 1, 1, 1, 1));
+        filter.setAfterDate(LocalDateTime.of(2025, 1, 1, 1, 1).toString());
 
         List<Transaction> results = transactionRepository.findAll(
                 TransactionServiceJpa.MakeTransactionsSpecification(filter));

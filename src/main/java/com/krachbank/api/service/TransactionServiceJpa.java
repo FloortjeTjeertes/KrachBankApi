@@ -293,11 +293,11 @@ public class TransactionServiceJpa implements TransactionService {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (filter.getSenderId() != null) {
-                predicates.add(cb.equal(root.get("fromAccount").get("id"), filter.getSenderId()));
+            if (filter.getSenderIban() != null) {
+                predicates.add(cb.equal(root.get("fromAccount").get("iban"), filter.getSenderIban()));
             }
-            if (filter.getReceiverId() != null) {
-                predicates.add(cb.equal(root.get("toAccount").get("id"), filter.getReceiverId()));
+            if (filter.getReceiverIban() != null) {
+                predicates.add(cb.equal(root.get("toAccount").get("iban"), filter.getReceiverIban()));
             }
             if (filter.getMinAmount() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), filter.getMinAmount()));
@@ -307,10 +307,10 @@ public class TransactionServiceJpa implements TransactionService {
             }
 
             if (filter.getBeforeDate() != null) {
-                predicates.add(cb.lessThan(root.get("date"), filter.getBeforeDate()));
+                predicates.add(cb.lessThan(root.get("createdAt"), filter.getBeforeDate()));
             }
             if (filter.getAfterDate() != null) {
-                predicates.add(cb.greaterThan(root.get("date"), filter.getAfterDate()));
+                predicates.add(cb.greaterThan(root.get("createdAt"), filter.getAfterDate()));
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
