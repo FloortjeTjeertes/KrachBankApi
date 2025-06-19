@@ -4,29 +4,29 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class TransactionFilter extends BaseFilter {
-    private Long senderId;
-    private Long receiverId;
+    private String senderIban;
+    private String receiverIban;
     private Long initiatorId;
 
     private BigDecimal minAmount;
     private BigDecimal maxAmount;
-    private LocalDateTime beforeDate;
-    private LocalDateTime afterDate;
+    private String beforeDate;
+    private String afterDate;
 
-    public Long getSenderId() {
-        return senderId;
+    public String getSenderIban() {
+        return senderIban;
     }
 
-    public void setSenderId(Long senderId) {
-        this.senderId = senderId;
+    public void setSenderIban(String senderId) {
+        this.senderIban = senderId;
     }
 
-    public Long getReceiverId() {
-        return receiverId;
+    public String getReceiverIban() {
+        return receiverIban;
     }
 
-    public void setReceiverId(Long receiverId) {
-        this.receiverId = receiverId;
+    public void setReceiverIban(String receiverId) {
+        this.receiverIban = receiverId;
     }
 
     public Long getInitiatorId() {
@@ -54,18 +54,18 @@ public class TransactionFilter extends BaseFilter {
     }
 
     public LocalDateTime getBeforeDate() {
-        return beforeDate;
+        return beforeDate != null ? LocalDateTime.parse(beforeDate) : null;
     }
 
-    public void setBeforeDate(LocalDateTime beforeDate) {
+    public void setBeforeDate(String beforeDate) {
         this.beforeDate = beforeDate;
     }
 
     public LocalDateTime getAfterDate() {
-        return afterDate;
+        return afterDate != null ? LocalDateTime.parse(afterDate) : null;
     }
 
-    public void setAfterDate(LocalDateTime afterDate) {
+    public void setAfterDate(String afterDate) {
         this.afterDate = afterDate;
     }
 

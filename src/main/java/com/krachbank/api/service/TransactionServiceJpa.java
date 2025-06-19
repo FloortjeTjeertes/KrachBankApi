@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -13,7 +12,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.krachbank.api.dto.TransactionDTOResponse;
-import com.krachbank.api.filters.BaseFilter;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.AccountType;
@@ -26,7 +24,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 
 @Service
-public class TransactionJpa implements TransactionService {
+public class TransactionServiceJpa implements TransactionService {
     private static final Long ATM_USER_ID = 3L; // Add this line - assuming ATM's owner ID is 3
 
     private final AccountServiceJpa accountServiceJpa;
@@ -35,7 +33,7 @@ public class TransactionJpa implements TransactionService {
 
     private final UserRepository userRepository;
 
-    public TransactionJpa(TransactionRepository transactionRepository, AccountServiceJpa accountServiceJpa,
+    public TransactionServiceJpa(TransactionRepository transactionRepository, AccountServiceJpa accountServiceJpa,
             UserRepository userRepository) {
         this.transactionRepository = transactionRepository;
         this.accountServiceJpa = accountServiceJpa;
@@ -52,6 +50,7 @@ public class TransactionJpa implements TransactionService {
         }
         transaction.setInitiator(user.get());
 
+        // Validate the transaction
         isValidTransaction(transaction);
 
         Account sendingAccount = transaction.getFromAccount();
@@ -70,9 +69,9 @@ public class TransactionJpa implements TransactionService {
         // TODO: check if the user is an admin - This is still relevant.
 
         if (!sendingAccount.getUser().getId().equals(ATM_USER_ID) && !sendingAccount.getUser().equals(user.get())) {
-            throw new IllegalArgumentException("You can only transfer money from your own accounts or the ATM account.");
+            throw new IllegalArgumentException(
+                    "You can only transfer money from your own accounts or the ATM account.");
         }
-
 
         // check if the transaction is to another persons account
         if (!receivingAccount.getUser().equals(sendingAccount.getUser())) {
@@ -174,16 +173,6 @@ public class TransactionJpa implements TransactionService {
     }
 
     @Override
-    public Page<Transaction> getAllTransactions(BaseFilter filter) {
-        Pageable pageable = filter.toPageAble();
-
-        Page<Transaction> accountPage = transactionRepository.findAll(pageable);
-
-        return accountPage;
-
-    }
-
-    @Override
     @Transactional
     public Optional<Transaction> updateTransaction(Long id, Transaction transaction) throws Exception {
         if (id == null || id <= 0) {
@@ -197,72 +186,35 @@ public class TransactionJpa implements TransactionService {
         }
 
         transaction.setId(id);
-        Transaction existingTransaction = transactionRepository.save(transaction);
+        transactionRepository.save(transaction);
 
         Optional<Transaction> updatedTransaction = getTransactionById(id);
 
         return updatedTransaction;
     }
 
-    public static Specification<Transaction> MakeTransactionsSpecification(TransactionFilter filter) {
-        return (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            if (filter.getSenderId() != null) {
-                predicates.add(cb.equal(root.get("fromAccount").get("id"), filter.getSenderId()));
-            }
-            if (filter.getReceiverId() != null) {
-                predicates.add(cb.equal(root.get("toAccount").get("id"), filter.getReceiverId()));
-            }
-            if (filter.getMinAmount() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), filter.getMinAmount()));
-            }
-            if (filter.getMaxAmount() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("amount"), filter.getMaxAmount()));
-            }
-
-            if (filter.getBeforeDate() != null) {
-                predicates.add(cb.lessThan(root.get("date"), filter.getBeforeDate()));
-            }
-            if (filter.getAfterDate() != null) {
-                predicates.add(cb.greaterThan(root.get("date"), filter.getAfterDate()));
-            }
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-
-    }
-
-    public boolean isValidTransaction(Transaction transaction) {
-        if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Invalid transaction amount");
-        }
-        if (transaction.getFromAccount() == null || transaction.getToAccount() == null) {
-            throw new IllegalArgumentException("Invalid transaction accounts");
-        }
-        if (transaction.getFromAccount().equals(transaction.getToAccount())) {
-            throw new IllegalArgumentException("Transaction accounts must be different");
-        }
-
-        // TODO: should i validate the description field?
-        return true;
-    }
-
     @Override
-    public List<TransactionDTOResponse> getUserTransactions(Long userId, Map<String, String> params) {
+    public Page<Transaction> getUserTransactions(Long userId, TransactionFilter filter) {
         // Get all transactions where the user is either the sender or receiver
-        List<Transaction> sentTransactions = transactionRepository.findByFromAccountIdOrderByCreatedAtAsc(userId);
-        List<Transaction> receivedTransactions = transactionRepository.findByToAccountIdOrderByCreatedAtAsc(userId);
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("invalid user id given");
+        }
+        if (filter == null) {
+            filter = new TransactionFilter();
+        }
 
-        List<Transaction> allTransactions = new ArrayList<>();
-        allTransactions.addAll(sentTransactions);
-        allTransactions.addAll(receivedTransactions);
+        Specification<Transaction> filterSpecification = toAndOrFromAccountBelongsToUser(userId);
 
-        // Remove duplicates if any (e.g., if user sent money to themselves)
-        List<Transaction> uniqueTransactions = allTransactions.stream()
-                .distinct()
-                .toList();
+        // If the filter has other criteria, combine them with the user ID filter (note:
+        // combining whit null value has no negative effect)
+        if (filter != null) {
+            filterSpecification = filterSpecification.and(MakeTransactionsSpecification(filter));
+        }
 
-        return toDTO(uniqueTransactions);
+        Page<Transaction> allTransactions = transactionRepository
+                .findAll(filterSpecification, filter.toPageAble());
+
+        return allTransactions;
     }
 
     @Override
@@ -286,6 +238,22 @@ public class TransactionJpa implements TransactionService {
         return transactionDTOs;
     }
 
+    @Override
+    public Page<Transaction> getTransactionsByIBAN(String iban, TransactionFilter filter) {
+        if (iban == null || iban.isEmpty()) {
+            throw new IllegalArgumentException("invalid iban given");
+        }
+        if (filter == null) {
+            filter = new TransactionFilter();
+        }
+        Specification<Transaction> spec = MakeTransactionsSpecification(filter);
+        spec = spec.and(toAndOrFromAccount(iban));
+
+        Page<Transaction> transactionPage = transactionRepository.findAll(spec, filter.toPageAble());
+
+        return transactionPage;
+    }
+
     // TODO: maybe move this to an helper class
     public Boolean reachedAbsoluteLimit(Account account, BigDecimal amountToSubtract) throws Exception {
         BigDecimal resultingAmount = account.getBalance().subtract(amountToSubtract);
@@ -300,7 +268,7 @@ public class TransactionJpa implements TransactionService {
     public Boolean reachedDailyTransferLimit(User user, BigDecimal amount, LocalDateTime today) throws Exception {
 
         BigDecimal totalSpendBeforeToday = getUserTotalAmountSpendAtDate(user, today); // total
-                                                                                         // amount of
+                                                                                       // amount of
                                                                                        // money spend
         // today
         BigDecimal totalSpendToday = totalSpendBeforeToday.add(amount);
@@ -318,6 +286,68 @@ public class TransactionJpa implements TransactionService {
         if (account.getTransactionLimit().compareTo(amount) < 0) {
             throw new Exception("this amount is more than your transfer limit of the account");
         }
+        return true;
+    }
+
+    public static Specification<Transaction> MakeTransactionsSpecification(TransactionFilter filter) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (filter.getSenderIban() != null) {
+                predicates.add(cb.equal(root.get("fromAccount").get("iban"), filter.getSenderIban()));
+            }
+            if (filter.getReceiverIban() != null) {
+                predicates.add(cb.equal(root.get("toAccount").get("iban"), filter.getReceiverIban()));
+            }
+            if (filter.getMinAmount() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), filter.getMinAmount()));
+            }
+            if (filter.getMaxAmount() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("amount"), filter.getMaxAmount()));
+            }
+
+            if (filter.getBeforeDate() != null) {
+                predicates.add(cb.lessThan(root.get("createdAt"), filter.getBeforeDate()));
+            }
+            if (filter.getAfterDate() != null) {
+                predicates.add(cb.greaterThan(root.get("createdAt"), filter.getAfterDate()));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+    }
+
+    public static Specification<Transaction> toAndOrFromAccountBelongsToUser(Long userID) {
+
+        if (userID == null || userID <= 0) {
+            throw new IllegalArgumentException("Account ID cannot be null or negative");
+        }
+        return (root, query, cb) -> cb.or(
+                cb.equal(root.get("fromAccount").get("user").get("id"), userID),
+                cb.equal(root.get("toAccount").get("user").get("id"), userID));
+    }
+
+    public static Specification<Transaction> toAndOrFromAccount(String iban) {
+        if (iban == null || iban.isEmpty()) {
+            throw new IllegalArgumentException("iban cannot be null or empty");
+        }
+        return (root, query, cb) -> cb.or(
+                cb.equal(root.get("fromAccount").get("iban"), iban),
+                cb.equal(root.get("toAccount").get("iban"), iban));
+    }
+
+    public boolean isValidTransaction(Transaction transaction) {
+        if (transaction.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Invalid transaction amount");
+        }
+        if (transaction.getFromAccount() == null || transaction.getToAccount() == null) {
+            throw new IllegalArgumentException("Invalid transaction accounts");
+        }
+        if (transaction.getFromAccount().equals(transaction.getToAccount())) {
+            throw new IllegalArgumentException("Transaction accounts must be different");
+        }
+
+        // TODO: should i validate the description field?
         return true;
     }
 

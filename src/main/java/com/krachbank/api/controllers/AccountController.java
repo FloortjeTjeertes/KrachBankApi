@@ -18,22 +18,39 @@ import com.krachbank.api.configuration.IBANGenerator;
 import com.krachbank.api.dto.AccountDTORequest;
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
+import com.krachbank.api.dto.PaginatedResponseDTO;
+import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.filters.AccountFilter;
+import com.krachbank.api.filters.TransactionFilter;
+import com.krachbank.api.mappers.AccountMapper;
+import com.krachbank.api.mappers.TransactionMapper;
 import com.krachbank.api.models.Account;
+import com.krachbank.api.models.AccountType;
+import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
+import com.krachbank.api.service.TransactionService;
 import com.krachbank.api.service.UserService;
+
 
 @RestController
 @RequestMapping("/accounts")
-public class AccountController implements Controller<Account, AccountDTOResponse, AccountDTORequest> {
+public class AccountController {
     private final AccountService accountService;
     private final UserService userService;
+    private final TransactionService transactionService;
+    private final AccountMapper accountMapper;
+    private final TransactionMapper transactionMapper;
 
-    public AccountController(AccountService accountService, UserService userService) {
+
+    public AccountController(AccountService accountService, UserService userService, AccountMapper accountMapper,
+            TransactionService transactionService, TransactionMapper transactionMapper) {
         this.accountService = accountService;
         this.userService = userService;
+        this.accountMapper = accountMapper;
+        this.transactionService = transactionService;
+        this.transactionMapper = transactionMapper;
     }
 
     @PostMapping
@@ -62,9 +79,9 @@ public class AccountController implements Controller<Account, AccountDTOResponse
                                         : java.math.BigDecimal.ZERO);
                 // Set account type: first is CHECKINGS, second is SAVINGS
                 if (i == 0) {
-                    account.setAccountType(com.krachbank.api.models.AccountType.CHECKING);
+                    account.setAccountType(AccountType.CHECKING);
                 } else {
-                    account.setAccountType(com.krachbank.api.models.AccountType.SAVINGS);
+                    account.setAccountType(AccountType.SAVINGS);
                 }
                 // --- Set the account owner ---
                 if (accountRequest.getUserId() == null) {
@@ -100,33 +117,62 @@ public class AccountController implements Controller<Account, AccountDTOResponse
     @GetMapping("/{iban}")
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
-       
-
+            if (iban == null || iban.isEmpty()) {
+                ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
+                return ResponseEntity.status(error.getCode()).body(error);
+            }
             accountService.getAccountByIBAN(iban);
 
-            return ResponseEntity.ok(toResponse(accountService.getAccountByIBAN(iban).get()));
+            return ResponseEntity.ok(accountMapper.toResponse(accountService.getAccountByIBAN(iban).get()));
         } catch (Exception e) {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
         }
 
     }
+
+    @GetMapping("/{iban}/transactions")
+    public ResponseEntity<?> getTransactionsForAccount(@PathVariable String iban,@ModelAttribute TransactionFilter filter) {
+        try {
+            if (iban == null || iban.isEmpty()) {
+                ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
+                return ResponseEntity.status(error.getCode()).body(error);
+            }
+            if (filter == null) {
+                filter = new TransactionFilter();
+            }
+            Page<Transaction> transactionsPage = transactionService.getTransactionsByIBAN(iban, filter);
+            if (transactionsPage.getSize() < 0) {
+                ErrorDTOResponse error = new ErrorDTOResponse("No transactions found for this account", 404);
+                return ResponseEntity.status(error.getCode()).body(error);
+            }
+
+            PaginatedResponseDTO<TransactionDTOResponse> paginatedResponse = transactionMapper.toPaginatedResponse(transactionsPage);
+
+            return ResponseEntity.ok(paginatedResponse);
+        } catch (Exception e) {
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
+            return ResponseEntity.status(error.getCode()).body(error);
+        }
+    }
+    
 
     @GetMapping()
     public ResponseEntity<?> getAccounts(@ModelAttribute AccountFilter filter) {
         try {
 
-            List<AccountDTOResponse> accountDTOs = new ArrayList<AccountDTOResponse>();
+            if (filter == null) {
+                filter = new AccountFilter();
+            }
             Page<Account> accountsPage = accountService.getAccountsByFilter(filter);
 
-            List<Account> accounts = accountsPage.getContent();
-
-            if (accounts == null || accounts.isEmpty()) {
-                return ResponseEntity.noContent().build();
+            if (accountsPage.getSize() < 0) {
+                ErrorDTOResponse error = new ErrorDTOResponse("No accounts found", 404);
+                return ResponseEntity.status(error.getCode()).body(error);
             }
-            accountDTOs = toResponseList(accounts);
-
-            return ResponseEntity.ok(accountDTOs);
+            PaginatedResponseDTO<AccountDTOResponse> paginatedResponse = accountMapper
+                    .toPaginatedResponse(accountsPage);
+            return ResponseEntity.ok(paginatedResponse);
         } catch (Exception e) {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
@@ -134,55 +180,5 @@ public class AccountController implements Controller<Account, AccountDTOResponse
 
     }
 
-    @Override
-    public Account toModel(AccountDTORequest dto) {
-        if (dto == null) {
-            throw new IllegalArgumentException("AccountDTOResponse cannot be null");
-        }
-        Account account = new Account();
-        account.setIban(IBANGenerator.generateIBAN());
-        account.setAccountType(dto.getAccountType());
-        account.setBalance(dto.getBalance());
-        account.setAbsoluteLimit(dto.getAbsoluteLimit());
-        account.setTransactionLimit(dto.getTransactionLimit());
-        account.setCreatedAt(LocalDateTime.now());
-
-        return new Account();
-    }
-
-    // TODO: maybe make this generic
-    public List<Account> toModelList(List<AccountDTORequest> dtoList) {
-        List<Account> accounts = new ArrayList<>();
-        for (AccountDTORequest dto : dtoList) {
-            accounts.add(toModel(dto));
-        }
-        return accounts;
-    }
-
-    // TODO: maybe make this generic
-    public List<AccountDTOResponse> toResponseList(List<Account> models) {
-        List<AccountDTOResponse> dtos = new ArrayList<>();
-        for (Account model : models) {
-            dtos.add(toResponse(model));
-        }
-        return dtos;
-    }
-
-    @Override
-    public AccountDTOResponse toResponse(Account model) {
-        if (model == null) {
-            throw new IllegalArgumentException("Account cannot be null");
-        }
-        AccountDTOResponse dto = new AccountDTOResponse();
-        dto.setIban(model.getIban().toString());
-        dto.setBalance(model.getBalance());
-        dto.setOwner(model.getUser().getId());
-        dto.setAbsoluteLimit(model.getAbsoluteLimit());
-        dto.setTransactionLimit(model.getTransactionLimit());
-        dto.setType(model.getAccountType());
-        dto.setCreatedAt(model.getCreatedAt() != null ? model.getCreatedAt().toString() : "Unknown");
-
-        return dto;
-    }
 
 }

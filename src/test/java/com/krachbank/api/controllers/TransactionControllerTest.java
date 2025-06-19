@@ -1,7 +1,9 @@
 package com.krachbank.api.controllers;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,10 +22,10 @@ import org.springframework.http.ResponseEntity;
 import com.krachbank.api.dto.TransactionDTORequest;
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
+import com.krachbank.api.mappers.TransactionMapper;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
-import com.krachbank.api.service.AccountService;
 import com.krachbank.api.service.TransactionService;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,15 +34,18 @@ public class TransactionControllerTest {
     @Mock
     private TransactionService transactionService;
 
+    // @Mock
+    // private transactionMapper transactionMapper;
+
     @Mock
-    private AccountService accountService;
+    private TransactionMapper transactionMapper;
 
     private Transaction fullTransaction;
     private TransactionController transactionController;
 
     @BeforeEach
     void setUp() {
-        transactionController = new TransactionController(transactionService, accountService);
+        transactionController = new TransactionController(transactionService, transactionMapper);
 
         User initiator = new User();
         initiator.setId(1L);
@@ -69,7 +74,7 @@ public class TransactionControllerTest {
         dto.setReceiver(fullTransaction.getToAccount().getIban().toString());
         dto.setDescription(fullTransaction.getDescription());
 
-        Transaction transaction = transactionController.toModel(dto);
+        Transaction transaction = transactionMapper.toModel(dto);
 
         assertNotNull(transaction);
         assertEquals(fullTransaction.getAmount(), transaction.getAmount());
@@ -87,12 +92,12 @@ public class TransactionControllerTest {
     void testToModelWithNullFields() {
         TransactionDTORequest dto = new TransactionDTORequest();
         // Only set initiator from setup
-        assertThrows(Iban4jException.class, () -> transactionController.toModel(dto));
+        assertThrows(Iban4jException.class, () -> transactionMapper.toModel(dto));
     }
 
     @Test
     void testToModelWithNullDTO() {
-        assertThrows(NullPointerException.class, () -> transactionController.toModel(null));
+        assertThrows(NullPointerException.class, () -> transactionMapper.toModel(null));
     }
 
     @Test
