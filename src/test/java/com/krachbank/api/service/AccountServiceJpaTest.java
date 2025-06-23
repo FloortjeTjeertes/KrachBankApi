@@ -12,14 +12,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.iban4j.Iban;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import com.krachbank.api.configuration.IBANGenerator;
+import com.krachbank.api.filters.AccountFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.AccountType;
 import com.krachbank.api.models.User;
@@ -207,6 +213,272 @@ public class AccountServiceJpaTest {
 
         assertThrows(IllegalArgumentException.class, () -> accountService.validateAccount(acc));
     }
+
+    // Test for getting an account by filter
+    @Test
+    void testGetAccountsByFilter_ValidFilter_ReturnsPage() {
+        AccountFilter filter = mock(AccountFilter.class);
+        Pageable pageable = mock(Pageable.class);
+        Page<Account> accountPage = mock(Page.class);
+
+        when(filter.toPageAble()).thenReturn(pageable);
+        when(accountRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(accountPage);
+
+        Page<Account> result = accountService.getAccountsByFilter(filter);
+
+        assertNotNull(result);
+        assertEquals(accountPage, result);
+        verify(accountRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    void testGetAccountsByFilter_NullFilter_ThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> accountService.getAccountsByFilter(null));
+    }
+
+    // Test for getting an account by ID
+    @Test
+    void testGetAccountById_ValidId_ReturnsAccount() throws Exception {
+        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.of(account1));
+
+        Optional<Account> result = accountService.getAccountById(1L);
+
+        assertTrue(result.isPresent());
+        assertEquals(account1, result.get());
+        verify(accountRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void testGetAccountById_IdIsZero_ThrowsInvalidParameterException() {
+        assertThrows(InvalidParameterException.class, () -> accountService.getAccountById(0L));
+    }
+
+    @Test
+    void testGetAccountById_IdIsNegative_ThrowsInvalidParameterException() {
+        assertThrows(InvalidParameterException.class, () -> accountService.getAccountById(-5L));
+    }
+
+    @Test
+    void testGetAccountById_IdIsNull_ThrowsInvalidParameterException() {
+        assertThrows(NullPointerException.class, () -> accountService.getAccountById(null));
+    }
+
+    @Test
+    void testGetAccountById_AccountNotFound_ThrowsException() {
+        when(accountRepository.findById(99L)).thenReturn(java.util.Optional.empty());
+
+        Exception exception = assertThrows(Exception.class, () -> accountService.getAccountById(99L));
+        assertEquals("there is no account for this id", exception.getMessage());
+        verify(accountRepository, times(1)).findById(99L);
+    }
+
+    // Tests for updateAccount
+
+    @Test
+    void testUpdateAccount_ValidAccount_UpdatesAndReturnsAccount() throws Exception {
+        // Arrange
+        Account updatedAccount = new Account();
+        updatedAccount.setId(1L);
+        updatedAccount.setIban(iban1);
+        updatedAccount.setBalance(BigDecimal.valueOf(2000.0));
+        updatedAccount.setAbsoluteLimit(BigDecimal.valueOf(150.0));
+        updatedAccount.setAccountType(AccountType.SAVINGS);
+        updatedAccount.setUser(user1);
+
+        when(accountRepository.existsById(1L)).thenReturn(false);
+        when(accountRepository.save(any(Account.class))).thenReturn(updatedAccount);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(updatedAccount));
+
+        // Act
+        Optional<Account> result = accountService.updateAccount(1L, updatedAccount);
+
+        // Assert
+        assertTrue(result.isPresent());
+        assertEquals(updatedAccount, result.get());
+        verify(accountRepository, times(1)).save(updatedAccount);
+        verify(accountRepository, times(1)).existsById(1L);
+        verify(accountRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void testUpdateAccount_IdIsNull_ThrowsInvalidParameterException() {
+        Account acc = new Account();
+        acc.setId(1L);
+        Exception exception = assertThrows(InvalidParameterException.class, () -> accountService.updateAccount(null, acc));
+        assertEquals("invalid id", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateAccount_IdIsZero_ThrowsInvalidParameterException() {
+        Account acc = new Account();
+        acc.setId(1L);
+        assertThrows(InvalidParameterException.class, () -> accountService.updateAccount(0L, acc));
+    }
+
+    @Test
+    void testUpdateAccount_IdIsNegative_ThrowsInvalidParameterException() {
+        Account acc = new Account();
+        acc.setId(1L);
+        assertThrows(InvalidParameterException.class, () -> accountService.updateAccount(-1L, acc));
+    }
+
+    @Test
+    void testUpdateAccount_AccountIsNull_ThrowsInvalidParameterException() {
+        assertThrows(InvalidParameterException.class, () -> accountService.updateAccount(1L, null));
+    }
+
+    @Test
+    void testUpdateAccount_AccountIdIsNull_ThrowsInvalidParameterException() {
+        Account acc = new Account();
+        acc.setId(null);
+        assertThrows(InvalidParameterException.class, () -> accountService.updateAccount(1L, acc));
+    }
+
+    @Test
+    void testUpdateAccount_AccountIdIsZero_ThrowsInvalidParameterException() {
+        Account acc = new Account();
+        acc.setId(0L);
+        assertThrows(InvalidParameterException.class, () -> accountService.updateAccount(1L, acc));
+    }
+
+    @Test
+    void testUpdateAccount_AccountIdIsNegative_ThrowsInvalidParameterException() {
+        Account acc = new Account();
+        acc.setId(-2L);
+        assertThrows(InvalidParameterException.class, () -> accountService.updateAccount(1L, acc));
+    }
+
+    @Test
+    void testUpdateAccount_AccountDoesNotExist_ThrowsInvalidParameterException() {
+        Account acc = new Account();
+        acc.setId(1L);
+        when(accountRepository.existsById(1L)).thenReturn(true);
+        assertThrows(InvalidParameterException.class, () -> accountService.updateAccount(1L, acc));
+        verify(accountRepository, times(1)).existsById(1L);
+    }
+
+    // Tests for removeAccount
+
+    @Test
+    void testRemoveAccount_ValidAccount_RemovesAccount() {
+        // Arrange
+        when(accountRepository.existsById(account1.getId())).thenReturn(true);
+
+        // Act
+        accountService.removeAccount(account1);
+
+        // Assert
+        verify(accountRepository, times(1)).existsById(account1.getId());
+        verify(accountRepository, times(1)).delete(account1);
+    }
+
+    @Test
+    void testRemoveAccount_NullAccount_ThrowsException() {
+       Exception exception = assertThrows(IllegalArgumentException.class, () -> accountService.removeAccount(null));
+        assertEquals("Account cannot be null", exception.getMessage());
+    }
+
+    @Test
+    void testRemoveAccount_NullAccountId_ThrowsException() {
+        Account acc = new Account();
+        acc.setId(null);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> accountService.removeAccount(acc));
+        assertEquals("Account ID is invalid", exception.getMessage());
+    }
+
+    @Test
+    void testRemoveAccount_AccountIdIsZero_ThrowsException() {
+        Account acc = new Account();
+        acc.setId(0L);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> accountService.removeAccount(acc));
+        assertEquals("Account ID is invalid", exception.getMessage());
+    }
+
+    @Test
+    void testRemoveAccount_AccountIdIsNegative_ThrowsException() {
+        Account acc = new Account();
+        acc.setId(-1L);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> accountService.removeAccount(acc));
+        assertEquals("Account ID is invalid", exception.getMessage());
+    }
+
+    @Test
+    void testRemoveAccount_AccountDoesNotExist_ThrowsException() {
+        when(accountRepository.existsById(account1.getId())).thenReturn(false);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> accountService.removeAccount(account1));
+        assertEquals("Account does not exist", exception.getMessage());
+        verify(accountRepository, times(1)).existsById(account1.getId());
+    }
+
+    // Tests for getAccountByIBAN
+
+    @Test
+    void testGetAccountByIBAN_ValidIban_ReturnsAccount() {
+        when(accountRepository.findByIban(iban1)).thenReturn(Optional.of(account1));
+
+        Optional<Account> result = accountService.getAccountByIBAN(iban1.toString());
+
+        assertTrue(result.isPresent());
+        assertEquals(account1, result.get());
+        verify(accountRepository, times(1)).findByIban(iban1);
+    }
+
+    @Test
+    void testGetAccountByIBAN_NullIban_ThrowsException() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> accountService.getAccountByIBAN(null));
+        assertEquals("IBAN cannot be null", exception.getMessage());
+    }
+
+    @Test
+    void testGetAccountByIBAN_AccountNotFound_ThrowsException() {
+        when(accountRepository.findByIban(iban1)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> accountService.getAccountByIBAN(iban1.toString()));
+        assertEquals("Account with this IBAN does not exist", exception.getMessage());
+        verify(accountRepository, times(1)).findByIban(iban1);
+    }
+
+    // Tests for getAccountsByUserId
+
+    @Test
+    void testGetAccountsByUserId_ValidUserIdAndFilter_ReturnsPage() {
+        Long userId = 1L;
+        AccountFilter filter = mock(AccountFilter.class);
+        Pageable pageable = mock(Pageable.class);
+        Page<Account> accountPage = mock(Page.class);
+
+        when(filter.toPageAble()).thenReturn(pageable);
+        // filter.setUserId(userId) is a void method, so no need to stub
+        when(accountRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(accountPage);
+
+        Page<Account> result = accountService.getAccountsByUserId(userId, filter);
+
+        assertNotNull(result);
+        assertEquals(accountPage, result);
+        verify(filter, times(1)).setUserId(userId);
+        verify(accountRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    void testGetAccountsByUserId_NullFilter_ThrowsException() {
+        Long userId = 1L;
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> accountService.getAccountsByUserId(userId, null));
+        assertEquals("Filter cannot be null", exception.getMessage());
+    }
+
+    @Test
+    void testGetAccountsByUserId_NullUserId_ThrowsException() {
+        AccountFilter filter = mock(AccountFilter.class);
+        Pageable pageable = mock(Pageable.class);
+        when(filter.toPageAble()).thenReturn(pageable);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> accountService.getAccountsByUserId(null, filter));
+        assertEquals("User ID cannot be null", exception.getMessage());
+    }
+
+   
+    
+
 
 
 

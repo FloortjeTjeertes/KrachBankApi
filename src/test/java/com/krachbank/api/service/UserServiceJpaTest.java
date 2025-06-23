@@ -141,6 +141,12 @@ public class UserServiceJpaTest {
     void createUser_EmailAlreadyExists_ThrowsException() {
         UserDTO newUserDTO = new UserDTO();
         newUserDTO.setEmail("john@example.com"); // Existing email
+        newUserDTO.setUsername("new.user"); // New username
+        newUserDTO.setPassword("rawPassword");
+        newUserDTO.setFirstName("New");
+        newUserDTO.setLastName("User");
+        newUserDTO.setPhoneNumber("555-555-5555");
+        newUserDTO.setBSN(111222333);
 
         when(userRepository.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.of(user1));
 
@@ -159,6 +165,11 @@ public class UserServiceJpaTest {
         UserDTO newUserDTO = new UserDTO();
         newUserDTO.setEmail("new.user@example.com");
         newUserDTO.setUsername("john.doe"); // Existing username
+        newUserDTO.setPassword("rawPassword");
+        newUserDTO.setFirstName("New");
+        newUserDTO.setLastName("User");
+        newUserDTO.setPhoneNumber("555-555-5555");
+        newUserDTO.setBSN(111222333);
 
         when(userRepository.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.empty());
         when(userRepository.findByUsername(newUserDTO.getUsername())).thenReturn(Optional.of(user1));
