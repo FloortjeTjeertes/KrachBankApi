@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 
-
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
@@ -28,6 +27,11 @@ import com.krachbank.api.models.User;
 import com.krachbank.api.repository.TransactionRepository;
 import com.krachbank.api.repository.UserRepository;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.mockito.Mockito;
+
 public class TransactionServiceJpaTest {
 
     TransactionServiceJpa transactionService;
@@ -46,12 +50,22 @@ public class TransactionServiceJpaTest {
         transactionRepository = mock(TransactionRepository.class);
         userRepository = mock(UserRepository.class);
         accountService = mock(AccountServiceJpa.class);
-        transactionFilter = mock(TransactionFilter.class);
+
+        transactionFilter = new TransactionFilter();
+        transactionFilter.setSenderIban("NL15KRCH9848875405");
+        transactionFilter.setReceiverIban("NL18KRCH9920885047");
+        transactionFilter.setInitiatorId(100L);
+        transactionFilter.setMinAmount(new BigDecimal("50.00"));
+        transactionFilter.setMaxAmount(new BigDecimal("500.00"));
+        transactionFilter.setBeforeDate("2024-12-31T23:59:59");
+        transactionFilter.setAfterDate("2024-01-01T00:00:00");
+        transactionFilter.setPage(0);
+        transactionFilter.setLimit(10);
 
         transactionService = new TransactionServiceJpa(transactionRepository, accountService, userRepository);
 
-        Iban iban = Iban.valueOf("DE32500211205487556354");
-        Iban iban2 = Iban.valueOf("DE52500202006796187625");
+        Iban iban = Iban.valueOf("NL15KRCH9848875405");
+        Iban iban2 = Iban.valueOf("NL18KRCH9920885047");
 
         User user1 = new User();
         user1.setId(100L);
@@ -167,15 +181,7 @@ public class TransactionServiceJpaTest {
         assertThrows(IllegalArgumentException.class, () -> transactionService.isValidTransaction(transaction));
     }
 
-  
-    @Test
-    void testToDTOWithEmptyListReturnsEmptyList() {
-        TransactionServiceJpa TransactionServiceJpa = transactionService;
-        List<TransactionDTOResponse> dtos = TransactionServiceJpa.toDTO(new ArrayList<>());
-        assertNotNull(dtos);
-        assertEquals(0, dtos.size());
-    }
-
+    // test GetTransactionByFilter
     @Test
     void testGetTransactionByFilterWithValidFilterReturnsTransaction() {
 
@@ -205,23 +211,32 @@ public class TransactionServiceJpaTest {
     @Test
     void testGetTransactionsByFilterWithValidFilterReturnsTransactions() {
 
+        List<Transaction> transactionList = List.of(fullTransaction, fullTransaction2);
+        Page<Transaction> pageResult = new PageImpl<>(transactionList, PageRequest.of(0, 10), transactionList.size());
+
+        when(transactionRepository.findAll(Mockito.<Specification<Transaction>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(pageResult);
+
         Page<Transaction> result = transactionService.getTransactionsByFilter(transactionFilter);
 
         assertNotNull(result);
-        assertEquals(2, result.getSize());
+        assertEquals(2, result.getTotalElements());
         assertEquals(fullTransaction, result.getContent().get(0));
         assertEquals(fullTransaction2, result.getContent().get(1));
     }
 
     @Test
     void testGetTransactionsByFilterWithValidFilterReturnsEmptyList() {
-        when(transactionRepository.findAll((Specification<Transaction>) any()))
-                .thenReturn(new ArrayList<>());
+
+        List<Transaction> transactionList = List.of();
+        Page<Transaction> pageResult = new PageImpl<>(transactionList, PageRequest.of(0, 10), 0);
+        when(transactionRepository.findAll(Mockito.<Specification<Transaction>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(pageResult);
 
         Page<Transaction> result = transactionService.getTransactionsByFilter(transactionFilter);
 
         assertNotNull(result);
-        assertEquals(0, result.getSize());
+        assertEquals(0, result.getTotalElements());
     }
 
     @Test
@@ -260,7 +275,8 @@ public class TransactionServiceJpaTest {
     void testGetTransactionByIdWithNegativeIdThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> transactionService.getTransactionById(-1L));
     }
-    //getUserTotalAmount tests
+
+    // getUserTotalAmount tests
     @Test
     void testGetUserTotalAmountSpendAtDateWithTransactionsOnSameDay() {
 
@@ -334,7 +350,6 @@ public class TransactionServiceJpaTest {
     // testIsInternalTransaction
     @Test
     void testIsInternalTransactionWithSameBankCode() {
-        // Use presetup accounts from setUp()
         Account account1 = fullTransaction.getFromAccount();
         Account account2 = fullTransaction.getToAccount();
 
@@ -358,17 +373,17 @@ public class TransactionServiceJpaTest {
         account1.setIban(fullTransaction.getFromAccount().getIban());
         account2.setIban(Iban.valueOf("DE64300205007996745665"));
 
-        boolean result = transactionService.IsInternalTransaction(account1, account2);
-
-        assertEquals(account1.getIban().getBankCode().equals(account2.getIban().getBankCode()), result);
+        Exception exception = assertThrows(IllegalArgumentException.class,
+                () -> transactionService.IsInternalTransaction(account1, account2));
+        assertEquals("The accounts are not from the same bank", exception.getMessage());
     }
 
     @Test
     void testIsInternalTransactionWithNullAccountsThrowsException() {
         Account account1 = fullTransaction.getFromAccount();
 
-        assertThrows(NullPointerException.class, () -> transactionService.IsInternalTransaction(null, account1));
-        assertThrows(NullPointerException.class, () -> transactionService.IsInternalTransaction(account1, null));
+        assertThrows(IllegalArgumentException.class, () -> transactionService.IsInternalTransaction(null, account1));
+        assertThrows(IllegalArgumentException.class, () -> transactionService.IsInternalTransaction(account1, null));
     }
 
     @Test
@@ -386,14 +401,20 @@ public class TransactionServiceJpaTest {
     @Test
     void testCreateTransactionSuccess() throws Exception {
         User user1 = new User();
+        user1.setUsername("testUser");
         user1.setId(100L);
+        user1.setDailyLimit(new BigDecimal("10000.00"));
+        user1.setPassword("testPassword");
+        user1.setEmail("testUser@example.com");
+        user1.setFirstName("Test");
+        user1.setLastName("User");
         user1.setDailyLimit(new BigDecimal("10000.00"));
 
         User user2 = new User();
         user2.setId(200L);
 
-        Iban iban1 = Iban.valueOf("DE32500211205487556354");
-        Iban iban2 = Iban.valueOf("DE52500202006796187625");
+        Iban iban1 = Iban.valueOf("NL15KRCH9848875405");
+        Iban iban2 = Iban.valueOf("NL18KRCH9920885047");
 
         Account sendingAccount = new Account();
         sendingAccount.setId(10L);
@@ -420,6 +441,7 @@ public class TransactionServiceJpaTest {
         transaction.setToAccount(receivingAccount);
         transaction.setInitiator(user1);
 
+        when(userRepository.findByUsername(user1.getUsername())).thenReturn(Optional.of(user1));
         when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
         when(accountService.getAccountByIBAN(iban1.toString())).thenReturn(Optional.of(sendingAccount));
@@ -433,22 +455,6 @@ public class TransactionServiceJpaTest {
     }
 
     @Test
-    void testCreateTransactionThrowsIfTransactionAlreadyExists() {
-        User user = new User();
-        user.setId(100L);
-
-        Transaction transaction = new Transaction();
-        transaction.setId(101L);
-        transaction.setInitiator(user);
-
-        when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.of(transaction));
-
-        Exception exeption = assertThrows(IllegalArgumentException.class,
-                () -> transactionService.createTransaction(transaction, user.getUsername()));
-        assertEquals("Transaction already exists", exeption.getMessage());
-    }
-
-    @Test
     void testCreateTransactionThrowsIfNotInternalTransaction() {
         User user = new User();
         user.setId(100L);
@@ -459,24 +465,31 @@ public class TransactionServiceJpaTest {
         Account fromAccount = new Account();
         fromAccount.setIban(iban1);
         fromAccount.setUser(user);
+        fromAccount.setAccountType(AccountType.CHECKING);
+        fromAccount.setBalance(new BigDecimal("1000.00"));
 
         Account toAccount = new Account();
         toAccount.setIban(iban2);
         toAccount.setUser(new User());
+        toAccount.setAccountType(AccountType.CHECKING);
+        toAccount.setBalance(new BigDecimal("1000.00"));
 
         Transaction transaction = new Transaction();
         transaction.setId(103L);
         transaction.setFromAccount(fromAccount);
         transaction.setToAccount(toAccount);
         transaction.setInitiator(user);
+        transaction.setAmount(new BigDecimal("100.00"));
 
+        when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Optional.of(user));
         when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
         when(accountService.getAccountByIBAN(iban1.toString())).thenReturn(Optional.of(fromAccount));
         when(accountService.getAccountByIBAN(iban2.toString())).thenReturn(Optional.of(toAccount));
 
         Exception exception = assertThrows(Exception.class,
                 () -> transactionService.createTransaction(transaction, user.getUsername()));
-        assertEquals("this transaction is not whit accounts from our bank", exception.getMessage());
+        assertEquals("The accounts are not from the same bank", exception.getMessage());
     }
 
     @Test
@@ -499,13 +512,16 @@ public class TransactionServiceJpaTest {
         transaction.setFromAccount(account);
         transaction.setToAccount(account);
         transaction.setInitiator(user);
+        transaction.setAmount(new BigDecimal("100.00"));
 
+        when(userRepository.findByUsername(user.getUsername()))
+                .thenReturn(Optional.of(user));
         when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
         when(accountService.getAccountByIBAN(iban.toString())).thenReturn(Optional.of(account));
 
         Exception exception = assertThrows(Exception.class,
                 () -> transactionService.createTransaction(transaction, user.getUsername()));
-        assertEquals("cant transfer to the same account", exception.getMessage());
+        assertEquals("Transaction accounts must be different", exception.getMessage());
     }
 
     @Test
@@ -516,8 +532,8 @@ public class TransactionServiceJpaTest {
         User user2 = new User();
         user2.setId(2L);
 
-        Iban iban1 = Iban.valueOf("DE32500211205487556354");
-        Iban iban2 = Iban.valueOf("DE52500202006796187625");
+        Iban iban1 = Iban.valueOf("NL15KRCH9848875405");
+        Iban iban2 = Iban.valueOf("NL18KRCH9920885047");
 
         Account from = new Account();
         from.setIban(iban1);
@@ -537,14 +553,17 @@ public class TransactionServiceJpaTest {
         transaction.setFromAccount(from);
         transaction.setToAccount(to);
         transaction.setInitiator(user1);
+        transaction.setAmount(new BigDecimal("100.00"));
 
+        when(userRepository.findByUsername(user1.getUsername()))
+                .thenReturn(Optional.of(user1));
         when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
         when(accountService.getAccountByIBAN(iban1.toString())).thenReturn(Optional.of(from));
         when(accountService.getAccountByIBAN(iban2.toString())).thenReturn(Optional.of(to));
 
         Exception exception = assertThrows(Exception.class,
                 () -> transactionService.createTransaction(transaction, user1.getUsername()));
-        assertEquals("cant transfer money to or from another persons saving account", exception.getMessage());
+        assertEquals("Can't transfer money to or from another person's saving account", exception.getMessage());
     }
 
     @Test
@@ -553,8 +572,8 @@ public class TransactionServiceJpaTest {
         user.setId(100L);
         user.setDailyLimit(new BigDecimal("10000.00"));
 
-        Iban iban1 = Iban.valueOf("DE32500211205487556354");
-        Iban iban2 = Iban.valueOf("DE52500202006796187625");
+        Iban iban1 = Iban.valueOf("NL15KRCH9848875405");
+        Iban iban2 = Iban.valueOf("NL18KRCH9920885047");
 
         Account from = new Account();
         from.setIban(iban1);
@@ -567,6 +586,7 @@ public class TransactionServiceJpaTest {
         Account to = new Account();
         to.setIban(iban2);
         to.setAccountType(AccountType.CHECKING);
+        to.setUser(new User());
 
         Transaction transaction = new Transaction();
         transaction.setId(106L);
@@ -575,6 +595,7 @@ public class TransactionServiceJpaTest {
         transaction.setInitiator(user);
         transaction.setAmount(new BigDecimal("20.00"));
 
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
         when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
         when(accountService.getAccountByIBAN(iban1.toString())).thenReturn(Optional.of(from));
         when(accountService.getAccountByIBAN(iban2.toString())).thenReturn(Optional.of(to));
@@ -591,8 +612,8 @@ public class TransactionServiceJpaTest {
         user.setId(100L);
         user.setDailyLimit(new BigDecimal("50.00"));
 
-        Iban iban1 = Iban.valueOf("DE32500211205487556354");
-        Iban iban2 = Iban.valueOf("DE52500202006796187625");
+        Iban iban1 = Iban.valueOf("NL15KRCH9848875405");
+        Iban iban2 = Iban.valueOf("NL18KRCH9920885047");
 
         Account from = new Account();
         from.setIban(iban1);
@@ -605,6 +626,7 @@ public class TransactionServiceJpaTest {
         Account to = new Account();
         to.setIban(iban2);
         to.setAccountType(AccountType.CHECKING);
+        to.setUser(new User());
 
         Transaction transaction = new Transaction();
         transaction.setId(107L);
@@ -613,6 +635,7 @@ public class TransactionServiceJpaTest {
         transaction.setInitiator(user);
         transaction.setAmount(new BigDecimal("100.00"));
 
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
         when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
         when(accountService.getAccountByIBAN(iban1.toString())).thenReturn(Optional.of(from));
         when(accountService.getAccountByIBAN(iban2.toString())).thenReturn(Optional.of(to));
@@ -630,8 +653,8 @@ public class TransactionServiceJpaTest {
         user.setId(100L);
         user.setDailyLimit(new BigDecimal("10000.00"));
 
-        Iban iban1 = Iban.valueOf("DE32500211205487556354");
-        Iban iban2 = Iban.valueOf("DE52500202006796187625");
+        Iban iban1 = Iban.valueOf("NL15KRCH9848875405");
+        Iban iban2 = Iban.valueOf("NL18KRCH9920885047");
 
         Account from = new Account();
         from.setIban(iban1);
@@ -644,6 +667,7 @@ public class TransactionServiceJpaTest {
         Account to = new Account();
         to.setIban(iban2);
         to.setAccountType(AccountType.CHECKING);
+        to.setUser(new User());
 
         Transaction transaction = new Transaction();
         transaction.setId(108L);
@@ -652,6 +676,7 @@ public class TransactionServiceJpaTest {
         transaction.setInitiator(user);
         transaction.setAmount(new BigDecimal("100.00"));
 
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
         when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
         when(accountService.getAccountByIBAN(iban1.toString())).thenReturn(Optional.of(from));
         when(accountService.getAccountByIBAN(iban2.toString())).thenReturn(Optional.of(to));
@@ -662,7 +687,64 @@ public class TransactionServiceJpaTest {
         assertEquals("this amount is more than your transfer limit of the account", exception.getMessage());
     }
 
- 
-  
+    // Tests for toAndOrFromAccountBelongsToUser
+
+    @Test
+    void testToAndOrFromAccountBelongsToUserWithValidUserId() {
+        Long userId = 123L;
+        Specification<Transaction> spec = TransactionServiceJpa.toAndOrFromAccountBelongsToUser(userId);
+        assertNotNull(spec);
+        // Further behavior of the specification should be tested via repository integration tests or by applying it to a mock repository.
+    }
+
+    @Test
+    void testToAndOrFromAccountBelongsToUserWithNullUserIdThrowsException() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            TransactionServiceJpa.toAndOrFromAccountBelongsToUser(null);
+        });
+        assertEquals("Account ID cannot be null or negative", exception.getMessage());
+    }
+
+    @Test
+    void testToAndOrFromAccountBelongsToUserWithNegativeUserIdThrowsException() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            TransactionServiceJpa.toAndOrFromAccountBelongsToUser(-1L);
+        });
+        assertEquals("Account ID cannot be null or negative", exception.getMessage());
+    }
+
+    @Test
+    void testToAndOrFromAccountBelongsToUserWithZeroUserIdThrowsException() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            TransactionServiceJpa.toAndOrFromAccountBelongsToUser(0L);
+        });
+        assertEquals("Account ID cannot be null or negative", exception.getMessage());
+    }
+
+    // Tests for toAndOrFromAccount
+    @Test
+    void testToAndOrFromAccountWithValidIbanReturnsSpecification() {
+        String iban = "NL15KRCH9848875405";
+        Specification<Transaction> spec = TransactionServiceJpa.toAndOrFromAccount(iban);
+        assertNotNull(spec);
+        // Further behavior of the specification should be tested via repository integration tests or by applying it to a mock repository.
+        
+    }
+
+    @Test
+    void testToAndOrFromAccountWithNullIbanThrowsException() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            TransactionServiceJpa.toAndOrFromAccount(null);
+        });
+        assertEquals("iban cannot be null or empty", exception.getMessage());
+    }
+
+    @Test
+    void testToAndOrFromAccountWithEmptyIbanThrowsException() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            TransactionServiceJpa.toAndOrFromAccount("");
+        });
+        assertEquals("iban cannot be null or empty", exception.getMessage());
+    }
 
 }

@@ -77,7 +77,7 @@ public class TransactionServiceJpa implements TransactionService {
         if (!receivingAccount.getUser().equals(sendingAccount.getUser())) {
             if (receivingAccount.getAccountType() == AccountType.SAVINGS
                     || sendingAccount.getAccountType() == AccountType.SAVINGS) {
-                throw new IllegalArgumentException("Can't transfer money to or from another person's saving account.");
+                throw new IllegalArgumentException("Can't transfer money to or from another person's saving account");
             }
 
         }
@@ -111,7 +111,7 @@ public class TransactionServiceJpa implements TransactionService {
         String sendingAccountBankCode = sendingAccount.getIban().getBankCode();
         String retrievingAccountBankCode = retrievingAccount.getIban().getBankCode();
         if (!sendingAccountBankCode.equals(retrievingAccountBankCode)) {
-            throw new IllegalArgumentException("account iban is null");
+            throw new IllegalArgumentException("The accounts are not from the same bank");
         }
         return sendingAccount.getIban().getBankCode().equals(retrievingAccount.getIban().getBankCode());
     }
@@ -217,7 +217,6 @@ public class TransactionServiceJpa implements TransactionService {
         return allTransactions;
     }
 
-   
     @Override
     public Page<Transaction> getTransactionsByIBAN(String iban, TransactionFilter filter) {
         if (iban == null || iban.isEmpty()) {
@@ -331,9 +330,7 @@ public class TransactionServiceJpa implements TransactionService {
         return true;
     }
 
-
-
-    //remove this method if not needed
+    // remove this method if not needed
     @Override
     public TransactionDTOResponse toDTO(Transaction model) {
         // TODO Auto-generated method stub
