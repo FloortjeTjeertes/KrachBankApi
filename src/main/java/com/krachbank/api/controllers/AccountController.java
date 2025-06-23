@@ -105,7 +105,7 @@ public class AccountController {
             List<AccountDTOResponse> accountDTOs = new ArrayList<>();
             List<Account> returnAccounts = accountService.createAccounts(accounts);
             for (Account account : returnAccounts) {
-                accountDTOs.add(accountService.toDTO(account));
+                accountDTOs.add(accountMapper.toResponse(account));
             }
             return ResponseEntity.ok(accountDTOs);
         } catch (IllegalArgumentException e) {

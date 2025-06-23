@@ -77,7 +77,7 @@ public class TransactionServiceJpa implements TransactionService {
         if (!receivingAccount.getUser().equals(sendingAccount.getUser())) {
             if (receivingAccount.getAccountType() == AccountType.SAVINGS
                     || sendingAccount.getAccountType() == AccountType.SAVINGS) {
-                throw new IllegalArgumentException("Can't transfer money to or from another person's saving account.");
+                throw new IllegalArgumentException("Can't transfer money to or from another person's saving account");
             }
 
         }
@@ -111,7 +111,7 @@ public class TransactionServiceJpa implements TransactionService {
         String sendingAccountBankCode = sendingAccount.getIban().getBankCode();
         String retrievingAccountBankCode = retrievingAccount.getIban().getBankCode();
         if (!sendingAccountBankCode.equals(retrievingAccountBankCode)) {
-            throw new IllegalArgumentException("account iban is null");
+            throw new IllegalArgumentException("The accounts are not from the same bank");
         }
         return sendingAccount.getIban().getBankCode().equals(retrievingAccount.getIban().getBankCode());
     }
@@ -215,27 +215,6 @@ public class TransactionServiceJpa implements TransactionService {
                 .findAll(filterSpecification, filter.toPageAble());
 
         return allTransactions;
-    }
-
-    @Override
-    public TransactionDTOResponse toDTO(Transaction model) {
-        TransactionDTOResponse transactionDTO = new TransactionDTOResponse();
-        transactionDTO.setAmount(model.getAmount());
-        transactionDTO.setCreatedAt(model.getCreatedAt());
-        transactionDTO.setInitiator(model.getInitiator().getId());
-        transactionDTO.setSender(model.getFromAccount().getIban().toString());
-        transactionDTO.setReceiver(model.getToAccount().getIban().toString());
-        transactionDTO.setDescription(model.getDescription());
-        return transactionDTO;
-    }
-
-    @Override
-    public List<TransactionDTOResponse> toDTO(List<Transaction> transactions) {
-        List<TransactionDTOResponse> transactionDTOs = new ArrayList<>();
-        for (Transaction transaction : transactions) {
-            transactionDTOs.add(toDTO(transaction));
-        }
-        return transactionDTOs;
     }
 
     @Override
@@ -349,6 +328,19 @@ public class TransactionServiceJpa implements TransactionService {
 
         // TODO: should i validate the description field?
         return true;
+    }
+
+    // remove this method if not needed
+    @Override
+    public TransactionDTOResponse toDTO(Transaction model) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toDTO'");
+    }
+
+    @Override
+    public List<TransactionDTOResponse> toDTO(List<Transaction> fields) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toDTO'");
     }
 
 }
