@@ -1,4 +1,3 @@
-// src/main/java/com/krachbank/api/dto/UserDTO.java
 package com.krachbank.api.dto;
 
 import java.math.BigDecimal;

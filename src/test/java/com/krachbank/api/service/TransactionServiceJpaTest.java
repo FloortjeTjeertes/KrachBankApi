@@ -16,9 +16,13 @@ import java.util.Optional;
 import org.iban4j.Iban;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
-import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.AccountType;
@@ -26,11 +30,6 @@ import com.krachbank.api.models.Transaction;
 import com.krachbank.api.models.User;
 import com.krachbank.api.repository.TransactionRepository;
 import com.krachbank.api.repository.UserRepository;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.mockito.Mockito;
 
 public class TransactionServiceJpaTest {
 
@@ -358,9 +357,10 @@ public class TransactionServiceJpaTest {
         account1.setIban(iban);
         account2.setIban(iban);
 
-        boolean result = transactionService.IsInternalTransaction(account1, account2);
+        transactionService.IsInternalTransaction(account1, account2);
 
-        assertEquals(iban.getBankCode().equals(account2.getIban().getBankCode()), result);
+        // If no exception is thrown, the test passes
+
     }
 
     @Test
@@ -746,5 +746,254 @@ public class TransactionServiceJpaTest {
         });
         assertEquals("iban cannot be null or empty", exception.getMessage());
     }
+
+    // Tests for updateTransaction
+
+    @Test
+    void testUpdateTransactionWithValidIdAndTransaction() throws Exception {
+        Long id = 123L;
+        Transaction transaction = new Transaction();
+        transaction.setId(id);
+        transaction.setAmount(new BigDecimal("200.00"));
+        transaction.setDescription("Updated transaction");
+
+        when(transactionRepository.save(transaction)).thenReturn(transaction);
+        when(transactionRepository.findById(id)).thenReturn(Optional.of(transaction));
+
+        Optional<Transaction> result = transactionService.updateTransaction(id, transaction);
+
+        assertNotNull(result);
+        assertEquals(transaction, result.get());
+    }
+
+    @Test
+    void testUpdateTransactionWithNullIdThrowsException() {
+        Transaction transaction = new Transaction();
+        transaction.setId(1L);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.updateTransaction(null, transaction);
+        });
+        assertEquals("invalid id given", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateTransactionWithNegativeIdThrowsException() {
+        Transaction transaction = new Transaction();
+        transaction.setId(1L);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.updateTransaction(-1L, transaction);
+        });
+        assertEquals("invalid id given", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateTransactionWithNullTransactionThrowsException() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.updateTransaction(1L, null);
+        });
+        assertEquals("transaction is null", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateTransactionWithNullTransactionIdThrowsException() {
+        Transaction transaction = new Transaction();
+        transaction.setId(null);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.updateTransaction(1L, transaction);
+        });
+        assertEquals("transaction id is null", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateTransactionWithZeroTransactionIdThrowsException() {
+        Transaction transaction = new Transaction();
+        transaction.setId(0L);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.updateTransaction(1L, transaction);
+        });
+        assertEquals("transaction id is null", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateTransactionReturnsEmptyIfTransactionNotFound() throws Exception {
+        Long id = 123L;
+        Transaction transaction = new Transaction();
+        transaction.setId(id);
+
+        when(transactionRepository.save(transaction)).thenReturn(transaction);
+        when(transactionRepository.findById(id)).thenReturn(Optional.empty());
+
+        Optional<Transaction> result = transactionService.updateTransaction(id, transaction);
+
+        assertNotNull(result);
+        assertEquals(Optional.empty(), result);
+    }
+
+    // Tests for getUserTransactions
+
+    @Test
+    void testGetUserTransactionsWithValidUserIdAndFilterReturnsTransactions() {
+        Long userId = 100L;
+        TransactionFilter filter = new TransactionFilter();
+        filter.setPage(0);
+        filter.setLimit(10);
+
+        List<Transaction> transactionList = List.of(fullTransaction, fullTransaction2);
+        Page<Transaction> pageResult = new PageImpl<>(transactionList, PageRequest.of(0, 10), transactionList.size());
+
+        when(transactionRepository.findAll(Mockito.<Specification<Transaction>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(pageResult);
+
+        Page<Transaction> result = transactionService.getUserTransactions(userId, filter);
+
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(fullTransaction, result.getContent().get(0));
+        assertEquals(fullTransaction2, result.getContent().get(1));
+    }
+
+    @Test
+    void testGetUserTransactionsWithValidUserIdAndNullFilterReturnsTransactions() {
+        Long userId = 100L;
+
+        List<Transaction> transactionList = List.of(fullTransaction, fullTransaction2);
+        Page<Transaction> pageResult = new PageImpl<>(transactionList, PageRequest.of(0, 10), transactionList.size());
+
+        when(transactionRepository.findAll(Mockito.<Specification<Transaction>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(pageResult);
+
+        Page<Transaction> result = transactionService.getUserTransactions(userId, null);
+
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(fullTransaction, result.getContent().get(0));
+        assertEquals(fullTransaction2, result.getContent().get(1));
+    }
+
+    @Test
+    void testGetUserTransactionsWithValidUserIdReturnsEmptyPage() {
+        Long userId = 100L;
+        TransactionFilter filter = new TransactionFilter();
+        filter.setPage(0);
+        filter.setLimit(10);
+
+        List<Transaction> transactionList = List.of();
+        Page<Transaction> pageResult = new PageImpl<>(transactionList, PageRequest.of(0, 10), 0);
+
+        when(transactionRepository.findAll(Mockito.<Specification<Transaction>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(pageResult);
+
+        Page<Transaction> result = transactionService.getUserTransactions(userId, filter);
+
+        assertNotNull(result);
+        assertEquals(0, result.getTotalElements());
+    }
+
+    @Test
+    void testGetUserTransactionsWithNullUserIdThrowsException() {
+        TransactionFilter filter = new TransactionFilter();
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.getUserTransactions(null, filter);
+        });
+        assertEquals("invalid user id given", exception.getMessage());
+    }
+
+    @Test
+    void testGetUserTransactionsWithNegativeUserIdThrowsException() {
+        TransactionFilter filter = new TransactionFilter();
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.getUserTransactions(-1L, filter);
+        });
+        assertEquals("invalid user id given", exception.getMessage());
+    }
+
+    @Test
+    void testGetUserTransactionsWithZeroUserIdThrowsException() {
+        TransactionFilter filter = new TransactionFilter();
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.getUserTransactions(0L, filter);
+        });
+        assertEquals("invalid user id given", exception.getMessage());
+    }
+
+    // Tests for getTransactionsByIBAN
+
+    @Test
+    void testGetTransactionsByIBANWithValidIbanAndFilterReturnsTransactions() {
+        String iban = "NL15KRCH9848875405";
+        TransactionFilter filter = new TransactionFilter();
+        filter.setPage(0);
+        filter.setLimit(10);
+
+        List<Transaction> transactionList = List.of(fullTransaction, fullTransaction2);
+        Page<Transaction> pageResult = new PageImpl<>(transactionList, PageRequest.of(0, 10), transactionList.size());
+
+        when(transactionRepository.findAll(Mockito.<Specification<Transaction>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(pageResult);
+
+        Page<Transaction> result = transactionService.getTransactionsByIBAN(iban, filter);
+
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(fullTransaction, result.getContent().get(0));
+        assertEquals(fullTransaction2, result.getContent().get(1));
+    }
+
+    @Test
+    void testGetTransactionsByIBANWithValidIbanAndNullFilterReturnsTransactions() {
+        String iban = "NL15KRCH9848875405";
+
+        List<Transaction> transactionList = List.of(fullTransaction, fullTransaction2);
+        Page<Transaction> pageResult = new PageImpl<>(transactionList, PageRequest.of(0, 10), transactionList.size());
+
+        when(transactionRepository.findAll(Mockito.<Specification<Transaction>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(pageResult);
+
+        Page<Transaction> result = transactionService.getTransactionsByIBAN(iban, null);
+
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(fullTransaction, result.getContent().get(0));
+        assertEquals(fullTransaction2, result.getContent().get(1));
+    }
+
+    @Test
+    void testGetTransactionsByIBANWithValidIbanReturnsEmptyPage() {
+        String iban = "NL15KRCH9848875405";
+        TransactionFilter filter = new TransactionFilter();
+        filter.setPage(0);
+        filter.setLimit(10);
+
+        List<Transaction> transactionList = List.of();
+        Page<Transaction> pageResult = new PageImpl<>(transactionList, PageRequest.of(0, 10), 0);
+
+        when(transactionRepository.findAll(Mockito.<Specification<Transaction>>any(), Mockito.any(Pageable.class)))
+                .thenReturn(pageResult);
+
+        Page<Transaction> result = transactionService.getTransactionsByIBAN(iban, filter);
+
+        assertNotNull(result);
+        assertEquals(0, result.getTotalElements());
+    }
+
+    @Test
+    void testGetTransactionsByIBANWithNullIbanThrowsException() {
+        TransactionFilter filter = new TransactionFilter();
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.getTransactionsByIBAN(null, filter);
+        });
+        assertEquals("invalid iban given", exception.getMessage());
+    }
+
+    @Test
+    void testGetTransactionsByIBANWithEmptyIbanThrowsException() {
+        TransactionFilter filter = new TransactionFilter();
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            transactionService.getTransactionsByIBAN("", filter);
+        });
+        assertEquals("invalid iban given", exception.getMessage());
+    }
+
+
 
 }

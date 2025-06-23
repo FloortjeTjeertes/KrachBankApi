@@ -106,7 +106,7 @@ public class AccountServiceJpa implements AccountService {
     public Optional<Account> updateAccount(Long id, Account account) throws Exception {
 
         try {
-            if (id <= 0 || id == null) {
+            if (id == null || id <= 0) {
                 throw new InvalidParameterException("invalid id");
             }
             if (account == null || account.getId() == null || account.getId() <= 0) {
@@ -126,7 +126,7 @@ public class AccountServiceJpa implements AccountService {
 
             return updatedAccount;
         } catch (Exception e) {
-            throw new Exception("something went wrong while updating change has been reversed");
+            throw e;
         }
 
     }
@@ -137,7 +137,7 @@ public class AccountServiceJpa implements AccountService {
             throw new IllegalArgumentException("Account cannot be null");
         }
         if (account.getId() == null || account.getId() <= 0) {
-            throw new IllegalArgumentException("Account ID is required");
+            throw new IllegalArgumentException("Account ID is invalid");
         }
         if (!accountRepository.existsById(account.getId())) {
             throw new IllegalArgumentException("Account does not exist");
@@ -145,29 +145,7 @@ public class AccountServiceJpa implements AccountService {
         accountRepository.delete(account);
     }
 
-    // TODO: maybe make an parent base Service class that has generalised these
-    // methods if posible
-    @Override
-    public AccountDTOResponse toDTO(Account model) {
-        AccountDTOResponse accountDTO = new AccountDTOResponse();
-        accountDTO.setType(model.getAccountType());
-        accountDTO.setBalance(model.getBalance());
-        accountDTO.setAbsoluteLimit(model.getAbsoluteLimit());
-        accountDTO.setTransactionLimit(model.getTransactionLimit());
-        accountDTO.setOwner(model.getUser().getId());
-        accountDTO.setCreatedAt(model.getCreatedAt().toString());
-        return accountDTO;
-    }
-
-    @Override
-    public List<AccountDTOResponse> toDTO(List<Account> accounts) {
-        List<AccountDTOResponse> accountDTOs = new ArrayList<>();
-        for (Account accountDTO : accounts) {
-            accountDTOs.add(toDTO(accountDTO));
-        }
-        return accountDTOs;
-    }
-
+    
     // add pagination filter to this method
     @Override
     public Optional<Account> getAccountByIBAN(String iban) {
@@ -176,9 +154,7 @@ public class AccountServiceJpa implements AccountService {
             throw new IllegalArgumentException("IBAN cannot be null");
         }
         Iban ibanObj = Iban.valueOf(iban);
-        if (ibanObj == null) {
-            throw new IllegalArgumentException("IBAN is not valid");
-        }
+     
         Optional<Account> account = accountRepository.findByIban(ibanObj);
         if (!account.isPresent()) {
             throw new IllegalArgumentException("Account with this IBAN does not exist");
@@ -231,6 +207,28 @@ public class AccountServiceJpa implements AccountService {
         };
     }
 
-    
+    // TODO: maybe make an parent base Service class that has generalised these
+    // methods if posible
+    @Override
+    public AccountDTOResponse toDTO(Account model) {
+        AccountDTOResponse accountDTO = new AccountDTOResponse();
+        accountDTO.setType(model.getAccountType());
+        accountDTO.setBalance(model.getBalance());
+        accountDTO.setAbsoluteLimit(model.getAbsoluteLimit());
+        accountDTO.setTransactionLimit(model.getTransactionLimit());
+        accountDTO.setOwner(model.getUser().getId());
+        accountDTO.setCreatedAt(model.getCreatedAt().toString());
+        return accountDTO;
+    }
+
+    @Override
+    public List<AccountDTOResponse> toDTO(List<Account> accounts) {
+        List<AccountDTOResponse> accountDTOs = new ArrayList<>();
+        for (Account accountDTO : accounts) {
+            accountDTOs.add(toDTO(accountDTO));
+        }
+        return accountDTOs;
+    }
+
 
 }

@@ -57,9 +57,7 @@ public class TransactionServiceJpa implements TransactionService {
         Account receivingAccount = transaction.getToAccount();
 
         // validate if accounts are from our bank
-        if (!IsInternalTransaction(sendingAccount, receivingAccount)) {
-            throw new Exception("This transaction is not with accounts from our bank.");
-        }
+        IsInternalTransaction(sendingAccount, receivingAccount);
 
         // Check if the transaction is to the same account
         if (sendingAccount.getIban().equals(receivingAccount.getIban())) {
@@ -104,7 +102,7 @@ public class TransactionServiceJpa implements TransactionService {
     }
 
     // check if the transaction is whit local accounts
-    public Boolean IsInternalTransaction(Account sendingAccount, Account retrievingAccount) {
+    public void IsInternalTransaction(Account sendingAccount, Account retrievingAccount) {
         if (sendingAccount == null || retrievingAccount == null) {
             throw new IllegalArgumentException("account is null");
         }
@@ -113,7 +111,6 @@ public class TransactionServiceJpa implements TransactionService {
         if (!sendingAccountBankCode.equals(retrievingAccountBankCode)) {
             throw new IllegalArgumentException("The accounts are not from the same bank");
         }
-        return sendingAccount.getIban().getBankCode().equals(retrievingAccount.getIban().getBankCode());
     }
 
     // check the total amount spend by an user

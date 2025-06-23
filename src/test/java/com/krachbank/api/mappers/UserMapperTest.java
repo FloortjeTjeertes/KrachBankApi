@@ -77,4 +77,6 @@ class UserMapperTest {
     void testToResponse_NullModelThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> userMapper.toResponse(null));
     }
+
+
 }

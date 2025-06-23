@@ -1,235 +1,227 @@
-/*
 package com.krachbank.api.service;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import org.assertj.core.data.Percentage;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.lang.reflect.Field; // Import for reflection
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Base64;
+import static org.junit.jupiter.api.Assertions.*;
+import io.jsonwebtoken.Claims;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
-
-@ExtendWith(MockitoExtension.class)
 class JwtServiceTest {
 
+    @InjectMocks
     private JwtService jwtService;
 
-    // Simulate @Value injection by directly setting fields
-    private final String TEST_SECRET_KEY = "5F1J5r9K2L8N4M6P7Q3R5T7W9Y2B4D6F8H0J1K3M5P7S9V1A3C5E7G9I1O3U5W7Z";
-    private final long TEST_JWT_EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours in milliseconds
-
-    @Mock
-    private UserDetails userDetails;
+    private String secretKey = Base64.getEncoder().encodeToString("testsecretkeytestsecretkeytestsecretkey".getBytes());
+    private long jwtExpiration = 1000 * 60 * 60; // 1 hour
 
     @BeforeEach
-    void setUp() throws NoSuchFieldException, IllegalAccessException { // Add exceptions for reflection
-        jwtService = new JwtService();
-
-        // --- Start of Reflection Code ---
-        // Get the private 'secretKey' field
-        Field secretKeyField = JwtService.class.getDeclaredField("secretKey");
-        secretKeyField.setAccessible(true); // Allow access to private field
-        secretKeyField.set(jwtService, TEST_SECRET_KEY); // Set its value on the instance
-
-        // Get the private 'jwtExpiration' field
-        Field jwtExpirationField = JwtService.class.getDeclaredField("jwtExpiration");
-        jwtExpirationField.setAccessible(true); // Allow access to private field
-        jwtExpirationField.set(jwtService, TEST_JWT_EXPIRATION); // Set its value on the instance
-        // --- End of Reflection Code ---
-
-        // Common mock setup for UserDetails
-        when(userDetails.getUsername()).thenReturn("testuser");
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        ReflectionTestUtils.setField(jwtService, "secretKey", secretKey);
+        ReflectionTestUtils.setField(jwtService, "jwtExpiration", jwtExpiration);
     }
 
-    // --- You will NOT need to add setSecretKey and setJwtExpiration to JwtService.java anymore ---
-    // public void setSecretKey(String secretKey) { this.secretKey = secretKey; }
-    // public void setJwtExpiration(long jwtExpiration) { this.jwtExpiration = jwtExpiration; }
-
-
+    // Test extractClaim method
     @Test
-    @DisplayName("generateToken(UserDetails) - Should generate a valid token with correct subject and claims")
-    void generateToken_UserDetails_ShouldGenerateValidToken() {
-        String token = jwtService.generateToken(userDetails);
-
-        assertNotNull(token);
-        assertThat(token).isNotEmpty();
+    void extractUsername_shouldReturnCorrectUsername() {
+        String username = "testuser";
+        Map<String, Object> claims = new HashMap<>();
+        String token = Jwts.builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey)),
+                        SignatureAlgorithm.HS256)
+                .compact();
 
         String extractedUsername = jwtService.extractUsername(token);
-        assertThat(extractedUsername).isEqualTo("testuser");
-
-        Date issuedAt = jwtService.extractClaim(token, c -> c.getIssuedAt());
-        Date expiration = jwtService.extractClaim(token, c -> c.getExpiration());
-
-        assertThat(issuedAt).isBefore(new Date());
-        assertThat(expiration).isAfter(issuedAt);
-        // Ensure expiration is roughly TEST_JWT_EXPIRATION milliseconds from issuedAt
-        assertThat(expiration.getTime() - issuedAt.getTime()).isCloseTo(TEST_JWT_EXPIRATION, Percentage.withPercentage(1000L)); // Allow 1 second variance
+        assertEquals(username, extractedUsername);
     }
 
     @Test
-    @DisplayName("generateToken(Map, UserDetails) - Should generate a token with extra claims")
-    void generateToken_ExtraClaims_ShouldIncludeExtraClaims() {
-        Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("role", "ADMIN");
-        extraClaims.put("userId", 123L);
+    void extractUsername_shouldThrowExceptionForInvalidToken() {
+        String invalidToken = "invalid.token.value";
+        assertThrows(Exception.class, () -> jwtService.extractUsername(invalidToken));
+    }
 
-        String token = jwtService.generateToken(extraClaims, userDetails);
+    // Test generateToken method
+    @Test
+    void generateToken_shouldReturnValidToken() {
+        // Arrange
+        String username = "testuser";
+        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
+        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
 
+        // Act
+        String token = jwtService.generateToken(userDetails);
+
+        // Assert
         assertNotNull(token);
-        String role = jwtService.extractClaim(token, claims -> (String) claims.get("role"));
-        Long userId = jwtService.extractClaim(token, claims -> claims.get("userId", Long.class));
-
-        assertThat(role).isEqualTo("ADMIN");
-        assertThat(userId).isEqualTo(123L);
-    }
-
-    @Test
-    @DisplayName("extractUsername - Should correctly extract username from token")
-    void extractUsername_ShouldReturnCorrectUsername() {
-        String token = jwtService.generateToken(userDetails);
         String extractedUsername = jwtService.extractUsername(token);
-        assertThat(extractedUsername).isEqualTo("testuser");
-    }
-
-    @Test
-    @DisplayName("isTokenValid - Should return true for a valid, non-expired token matching userDetails")
-    void isTokenValid_ValidToken_ReturnsTrue() {
-        String token = jwtService.generateToken(userDetails);
+        assertEquals(username, extractedUsername);
         assertTrue(jwtService.isTokenValid(token, userDetails));
     }
 
     @Test
-    @DisplayName("isTokenValid - Should return false for an expired token")
-    void isTokenValid_ExpiredToken_ReturnsFalse() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
-        // Temporarily set a very short expiration for this test using reflection
-        Field jwtExpirationField = JwtService.class.getDeclaredField("jwtExpiration");
-        jwtExpirationField.setAccessible(true);
-        jwtExpirationField.set(jwtService, 100L); // 100 milliseconds
+    void generateToken_shouldContainCorrectExpiration() {
+        // Arrange
+        String username = "testuser";
+        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
+        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
+
+        // Act
         String token = jwtService.generateToken(userDetails);
 
-        // Wait for the token to expire
-        Thread.sleep(150); // Sleep more than expiration time
+        // Assert
+        Date expiration = ReflectionTestUtils.invokeMethod(jwtService, "extractExpiration", token);
+        assertNotNull(expiration);
+        long now = System.currentTimeMillis();
+        assertTrue(expiration.getTime() > now);
+        assertTrue(expiration.getTime() <= now + jwtExpiration);
+    }
+
+    // Test isTokenValid method
+    @Test
+    void isTokenValid_shouldReturnTrueForValidTokenAndMatchingUser() {
+        String username = "validuser";
+        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
+        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
+
+        String token = jwtService.generateToken(userDetails);
+
+        assertTrue(jwtService.isTokenValid(token, userDetails));
+    }
+
+    @Test
+    void isTokenValid_shouldReturnFalseForTokenWithDifferentUsername() {
+        String username = "user1";
+        String otherUsername = "user2";
+        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
+        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(otherUsername);
+
+        // Token is generated for username "user1"
+        String token = jwtService.generateToken(new HashMap<>(),
+                new org.springframework.security.core.userdetails.User(username, "", new java.util.ArrayList<>()));
+
+        assertFalse(jwtService.isTokenValid(token, userDetails));
+    }
+
+    @Test
+    void isTokenValid_shouldReturnFalseForExpiredToken() throws InterruptedException {
+        String username = "expireduser";
+        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
+        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
+
+        // Set a very short expiration for this test
+        ReflectionTestUtils.setField(jwtService, "jwtExpiration", 1L); // 1 ms
+        String token = jwtService.generateToken(userDetails);
+
+        // Wait to ensure the token is expired
+        Thread.sleep(5);
 
         assertFalse(jwtService.isTokenValid(token, userDetails));
 
-        // Reset expiration for other tests by setting it back to the original value
-        jwtExpirationField.set(jwtService, TEST_JWT_EXPIRATION);
+        // Restore expiration for other tests
+        ReflectionTestUtils.setField(jwtService, "jwtExpiration", jwtExpiration);
     }
 
     @Test
-    @DisplayName("isTokenValid - Should return false for a token with a different username")
-    void isTokenValid_DifferentUsername_ReturnsFalse() {
-        String token = jwtService.generateToken(userDetails); // Token for 'testuser'
+    void isTokenValid_shouldThrowExceptionForMalformedToken() {
+        String malformedToken = "malformed.token.value";
+        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
+        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn("anyuser");
 
-        // Create another UserDetails with a different username
-        UserDetails anotherUserDetails = org.mockito.Mockito.mock(UserDetails.class);
-        when(anotherUserDetails.getUsername()).thenReturn("anotheruser");
-
-        assertFalse(jwtService.isTokenValid(token, anotherUserDetails));
+        assertThrows(Exception.class, () -> jwtService.isTokenValid(malformedToken, userDetails));
     }
 
+    // Test extractClaim method with custom claim
     @Test
-    @DisplayName("isTokenExpired - Should return true for an expired token")
-    void isTokenExpired_ExpiredToken_ReturnsTrue() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
-        // Temporarily set a very short expiration for this specific test using reflection
-        Field jwtExpirationField = JwtService.class.getDeclaredField("jwtExpiration");
-        jwtExpirationField.setAccessible(true);
-        jwtExpirationField.set(jwtService, 10L); // 10 milliseconds
-        String token = jwtService.generateToken(userDetails);
+    void extractClaim_shouldReturnCustomClaim() {
+        String username = "claimuser";
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", "admin");
+        String token = Jwts.builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey)),
+                        SignatureAlgorithm.HS256)
+                .compact();
 
-        // Wait for the token to expire
-        Thread.sleep(50); // Sleep more than the expiration time
-
-        assertTrue(jwtService.isTokenExpired(token));
-
-        // Reset expiration for other tests by setting it back to the original value
-        jwtExpirationField.set(jwtService, TEST_JWT_EXPIRATION);
+        String role = jwtService.extractClaim(token, c -> c.get("role", String.class));
+        assertEquals("admin", role);
     }
 
+    // Test generateToken with extra claims
     @Test
-    @DisplayName("isTokenExpired - Should return false for a non-expired token")
-    void isTokenExpired_NonExpiredToken_ReturnsFalse() {
-        // Default TEST_JWT_EXPIRATION (24 hours) is long enough for this
-        String token = jwtService.generateToken(userDetails);
-        assertFalse(jwtService.isTokenExpired(token));
-    }
-
-    @Test
-    @DisplayName("extractClaim - Should extract any claim correctly")
-    void extractClaim_ShouldExtractAnyClaim() {
+    void generateToken_withExtraClaims_shouldContainClaims() {
+        String username = "extraclaimsuser";
         Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("customClaim", "value123");
+        extraClaims.put("department", "finance");
+        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
+        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
+
         String token = jwtService.generateToken(extraClaims, userDetails);
 
-        String customClaimValue = jwtService.extractClaim(token, claims -> (String) claims.get("customClaim"));
-        assertThat(customClaimValue).isEqualTo("value123");
+        String department = jwtService.extractClaim(token, c -> c.get("department", String.class));
+        assertEquals("finance", department);
+        assertEquals(username, jwtService.extractUsername(token));
     }
 
+    // Test isTokenExpired method
     @Test
-    @DisplayName("extractAllClaims - Should throw exception for invalid token format")
-    void extractAllClaims_InvalidTokenFormat_ThrowsException() {
-        String malformedToken = "not.a.real.jwt";
-        assertThrows(MalformedJwtException.class, () -> jwtService.extractAllClaims(malformedToken));
-    }
+    void isTokenExpired_shouldReturnTrueForExpiredToken() throws InterruptedException {
+        String username = "expired";
+        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
+        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
 
-    @Test
-    @DisplayName("extractAllClaims - Should throw exception for token with invalid signature")
-    void extractAllClaims_InvalidSignature_ThrowsException() throws NoSuchFieldException, IllegalAccessException {
-        // Generate a token with the correct service
-        String validToken = jwtService.generateToken(userDetails);
-
-        // Create a new JwtService instance
-        JwtService maliciousJwtService = new JwtService();
-
-        // Use reflection to set a DIFFERENT secret key for this malicious service
-        Field maliciousSecretKeyField = JwtService.class.getDeclaredField("secretKey");
-        maliciousSecretKeyField.setAccessible(true);
-        maliciousSecretKeyField.set(maliciousJwtService, "ANOTHER_SECRET_KEY_FOR_TAMPERING_DONT_USE_THIS_IN_PROD_DANGER_LONG_ENOUGH"); // Different key
-        // Also set expiration for completeness, though not strictly needed for SignatureException
-        Field maliciousJwtExpirationField = JwtService.class.getDeclaredField("jwtExpiration");
-        maliciousJwtExpirationField.setAccessible(true);
-        maliciousJwtExpirationField.set(maliciousJwtService, TEST_JWT_EXPIRATION);
-
-
-        // Try to parse the valid token with the malicious service's key
-        assertThrows(SignatureException.class, () -> maliciousJwtService.extractAllClaims(validToken));
-    }
-
-    @Test
-    @DisplayName("extractAllClaims - Should throw exception for expired token when trying to extract claims directly")
-    void extractAllClaims_ExpiredToken_ThrowsExpiredJwtException() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
-        // Temporarily set a very short expiration for this specific test using reflection
-        Field jwtExpirationField = JwtService.class.getDeclaredField("jwtExpiration");
-        jwtExpirationField.setAccessible(true);
-        jwtExpirationField.set(jwtService, 10L); // 10 milliseconds
+        ReflectionTestUtils.setField(jwtService, "jwtExpiration", 1L); // 1 ms
         String token = jwtService.generateToken(userDetails);
+        Thread.sleep(5);
 
-        // Wait for the token to expire
-        Thread.sleep(50); // Sleep more than the expiration time
-
-        // Directly extracting claims from an expired token usually throws ExpiredJwtException
-        assertThrows(ExpiredJwtException.class, () -> jwtService.extractAllClaims(token));
-
-        // Reset expiration for other tests by setting it back to the original value
-        jwtExpirationField.set(jwtService, TEST_JWT_EXPIRATION);
+        assertTrue(ReflectionTestUtils.invokeMethod(jwtService, "isTokenExpired", token));
+        ReflectionTestUtils.setField(jwtService, "jwtExpiration", jwtExpiration);
     }
-}*/
+
+    // Test extractAllClaims method
+    @Test
+    void extractAllClaims_shouldReturnClaims() {
+        String username = "claimsuser";
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("foo", "bar");
+        String token = Jwts.builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey)),
+                        SignatureAlgorithm.HS256)
+                .compact();
+
+        Claims extractedClaims = ReflectionTestUtils.invokeMethod(jwtService, "extractAllClaims", token);
+        assertEquals("bar", extractedClaims.get("foo", String.class));
+        assertEquals(username, extractedClaims.getSubject());
+    }
+
+    // Test getSignInKey method
+    @Test
+    void getSignInKey_shouldReturnValidKey() {
+        java.security.Key key = ReflectionTestUtils.invokeMethod(jwtService, "getSignInKey");
+        assertNotNull(key);
+        assertEquals("HmacSHA256", key.getAlgorithm());
+    }
+
+
+
+}
