@@ -93,6 +93,7 @@ public class AccountServiceJpaTest {
         verify(accountRepository, times(1)).save(any(Account.class));
     }
 
+    // Test for creating multiple accounts
     @Test
     void testCreateAccounts() {
         // Change values for this test
@@ -121,6 +122,23 @@ public class AccountServiceJpaTest {
         verify(accountRepository, times(1)).saveAll(savedAccounts);
     }
 
+   
+    @Test
+    void testCreateAccounts_EmptyList() {
+        List<Account> emptyList = Arrays.asList();
+        List<Account> result = accountService.createAccounts(emptyList);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testCreateAccounts_NullList() {
+        assertThrows(NullPointerException.class, () -> accountService.createAccounts(null));
+    }
+
+    // Test for creating an account with invalid parameters
+    //TODO:test valid parameters
+
     @Test
     void testCreateAccount_NullAccount_ThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> accountService.createAccount(null));
@@ -144,16 +162,53 @@ public class AccountServiceJpaTest {
         assertThrows(IllegalArgumentException.class, () -> accountService.createAccount(account1));
     }
 
+    // Test for validating an account
     @Test
-    void testCreateAccounts_EmptyList() {
-        List<Account> emptyList = Arrays.asList();
-        List<Account> result = accountService.createAccounts(emptyList);
+    void testValidateAccount_ValidAccount_ReturnsAccount() {
+        Account validAccount = new Account();
+        validAccount.setIban(iban1);
+        validAccount.setBalance(BigDecimal.valueOf(100.0));
+        validAccount.setUser(user1);
+
+        Account result = accountService.validateAccount(validAccount);
+
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertEquals(validAccount, result);
     }
 
     @Test
-    void testCreateAccounts_NullList() {
-        assertThrows(NullPointerException.class, () -> accountService.createAccounts(null));
+    void testValidateAccount_NullAccount_ThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> accountService.validateAccount(null));
     }
+
+    @Test
+    void testValidateAccount_NullIban_ThrowsException() {
+        Account acc = new Account();
+        acc.setBalance(BigDecimal.valueOf(100.0));
+        acc.setUser(user1);
+
+        assertThrows(IllegalArgumentException.class, () -> accountService.validateAccount(acc));
+    }
+
+    @Test
+    void testValidateAccount_NullBalance_ThrowsException() {
+        Account acc = new Account();
+        acc.setIban(iban1);
+        acc.setUser(user1);
+
+        assertThrows(IllegalArgumentException.class, () -> accountService.validateAccount(acc));
+    }
+
+    @Test
+    void testValidateAccount_NullUser_ThrowsException() {
+        Account acc = new Account();
+        acc.setIban(iban1);
+        acc.setBalance(BigDecimal.valueOf(100.0));
+
+        assertThrows(IllegalArgumentException.class, () -> accountService.validateAccount(acc));
+    }
+
+
+
+    
 }
