@@ -112,6 +112,7 @@ public class TransactionServiceJpaTest {
                 .thenReturn(Optional.of(fullTransaction));
     }
 
+    // testIsValidTransaction
     @Test
     void testIsValidTransactionWithValidTransaction() {
         boolean result = transactionService.isValidTransaction(fullTransaction);
@@ -166,53 +167,9 @@ public class TransactionServiceJpaTest {
         assertThrows(IllegalArgumentException.class, () -> transactionService.isValidTransaction(transaction));
     }
 
-    // TODO: move this to the test class for the transaction Mapper
+  
     @Test
-    void testToDTOWithFullTransaction() {
-
-        TransactionDTOResponse dto = transactionService.toDTO(fullTransaction);
-
-        assertNotNull(dto);
-        assertEquals(fullTransaction.getAmount(), dto.getAmount());
-        assertEquals(fullTransaction.getDescription(), dto.getDescription());
-        assertEquals(fullTransaction.getCreatedAt().toString(), dto.getCreatedAt().toString());
-        assertEquals(fullTransaction.getFromAccount().getIban().toString(), dto.getSender());
-        assertEquals(fullTransaction.getToAccount().getIban().toString(), dto.getReceiver());
-        assertEquals(fullTransaction.getInitiator().getId(), dto.getInitiator());
-    }
-
-    @Test
-    void testToDTOWithNullTransaction() {
-        assertThrows(NullPointerException.class, () -> transactionService.toDTO((Transaction) null));
-    }
-
-    @Test
-    void testToDTOListWithMultipleTransactions() {
-
-        List<TransactionDTOResponse> dtos = transactionService.toDTO(transactions);
-
-        assertNotNull(dtos);
-        assertEquals(2, dtos.size());
-
-        TransactionDTOResponse dto1 = dtos.get(0);
-        assertEquals(fullTransaction.getAmount(), dto1.getAmount());
-        assertEquals(fullTransaction.getDescription(), dto1.getDescription());
-        assertEquals(fullTransaction.getCreatedAt(), dto1.getCreatedAt());
-        assertEquals(fullTransaction.getFromAccount().getIban().toString(), dto1.getSender());
-        assertEquals(fullTransaction.getToAccount().getIban().toString(), dto1.getReceiver());
-        assertEquals(fullTransaction.getInitiator().getId(), dto1.getInitiator());
-
-        TransactionDTOResponse dto2 = dtos.get(1);
-        assertEquals(fullTransaction2.getAmount(), dto2.getAmount());
-        assertEquals(fullTransaction2.getDescription(), dto2.getDescription());
-        assertEquals(fullTransaction2.getCreatedAt(), dto2.getCreatedAt());
-        assertEquals(fullTransaction2.getFromAccount().getIban().toString(), dto2.getSender());
-        assertEquals(fullTransaction2.getToAccount().getIban().toString(), dto2.getReceiver());
-        assertEquals(fullTransaction2.getInitiator().getId(), dto2.getInitiator());
-    }
-
-    @Test
-    void testToDTOListWithEmptyList() {
+    void testToDTOWithEmptyListReturnsEmptyList() {
         TransactionServiceJpa TransactionServiceJpa = transactionService;
         List<TransactionDTOResponse> dtos = TransactionServiceJpa.toDTO(new ArrayList<>());
         assertNotNull(dtos);
@@ -303,7 +260,7 @@ public class TransactionServiceJpaTest {
     void testGetTransactionByIdWithNegativeIdThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> transactionService.getTransactionById(-1L));
     }
-
+    //getUserTotalAmount tests
     @Test
     void testGetUserTotalAmountSpendAtDateWithTransactionsOnSameDay() {
 
@@ -374,6 +331,7 @@ public class TransactionServiceJpaTest {
                 () -> transactionService.getUserTotalAmountSpendAtDate(user, null));
     }
 
+    // testIsInternalTransaction
     @Test
     void testIsInternalTransactionWithSameBankCode() {
         // Use presetup accounts from setUp()
@@ -424,6 +382,7 @@ public class TransactionServiceJpaTest {
         assertThrows(NullPointerException.class, () -> transactionService.IsInternalTransaction(account1, account2));
     }
 
+    // testCreateTransaction
     @Test
     void testCreateTransactionSuccess() throws Exception {
         User user1 = new User();

@@ -217,27 +217,7 @@ public class TransactionServiceJpa implements TransactionService {
         return allTransactions;
     }
 
-    @Override
-    public TransactionDTOResponse toDTO(Transaction model) {
-        TransactionDTOResponse transactionDTO = new TransactionDTOResponse();
-        transactionDTO.setAmount(model.getAmount());
-        transactionDTO.setCreatedAt(model.getCreatedAt());
-        transactionDTO.setInitiator(model.getInitiator().getId());
-        transactionDTO.setSender(model.getFromAccount().getIban().toString());
-        transactionDTO.setReceiver(model.getToAccount().getIban().toString());
-        transactionDTO.setDescription(model.getDescription());
-        return transactionDTO;
-    }
-
-    @Override
-    public List<TransactionDTOResponse> toDTO(List<Transaction> transactions) {
-        List<TransactionDTOResponse> transactionDTOs = new ArrayList<>();
-        for (Transaction transaction : transactions) {
-            transactionDTOs.add(toDTO(transaction));
-        }
-        return transactionDTOs;
-    }
-
+   
     @Override
     public Page<Transaction> getTransactionsByIBAN(String iban, TransactionFilter filter) {
         if (iban == null || iban.isEmpty()) {
@@ -349,6 +329,21 @@ public class TransactionServiceJpa implements TransactionService {
 
         // TODO: should i validate the description field?
         return true;
+    }
+
+
+
+    //remove this method if not needed
+    @Override
+    public TransactionDTOResponse toDTO(Transaction model) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toDTO'");
+    }
+
+    @Override
+    public List<TransactionDTOResponse> toDTO(List<Transaction> fields) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'toDTO'");
     }
 
 }

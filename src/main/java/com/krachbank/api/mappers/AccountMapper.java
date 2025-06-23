@@ -25,7 +25,7 @@ public  class AccountMapper extends BaseMapper<Account, AccountDTORequest, Accou
         account.setTransactionLimit(dto.getTransactionLimit());
         account.setCreatedAt(LocalDateTime.now());
 
-        return new Account();
+        return account;
     }
 
     @Override
