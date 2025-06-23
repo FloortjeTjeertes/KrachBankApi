@@ -177,8 +177,5 @@ public class AccountController {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
         }
-
     }
-
-
 }

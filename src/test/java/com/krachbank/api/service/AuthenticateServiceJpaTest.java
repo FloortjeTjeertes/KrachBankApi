@@ -83,7 +83,7 @@ class AuthenticationServiceJpaTest {
         newUser.setVerified(false);
         newUser.setActive(true);
         newUser.setDailyLimit(BigDecimal.valueOf(0.0));
-        newUser.setPassword("encodedPassword"); 
+        newUser.setPassword("encodedPassword");
 
         // Mock repository behavior
         when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.empty());
