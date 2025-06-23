@@ -42,6 +42,7 @@ class AuthenticationServiceJpaTest {
     private PasswordEncoder passwordEncoder;
     private JwtService jwtService;
     private AuthenticationManager authenticationManager;
+    private EmailService emailService;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +51,7 @@ class AuthenticationServiceJpaTest {
         passwordEncoder = mock(PasswordEncoder.class);
         jwtService = mock(JwtService.class);
         authenticationManager = mock(AuthenticationManager.class);
+        emailService = mock(EmailService.class);
 
         // Inject mocks into the service
         authenticationService = new AuthenticationServiceJpa(
@@ -57,6 +59,7 @@ class AuthenticationServiceJpaTest {
                 passwordEncoder,
                 jwtService,
                 authenticationManager
+                , emailService
         );
     }
 
@@ -76,11 +79,11 @@ class AuthenticationServiceJpaTest {
         newUser.setFirstName("John");
         newUser.setLastName("Doe");
         newUser.setPhoneNumber("1234567890");
-        newUser.setBSN(123456789);
+        newUser.setBSN("123456789");
         newUser.setVerified(false);
         newUser.setActive(true);
         newUser.setDailyLimit(BigDecimal.valueOf(0.0));
-        newUser.setPassword("encodedPassword"); // Password will be encoded by service
+        newUser.setPassword("encodedPassword"); 
 
         // Mock repository behavior
         when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.empty());

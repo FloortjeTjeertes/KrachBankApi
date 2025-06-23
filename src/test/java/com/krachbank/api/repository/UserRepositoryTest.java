@@ -44,7 +44,7 @@ class UserRepositoryTest {
         user1.setLastName("Doe");
         user1.setEmail("john.doe@example.com");
         user1.setPhoneNumber("111-222-3333");
-        user1.setBSN(123456789);
+        user1.setBSN("123456789");
         user1.setUsername("john.doe");
         user1.setPassword("encodedPassword1");
         user1.setActive(true);
@@ -57,7 +57,7 @@ class UserRepositoryTest {
         user2.setLastName("Smith");
         user2.setEmail("jane.smith@example.com");
         user2.setPhoneNumber("444-555-6666");
-        user2.setBSN(987654321);
+        user2.setBSN("987654321");
         user2.setUsername("jane.smith");
         user2.setPassword("encodedPassword2");
         user2.setActive(true);
@@ -70,7 +70,7 @@ class UserRepositoryTest {
         user3.setLastName("Jones");
         user3.setEmail("peter.jones@example.com");
         user3.setPhoneNumber("777-888-9999");
-        user3.setBSN(112233445);
+        user3.setBSN("112233445");
         user3.setUsername("peter.jones");
         user3.setPassword("encodedPassword3");
         user3.setActive(false); // Inactive user
@@ -225,7 +225,7 @@ class UserRepositoryTest {
         newUser.setLastName("User");
         newUser.setEmail("new.user@example.com");
         newUser.setPhoneNumber("999-888-7777");
-        newUser.setBSN(100100100);
+        newUser.setBSN("100100100");
         newUser.setUsername("new.user");
         newUser.setPassword("newEncodedPassword");
         newUser.setActive(true);

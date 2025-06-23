@@ -26,8 +26,7 @@ public class UserDTO implements DTO {
     private String lastName;
     private String email;
     private String phoneNumber;
-    private int BSN; // Note: Ensure consistency with 'bsn' property in RegisterRequest/User entity
-                     // if needed
+    private String BSN;
     private String password; // Added for registration input
     private String username;
     private Boolean isAdmin;

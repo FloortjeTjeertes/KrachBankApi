@@ -39,7 +39,7 @@ class AuthenticationRepositoryTest {
         user1.setUsername("alice_smith");
         user1.setEmail("alice.smith@example.com");
         user1.setPhoneNumber("111-111-1111");
-        user1.setBSN(111222333);
+        user1.setBSN("111222333");
         user1.setPassword("hashedpass1"); // Password field is not used in findByUsername/Email
         user1.setCreatedAt(LocalDateTime.now());
         user1.setVerified(true);
@@ -52,7 +52,7 @@ class AuthenticationRepositoryTest {
         user2.setUsername("bob_johnson");
         user2.setEmail("bob.johnson@example.com");
         user2.setPhoneNumber("222-222-2222");
-        user2.setBSN(444555666);
+        user2.setBSN("444555666");
         user2.setPassword("hashedpass2");
         user2.setCreatedAt(LocalDateTime.now());
         user2.setVerified(false);
@@ -147,7 +147,7 @@ class AuthenticationRepositoryTest {
         newUser.setUsername("charlie.brown");
         newUser.setEmail("charlie.brown@example.com");
         newUser.setPhoneNumber("333-333-3333");
-        newUser.setBSN(777888999);
+        newUser.setBSN("777888999");
         newUser.setPassword("newhashedpass");
         newUser.setCreatedAt(LocalDateTime.now());
         newUser.setVerified(false);

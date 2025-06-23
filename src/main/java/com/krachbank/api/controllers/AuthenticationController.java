@@ -43,7 +43,7 @@ public class AuthenticationController {
             userDTO.setPassword(registerRequest.getPassword());
             userDTO.setFirstName(registerRequest.getFirstName());
             userDTO.setLastName(registerRequest.getLastName());
-            userDTO.setBSN(Integer.parseInt(registerRequest.getBSN()));
+            userDTO.setBSN(registerRequest.getBSN());
             userDTO.setPhoneNumber(registerRequest.getPhoneNumber());
             userDTO.setIsAdmin(false);
             // userDTO.setPhoneNumber(registerRequest.getPhoneNumber()); // Uncomment if RegisterRequest has phoneNumber

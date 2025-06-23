@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.springframework.mail.MailException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,16 +29,18 @@ public class AuthenticationServiceJpa implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
     public AuthenticationServiceJpa(
             AuthenticationRepository authenticationRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            AuthenticationManager authenticationManager) {
+            AuthenticationManager authenticationManager, EmailService emailService) {
         this.authenticationRepository = authenticationRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.emailService = emailService;
     }
 
     @Override
@@ -50,11 +53,10 @@ public class AuthenticationServiceJpa implements AuthenticationService {
         User newUser = new User();
         newUser.setFirstName(registerRequest.getFirstName());
         newUser.setLastName(registerRequest.getLastName());
-        // If username is derived from first+last name, set it here for the User object
-        newUser.setUsername(registerRequest.getFirstName() + registerRequest.getLastName()); // Make sure this matches your UserService logic
+        newUser.setUsername(registerRequest.getFirstName() + registerRequest.getLastName());
         newUser.setEmail(registerRequest.getEmail());
         newUser.setPhoneNumber(registerRequest.getPhoneNumber());
-        newUser.setBSN(Integer.parseInt(registerRequest.getBSN()));
+        newUser.setBSN(registerRequest.getBSN());
         newUser.setCreatedAt(LocalDateTime.now());
         newUser.setVerified(false);
         newUser.setActive(true);
@@ -91,7 +93,18 @@ public class AuthenticationServiceJpa implements AuthenticationService {
 
         // Generate JWT token for the authenticated user
         String jwtToken = jwtService.generateToken((UserDetails) user);
-
+        try {
+            String subject = "Successful Login to KrachBank";
+            String text = "Dear " + user.getFirstName() + ",\n\n"
+                    + "Your KrachBank account (" + user.getEmail() + ") was accessed on " + LocalDateTime.now() + ".\n"
+                    + "If this was not you, please contact support immediately.\n\n"
+                    + "Best regards,\n"
+                    + "The KrachBank Team";
+            emailService.sendEmail(user.getEmail(), subject, text);
+        } catch (MailException e) {
+            System.err.println("Failed to send login notification email to " + user.getEmail() + ": " + e.getMessage());
+            // Optionally, handle this
+        }
         AuthenticationDTO authenticatedUserDetails = AuthenticationDTO.fromModel(user);
         return new AuthenticationResultDTO(jwtToken, authenticatedUserDetails);
     }

@@ -54,7 +54,7 @@ public class UserServiceJpaTest {
         user1.setLastName("Doe");
         user1.setEmail("john@example.com");
         user1.setPhoneNumber("1234567890");
-        user1.setBSN(123456789);
+        user1.setBSN("123456789");
         user1.setUsername("john.doe");
 
         user2 = new User();
@@ -67,7 +67,7 @@ public class UserServiceJpaTest {
         user2.setLastName("Smith");
         user2.setEmail("jane@example.com");
         user2.setPhoneNumber("0987654321");
-        user2.setBSN(987654321);
+        user2.setBSN("987654321");
         user2.setUsername("jane.smith");
 
         userDTO1 = userService.toDTO(user1); // Pre-convert for convenience in tests
@@ -105,7 +105,7 @@ public class UserServiceJpaTest {
         newUserDTO.setLastName("User");
         newUserDTO.setEmail("new.user@example.com");
         newUserDTO.setPhoneNumber("555-555-5555");
-        newUserDTO.setBSN(111222333);
+        newUserDTO.setBSN("111222333");
         newUserDTO.setUsername("new.user");
         newUserDTO.setPassword("rawPassword");
 
@@ -182,7 +182,7 @@ public class UserServiceJpaTest {
         updatedDetails.setEmail("johnny.depp@example.com");
         updatedDetails.setPhoneNumber("111-222-3333");
         updatedDetails.setDailyLimit(BigDecimal.valueOf(1500));
-        updatedDetails.setBSN(999888777);
+        updatedDetails.setBSN("999888777");
         updatedDetails.setVerified(false); // Change status
         updatedDetails.setActive(false); // Change status
         updatedDetails.setUsername("johnny.depp");
@@ -410,7 +410,7 @@ public class UserServiceJpaTest {
         userWithNullId.setFirstName("Test");
         userWithNullId.setLastName("User");
         userWithNullId.setEmail("test@example.com");
-        userWithNullId.setBSN(123);
+        userWithNullId.setBSN("123");
         userWithNullId.setId(null); // Simulate user object from DB having null ID somehow (unlikely for real JPA)
         userWithNullId.setActive(true); // Fulfill other checks
         userWithNullId.setVerified(false);
@@ -472,10 +472,10 @@ public class UserServiceJpaTest {
     @Test
     @DisplayName("testVerifyUser - Invalid BSN should throw IllegalArgumentException")
     void testVerifyUser_InvalidBsn_ThrowsException() {
-        user1.setBSN(0);
+        user1.setBSN("0");
         when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
         assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
-        user1.setBSN(-1);
+        user1.setBSN("-1");
         when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
         assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(user1.getId()));
     }
@@ -486,7 +486,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Alice");
         userDTO.setLastName("Smith");
         userDTO.setEmail("alice@example.com");
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Alice Smith");
         userDTO.setPassword("password");
@@ -537,7 +537,7 @@ public class UserServiceJpaTest {
         existing.setEmail("old@example.com");
         existing.setPhoneNumber("000");
         existing.setDailyLimit(BigDecimal.valueOf(100));
-        existing.setBSN(111);
+        existing.setBSN("111");
         existing.setVerified(false);
         existing.setActive(true);
         existing.setUsername("olduser");
@@ -548,7 +548,7 @@ public class UserServiceJpaTest {
         update.setEmail("new@example.com");
         update.setPhoneNumber("111");
         update.setDailyLimit(BigDecimal.valueOf(200));
-        update.setBSN(222);
+        update.setBSN("222");
         update.setVerified(true);
         update.setActive(false);
         update.setUsername("newuser");
@@ -632,7 +632,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Test");
         userDTO.setLastName("User");
         userDTO.setEmail("test@example.com");
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword(null);
@@ -682,7 +682,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName(null);
         userDTO.setLastName("User");
         userDTO.setEmail("test@example.com");
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword("password");
@@ -697,7 +697,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Test");
         userDTO.setLastName(null);
         userDTO.setEmail("test@example.com");
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword("password");
@@ -712,7 +712,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Test");
         userDTO.setLastName("User");
         userDTO.setEmail(null);
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword("password");
@@ -727,7 +727,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Test");
         userDTO.setLastName("User");
         userDTO.setEmail("test@example.com");
-        userDTO.setBSN(0);
+        userDTO.setBSN("0");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword("password");
@@ -742,7 +742,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Test");
         userDTO.setLastName("User");
         userDTO.setEmail("test@example.com");
-        userDTO.setBSN(-5);
+        userDTO.setBSN("-5");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword("password");
@@ -783,7 +783,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("");
         userDTO.setLastName("User");
         userDTO.setEmail("test@example.com");
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword("password");
@@ -798,7 +798,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Test");
         userDTO.setLastName("");
         userDTO.setEmail("test@example.com");
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword("password");
@@ -813,7 +813,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Test");
         userDTO.setLastName("User");
         userDTO.setEmail("");
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword("password");
@@ -828,7 +828,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Test");
         userDTO.setLastName("User");
         userDTO.setEmail("test@example.com");
-        userDTO.setBSN(0);
+        userDTO.setBSN("0");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword("password");
@@ -843,7 +843,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Test");
         userDTO.setLastName("User");
         userDTO.setEmail("test@example.com");
-        userDTO.setBSN(-10);
+        userDTO.setBSN("-10");
         userDTO.setPhoneNumber("1234567890");
         userDTO.setUsername("Test User");
         userDTO.setPassword("password");
@@ -861,7 +861,7 @@ public class UserServiceJpaTest {
         existing.setEmail("old@example.com");
         existing.setPhoneNumber("000");
         existing.setDailyLimit(BigDecimal.valueOf(100));
-        existing.setBSN(111);
+        existing.setBSN("111");
         existing.setVerified(false);
         existing.setActive(true);
         existing.setUsername("olduser");
@@ -872,7 +872,7 @@ public class UserServiceJpaTest {
         update.setEmail("new@example.com");
         update.setPhoneNumber("999");
         update.setDailyLimit(BigDecimal.valueOf(500));
-        update.setBSN(222);
+        update.setBSN("222");
         update.setVerified(true);
         update.setActive(false);
         update.setUsername("newuser");
@@ -934,7 +934,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Bob");
         userDTO.setLastName("Builder");
         userDTO.setEmail("bob@builder.com");
-        userDTO.setBSN(111222333);
+        userDTO.setBSN("111222333");
         userDTO.setPhoneNumber("0612345678");
         userDTO.setUsername("bobthebuilder");
         userDTO.setPassword("canwefixit");
@@ -954,7 +954,7 @@ public class UserServiceJpaTest {
         assertEquals("Bob", created.getFirstName());
         assertEquals("Builder", created.getLastName());
         assertEquals("bob@builder.com", created.getEmail());
-        assertEquals(111222333, created.getBSN());
+        assertEquals("111222333", created.getBSN());
         assertEquals("0612345678", created.getPhoneNumber());
         assertEquals("bobthebuilder", created.getUsername());
         assertEquals(99L, created.getId());
@@ -1010,7 +1010,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("No");
         userDTO.setLastName("Username");
         userDTO.setEmail("nouser@example.com");
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPhoneNumber("0612345678");
         userDTO.setUsername(null);
         userDTO.setPassword("pw");
@@ -1034,7 +1034,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("No");
         userDTO.setLastName("Username");
         userDTO.setEmail("nouser2@example.com");
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPassword("pw");
         userDTO.setUsername(null);
         when(userRepository.findByEmail(userDTO.getEmail())).thenReturn(Optional.empty());
@@ -1057,7 +1057,7 @@ public class UserServiceJpaTest {
         userDTO.setFirstName("Dup");
         userDTO.setLastName("User");
         userDTO.setEmail("dup@example.com");
-        userDTO.setBSN(123456789);
+        userDTO.setBSN("123456789");
         userDTO.setPassword("pw");
         userDTO.setUsername("dupuser");
         when(userRepository.findByEmail(userDTO.getEmail())).thenReturn(Optional.empty());
