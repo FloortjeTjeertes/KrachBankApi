@@ -4,12 +4,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.springframework.security.authentication.AuthenticationManager; // For login
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken; // For login
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.AuthenticationException; // Import this
 
 import com.krachbank.api.dto.AuthenticationDTO;
 import com.krachbank.api.dto.AuthenticationResultDTO;
@@ -25,14 +26,14 @@ public class AuthenticationServiceJpa implements AuthenticationService {
 
     private final AuthenticationRepository authenticationRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService; // Injected JwtService
-    private final AuthenticationManager authenticationManager; // Injected AuthenticationManager
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     public AuthenticationServiceJpa(
             AuthenticationRepository authenticationRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            AuthenticationManager authenticationManager) { // Inject AuthenticationManager
+            AuthenticationManager authenticationManager) {
         this.authenticationRepository = authenticationRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -42,9 +43,6 @@ public class AuthenticationServiceJpa implements AuthenticationService {
     @Override
     @Transactional
     public AuthenticationResultDTO register(RegisterRequest registerRequest) throws UserAlreadyExistsException {
-        if (authenticationRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
-            throw new UserAlreadyExistsException("User with username '" + registerRequest.getUsername() + "' already exists.");
-        }
         if (authenticationRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException("User with email '" + registerRequest.getEmail() + "' already exists.");
         }
@@ -52,10 +50,11 @@ public class AuthenticationServiceJpa implements AuthenticationService {
         User newUser = new User();
         newUser.setFirstName(registerRequest.getFirstName());
         newUser.setLastName(registerRequest.getLastName());
-        newUser.setUsername(registerRequest.getUsername());
+        // If username is derived from first+last name, set it here for the User object
+        newUser.setUsername(registerRequest.getFirstName() + registerRequest.getLastName()); // Make sure this matches your UserService logic
         newUser.setEmail(registerRequest.getEmail());
         newUser.setPhoneNumber(registerRequest.getPhoneNumber());
-        newUser.setBSN(registerRequest.getBSN());
+        newUser.setBSN(Integer.parseInt(registerRequest.getBSN()));
         newUser.setCreatedAt(LocalDateTime.now());
         newUser.setVerified(false);
         newUser.setActive(true);
@@ -64,8 +63,7 @@ public class AuthenticationServiceJpa implements AuthenticationService {
 
         User savedUser = authenticationRepository.save(newUser);
 
-        // Generate JWT token for the newly registered user
-        String jwtToken = jwtService.generateToken((UserDetails) savedUser); // Use savedUser directly as it implements UserDetails
+        String jwtToken = jwtService.generateToken((UserDetails) savedUser);
 
         AuthenticationDTO authenticatedUserDetails = AuthenticationDTO.fromModel(savedUser);
         return new AuthenticationResultDTO(jwtToken, authenticatedUserDetails);
@@ -78,20 +76,21 @@ public class AuthenticationServiceJpa implements AuthenticationService {
             // Authenticate the user using Spring Security's AuthenticationManager
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsername(),
+                            loginRequest.getEmail(), // Use email as the principal for authentication
                             loginRequest.getPassword()
                     )
             );
-        } catch (Exception e) { // Catch AuthenticationException (or more specific ones)
-            throw new InvalidCredentialsException("Invalid username or password.");
+        } catch (AuthenticationException e) { // Catch AuthenticationException, which is more specific
+            throw new InvalidCredentialsException("Invalid email or password."); // More specific error message
         }
 
         // If authentication succeeds, retrieve the user to generate a token
-        User user = authenticationRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new InvalidCredentialsException("User not found after successful authentication (should not happen)."));
+        // *** CRITICAL FIX: Use findByEmail here, not findByUsername ***
+        User user = authenticationRepository.findByEmail(loginRequest.getEmail()) // <--- CHANGED THIS LINE
+                .orElseThrow(() -> new InvalidCredentialsException("User not found after successful authentication (this indicates a deeper issue)."));
 
         // Generate JWT token for the authenticated user
-        String jwtToken = jwtService.generateToken((UserDetails) user); // Use user directly as it implements UserDetails
+        String jwtToken = jwtService.generateToken((UserDetails) user);
 
         AuthenticationDTO authenticatedUserDetails = AuthenticationDTO.fromModel(user);
         return new AuthenticationResultDTO(jwtToken, authenticatedUserDetails);
@@ -100,6 +99,9 @@ public class AuthenticationServiceJpa implements AuthenticationService {
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
+        // This method still uses findByUsername. If you intend to deprecate username lookup
+        // you might remove or refactor this method as well, or update its name.
+        // For now, it's fine as long as findByEmail is used in login.
         return authenticationRepository.findByUsername(username);
     }
 }

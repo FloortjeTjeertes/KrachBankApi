@@ -8,7 +8,11 @@ import com.krachbank.api.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -39,7 +43,7 @@ public class AuthenticationController {
             userDTO.setPassword(registerRequest.getPassword());
             userDTO.setFirstName(registerRequest.getFirstName());
             userDTO.setLastName(registerRequest.getLastName());
-            userDTO.setBSN(registerRequest.getBSN());
+            userDTO.setBSN(Integer.parseInt(registerRequest.getBSN()));
             userDTO.setPhoneNumber(registerRequest.getPhoneNumber());
             userDTO.setIsAdmin(false);
             // userDTO.setPhoneNumber(registerRequest.getPhoneNumber()); // Uncomment if RegisterRequest has phoneNumber
@@ -54,11 +58,19 @@ public class AuthenticationController {
 
 
             UserDTO createdUser = userService.createUser(userDTO);
-
             return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully with email: " + createdUser.getEmail());
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage()));
+        return ResponseEntity.badRequest().body(errors);
     }
 
     @PostMapping("/login")

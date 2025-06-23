@@ -67,7 +67,7 @@ class AuthenticationServiceJpaTest {
     void register_Success() throws UserAlreadyExistsException {
         // Arrange
         RegisterRequest request = new RegisterRequest(
-                "testuser", "password123", "John", "Doe", "john.doe@example.com", "1234567890", 123456789
+                "testuser", "password123", "John", "Doe", "john.doe@example.com", "1234567890", "123456789"
         );
 
         User newUser = new User();
@@ -111,7 +111,7 @@ class AuthenticationServiceJpaTest {
     void register_UsernameExists_ThrowsException() {
         // Arrange
         RegisterRequest request = new RegisterRequest(
-                "existinguser", "password123", "John", "Doe", "john.doe@example.com", "1234567890", 123456789
+                "existinguser", "password123", "John", "Doe", "john.doe@example.com", "1234567890", "123456789"
         );
         when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.of(new User()));
 
@@ -133,7 +133,7 @@ class AuthenticationServiceJpaTest {
     void register_EmailExists_ThrowsException() {
         // Arrange
         RegisterRequest request = new RegisterRequest(
-                "testuser", "password123", "John", "Doe", "existing@example.com", "1234567890", 123456789
+                "testuser", "password123", "John", "Doe", "existing@example.com", "1234567890", "123456789"
         );
         when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.empty());
         when(authenticationRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(new User()));
@@ -171,7 +171,7 @@ class AuthenticationServiceJpaTest {
                 .thenReturn(mock(Authentication.class)); // Return a dummy Authentication object
 
         // Mock repository behavior after successful authentication
-        when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.of(foundUser));
+        when(authenticationRepository.findByUsername(request.getEmail())).thenReturn(Optional.of(foundUser));
         when(jwtService.generateToken(any(UserDetails.class))).thenReturn("mockJwtToken");
 
         // Act
@@ -184,9 +184,9 @@ class AuthenticationServiceJpaTest {
 
         // Verify interactions
         verify(authenticationManager, times(1)).authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-        verify(authenticationRepository, times(1)).findByUsername(request.getUsername());
+        verify(authenticationRepository, times(1)).findByUsername(request.getEmail());
         verify(jwtService, times(1)).generateToken(foundUser); // Directly verify with 'foundUser'
     }
 
@@ -207,7 +207,7 @@ class AuthenticationServiceJpaTest {
 
         assertThat(thrown.getMessage()).isEqualTo("Invalid username or password.");
         verify(authenticationManager, times(1)).authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         verify(authenticationRepository, never()).findByUsername(anyString()); // Should not attempt to find user
         verify(jwtService, never()).generateToken(any(UserDetails.class));
@@ -224,7 +224,7 @@ class AuthenticationServiceJpaTest {
                 .thenReturn(mock(Authentication.class));
 
         // Mock repository to *not* find the user after successful authentication
-        when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.empty());
+        when(authenticationRepository.findByUsername(request.getEmail())).thenReturn(Optional.empty());
 
         // Act & Assert
         InvalidCredentialsException thrown = assertThrows(InvalidCredentialsException.class, () -> {
@@ -233,9 +233,9 @@ class AuthenticationServiceJpaTest {
 
         assertThat(thrown.getMessage()).isEqualTo("User not found after successful authentication (should not happen).");
         verify(authenticationManager, times(1)).authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-        verify(authenticationRepository, times(1)).findByUsername(request.getUsername());
+        verify(authenticationRepository, times(1)).findByUsername(request.getEmail());
         verify(jwtService, never()).generateToken(any(UserDetails.class));
     }
 
