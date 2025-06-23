@@ -19,10 +19,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Retrieve the user from your repository
-        User user = authenticationRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-        return user; // Your User model will implement UserDetails
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = authenticationRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
+        return user;
     }
 }

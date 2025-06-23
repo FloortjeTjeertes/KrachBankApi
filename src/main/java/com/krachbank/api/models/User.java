@@ -42,7 +42,7 @@ public class User implements Model, UserDetails {
     private String phoneNumber;
 
     @Column(name = "bsn")
-    private int BSN;
+    private String BSN;
 
     private String firstName;
 
@@ -89,6 +89,10 @@ public class User implements Model, UserDetails {
     @Override
     public boolean isEnabled() {
         return this.active;
+    }
+    @Override
+    public String getUsername() {
+        return this.email; // Use email as the username for authentication
     }
 
 }

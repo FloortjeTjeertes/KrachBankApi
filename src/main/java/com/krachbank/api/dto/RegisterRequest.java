@@ -2,6 +2,7 @@ package com.krachbank.api.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,18 +24,22 @@ public class RegisterRequest implements DTO {
     private String username;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters long")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,}$",
+            message = "Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character.")
     private String password;
-
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     private String email;
 
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must be between 10 and 15 digits")
     private String phoneNumber;
 
-    //bsn should be a Long or int, depending on your requirements
     @NotBlank(message = "BSN is required")
-    private int BSN; // Business Social Number
+    // Rule for BSN: Exactly 9 digits
+    @Pattern(regexp = "^[0-9]{9}$", message = "BSN must be exactly 9 digits")
+    private String BSN;
 
    
 }

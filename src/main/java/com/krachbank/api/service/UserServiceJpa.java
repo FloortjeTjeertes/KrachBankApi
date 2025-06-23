@@ -57,8 +57,12 @@ public class UserServiceJpa implements UserService {
         if (user.getLastName() == null || user.getLastName().isEmpty()) {
             throw new IllegalArgumentException("Last name is required");
         }
-        if (user.getBSN() <= 0) {
-            throw new IllegalArgumentException("BSN must be a positive number");
+        String bsn = user.getBSN();
+        if (bsn == null || bsn.isEmpty()) {
+            throw new IllegalArgumentException("BSN is required");
+        }
+        if (bsn .length() != 9 || !bsn.matches("\\d+")) {
+            throw new IllegalArgumentException("BSN must be a 9-digit number");
         }
         user.setVerified(true);
 
@@ -80,8 +84,12 @@ public class UserServiceJpa implements UserService {
         if (userDTO.getLastName() == null || userDTO.getLastName().isEmpty()) {
             throw new IllegalArgumentException("Last name is required");
         }
-        if (userDTO.getBSN() <= 0) {
-            throw new IllegalArgumentException("BSN must be a positive number");
+        String bsn = userDTO.getBSN();
+        if (bsn == null || bsn.isEmpty()) {
+            throw new IllegalArgumentException("BSN is required");
+        }
+        if (bsn .length() != 9 || !bsn.matches("\\d+")) {
+            throw new IllegalArgumentException("BSN must be a 9-digit number");
         }
         // --- Validation for existing user (based on email and username) ---
         if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
@@ -97,7 +105,7 @@ public class UserServiceJpa implements UserService {
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
         user.setEmail(userDTO.getEmail());
-        user.setBSN(userDTO.getBSN());
+        user.setBSN(String.valueOf(userDTO.getBSN()));
         user.setPhoneNumber(userDTO.getPhoneNumber());
 
         // Set username from DTO or combine first and last name if not set
@@ -146,13 +154,8 @@ public class UserServiceJpa implements UserService {
         existingUser.setBSN(userDetails.getBSN()); // Ensure this maps correctly from userDetails
         existingUser.setVerified(userDetails.isVerified());
         existingUser.setActive(userDetails.isActive());
-        // existingUser.setUsername(userDetails.getUsername()); // <--- Ensure username
-        // is updated if passed
-
-        // Save the updated entity
         User updatedUser = userRepository.save(existingUser);
 
-        // USE UserDTO.fromModel() for consistent conversion
         return toDTO(updatedUser); // <--- CHANGED HERE
     }
 
