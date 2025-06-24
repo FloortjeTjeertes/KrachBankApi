@@ -1,20 +1,20 @@
 package com.krachbank.api.service;
 
-import com.krachbank.api.dto.DTO;
-import com.krachbank.api.dto.UserDTO;
-import com.krachbank.api.filters.UserFilter;
-import com.krachbank.api.models.User;
-import com.krachbank.api.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -23,11 +23,23 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import com.krachbank.api.dto.UserDTO;
+import com.krachbank.api.models.User;
+import com.krachbank.api.repository.UserRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 public class UserServiceJpaTest {
     private UserServiceJpa userService;
@@ -275,9 +287,10 @@ public class UserServiceJpaTest {
 
     @Test
     void testGetAllUsers() {
+
         List<User> usersList = Arrays.asList(user1, user2);
         // Mocking findAll with Specification and Pageable
-        when(userRepository.findAll(nullable(Specification.class), any(Pageable.class)))
+        when(userRepository.findAll(any(Pageable.class)))
                 .thenReturn(new PageImpl<>(usersList));
 
         // Call the service method with empty params and null filter for a general "get
@@ -289,7 +302,7 @@ public class UserServiceJpaTest {
         assertEquals(user1.getId(), users.get(0).getId());
         assertEquals(user2.getId(), users.get(1).getId());
         // Verify that findAll was called with any Specification and any Pageable
-        verify(userRepository, times(1)).findAll(nullable(Specification.class), any(Pageable.class));
+        verify(userRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
@@ -410,7 +423,8 @@ public class UserServiceJpaTest {
     @DisplayName("testVerifyUser - User not found should throw EntityNotFoundException")
     void testVerifyUser_UserNotFound_ThrowsException() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> userService.verifyUser(99L));
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> userService.verifyUser(99L));
+        assertEquals("User not found with ID: 99", exception.getMessage());
         verify(userRepository, times(1)).findById(99L);
     }
 

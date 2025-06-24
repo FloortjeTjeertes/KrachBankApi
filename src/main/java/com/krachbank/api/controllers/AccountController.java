@@ -1,5 +1,6 @@
 package com.krachbank.api.controllers;
 
+transactionsadmin
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.krachbank.api.configuration.IBANGenerator;
 import com.krachbank.api.dto.AccountDTORequest;
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
@@ -31,6 +31,7 @@ import com.krachbank.api.filters.AccountFilter;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.mappers.AccountMapper;
 import com.krachbank.api.mappers.TransactionMapper;
+import com.krachbank.api.mappers.UserMapper;
 import com.krachbank.api.models.Account;
 import com.krachbank.api.models.AccountType;
 import com.krachbank.api.models.Transaction;
@@ -38,7 +39,6 @@ import com.krachbank.api.models.User;
 import com.krachbank.api.service.AccountService;
 import com.krachbank.api.service.TransactionService;
 import com.krachbank.api.service.UserService;
-
 
 @RestController
 @RequestMapping("/accounts")
@@ -48,16 +48,17 @@ public class AccountController {
     private final TransactionService transactionService;
     private final AccountMapper accountMapper;
     private final TransactionMapper transactionMapper;
-    private static final Logger logger = LoggerFactory.getLogger(AccountController.class);
 
+    private final UserMapper userMapper; // Assuming you have a UserMapper similar to AccountMapper
 
     public AccountController(AccountService accountService, UserService userService, AccountMapper accountMapper,
-                             TransactionService transactionService, TransactionMapper transactionMapper) {
+            TransactionService transactionService, TransactionMapper transactionMapper, UserMapper userMapper) {
         this.accountService = accountService;
         this.userService = userService;
         this.accountMapper = accountMapper;
         this.transactionService = transactionService;
         this.transactionMapper = transactionMapper;
+        this.userMapper = userMapper;
     }
 
     @PostMapping
@@ -66,6 +67,19 @@ public class AccountController {
             List<Account> accounts = new ArrayList<>();
             for (int i = 0; i < accountRequests.size(); i++) {
                 AccountDTORequest accountRequest = accountRequests.get(i);
+                // Account account = new Account();
+                // account.setIban(IBANGenerator.generateIBAN());
+                // account.setCreatedAt(LocalDateTime.now());
+                // account.setBalance(accountRequest.getBalance() != null &&
+                // accountRequest.getBalance().compareTo(BigDecimal.ZERO) != 0 ?
+                // accountRequest.getBalance() : BigDecimal.ZERO);
+                // account.setAbsoluteLimit(accountRequest.getAbsoluteLimit() != null &&
+                // accountRequest.getAbsoluteLimit().compareTo(BigDecimal.ZERO) != 0 ?
+                // accountRequest.getAbsoluteLimit() : BigDecimal.ZERO);
+                // account.setTransactionLimit(accountRequest.getTransactionLimit() != null &&
+                // accountRequest.getTransactionLimit().compareTo(BigDecimal.ZERO) != 0 ?
+                // accountRequest.getTransactionLimit() : BigDecimal.ZERO);
+
                 Account account = new Account();
                 account.setIban(IBANGenerator.generateIBAN());
                 account.setCreatedAt(LocalDateTime.now());
@@ -84,7 +98,9 @@ public class AccountController {
                                 && accountRequest.getTransactionLimit().compareTo(java.math.BigDecimal.ZERO) != 0
                                 ? accountRequest.getTransactionLimit()
                                 : java.math.BigDecimal.ZERO);
+                account = accountMapper.toModel(accountRequest);
                 // Set account type: first is CHECKINGS, second is SAVINGS
+
                 if (i == 0) {
                     account.setAccountType(AccountType.CHECKING);
                 } else {
@@ -94,16 +110,17 @@ public class AccountController {
                 if (accountRequest.getUserId() == null) {
                     throw new IllegalArgumentException("Account owner is required");
                 }
-                // Fetch the user entity by userId (expects Long)
+                // // Fetch the user entity by userId (expects Long)
                 UserDTO userDTO = userService.getUserById(accountRequest.getUserId());
-                // set userdto to User
-                User user = new User();
-                user.setId(userDTO.getId());
-                user.setEmail(userDTO.getEmail());
-                user.setFirstName(userDTO.getFirstName());
-                user.setLastName(userDTO.getLastName());
-                user.setBSN(userDTO.getBSN());
-                user.setPhoneNumber(userDTO.getPhoneNumber());
+                // // set userdto to User
+                // User user = new User();
+                // user.setId(userDTO.getId());
+                // user.setEmail(userDTO.getEmail());
+                // user.setFirstName(userDTO.getFirstName());
+                // user.setLastName(userDTO.getLastName());
+                // user.setBSN(userDTO.getBSN());
+                // user.setPhoneNumber(userDTO.getPhoneNumber());
+                User user = userMapper.toModel(userDTO);
 
                 account.setUser(user);
                 // --- end set owner ---
@@ -124,7 +141,7 @@ public class AccountController {
     @GetMapping("/{iban}")
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
-            if (iban == null || iban.isEmpty()) {
+            if (iban.isBlank() || iban.isEmpty()) {
                 ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
@@ -142,9 +159,10 @@ public class AccountController {
     }
 
     @GetMapping("/{iban}/transactions")
-    public ResponseEntity<?> getTransactionsForAccount(@PathVariable String iban,@ModelAttribute TransactionFilter filter) {
+    public ResponseEntity<?> getTransactionsForAccount(@PathVariable String iban,
+            @ModelAttribute TransactionFilter filter) {
         try {
-            if (iban == null || iban.isEmpty()) {
+            if (iban.isEmpty() || iban.isBlank()) {
                 ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
@@ -157,7 +175,8 @@ public class AccountController {
                 return ResponseEntity.status(error.getCode()).body(error);
             }
 
-            PaginatedResponseDTO<TransactionDTOResponse> paginatedResponse = transactionMapper.toPaginatedResponse(transactionsPage);
+            PaginatedResponseDTO<TransactionDTOResponse> paginatedResponse = transactionMapper
+                    .toPaginatedResponse(transactionsPage);
 
             return ResponseEntity.ok(paginatedResponse);
         } catch (Exception e) {
@@ -165,7 +184,6 @@ public class AccountController {
             return ResponseEntity.status(error.getCode()).body(error);
         }
     }
-
 
     @GetMapping()
     public ResponseEntity<?> getAccounts(@ModelAttribute AccountFilter filter) {
@@ -235,4 +253,5 @@ public class AccountController {
             return ResponseEntity.status(500).body(new ErrorDTOResponse(e.getMessage(), 500));
         }
     }
+}
 }

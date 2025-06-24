@@ -10,19 +10,19 @@ class AuthenticationDTOTest {
 
     @Test
     void testToModel() {
-        AuthenticationDTO dto = new AuthenticationDTO(
-                1L,
-                "testuser",
-                "test@example.com",
-                "1234567890",
-                "123456789",
-                "John",
-                "Doe",
-                new BigDecimal("1000.00"),
-                LocalDateTime.now(),
-                true,
-                true,
-                false);
+        AuthenticationDTO dto = new AuthenticationDTO();
+        dto.setId(1L);
+        dto.setUsername("testuser");
+        dto.setEmail("a.a@a.com");
+        dto.setPhoneNumber("1234567890");
+        dto.setFirstName("John");
+        dto.setLastName("Doe");
+        dto.setDailyLimit(new BigDecimal("1000.00"));
+        dto.setCreatedAt(LocalDateTime.now());
+        dto.setVerified(true);
+        dto.setActive(true);
+        dto.setAdmin(false);
+        dto.setBSN("123456789");
 
         User user = dto.ToModel();
 

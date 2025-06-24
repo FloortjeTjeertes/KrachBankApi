@@ -15,7 +15,6 @@ import org.iban4j.Iban;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.krachbank.api.dto.TransactionDTO;
 import com.krachbank.api.dto.TransactionDTORequest;
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.models.Account;
