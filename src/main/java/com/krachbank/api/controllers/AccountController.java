@@ -1,6 +1,5 @@
 package com.krachbank.api.controllers;
 
-transactionsadmin
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.krachbank.api.configuration.IBANGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -238,7 +238,6 @@ public class AccountController {
                 return ResponseEntity.status(404).body(new ErrorDTOResponse("Account not found with IBAN: " + iban, 404));
             }
             Account accountToUpdate = optionalAccount.get();
-            logger.debug("Controller: Account retrieved by IBAN has ID: {}", accountToUpdate.getId());
 
             accountToUpdate.setTransactionLimit(newLimit);
 
@@ -253,5 +252,4 @@ public class AccountController {
             return ResponseEntity.status(500).body(new ErrorDTOResponse(e.getMessage(), 500));
         }
     }
-}
 }
