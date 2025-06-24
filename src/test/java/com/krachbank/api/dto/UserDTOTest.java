@@ -10,6 +10,7 @@ class UserDTOTest {
 
     @Test
     void testToModel_AllFieldsSet() {
+
         UserDTO dto = new UserDTO();
         dto.setId(1L);
         dto.setDailyLimit(new BigDecimal("1000.00"));
@@ -25,7 +26,6 @@ class UserDTOTest {
         dto.setPassword("password123");
         dto.setUsername("johndoe");
         dto.setIsAdmin(true);
-
         User user = dto.ToModel();
 
         assertEquals(dto.getId(), user.getId());

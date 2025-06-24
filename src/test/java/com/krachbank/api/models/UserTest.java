@@ -26,6 +26,7 @@ class UserTest {
     @BeforeEach
     void setUp() {
         now = LocalDateTime.now();
+
         user = new User();
         user.setId(1L);
         user.setUsername("testuser");
@@ -40,7 +41,7 @@ class UserTest {
         user.setCreatedAt(now);
         user.setVerified(true); 
         user.setActive(true);
-        user.setAdmin(false); // Default to false for admin
+        user.setAdmin(false); 
     }
 
     @Test
@@ -84,7 +85,7 @@ class UserTest {
         assertEquals("newpass", user.getPassword());
         assertEquals("another@example.com", user.getEmail());
         assertEquals("0987654321", user.getPhoneNumber());
-        assertEquals(987654321, user.getBSN());
+        assertEquals("987654321", user.getBSN());
         assertEquals("Jane", user.getFirstName());
         assertEquals("Smith", user.getLastName());
         assertEquals(new BigDecimal("2000.00"), user.getDailyLimit());
@@ -152,12 +153,11 @@ class UserTest {
         newUser.setVerified(false);
         newUser.setActive(false);
         newUser.setAdmin(true);
-        
         assertEquals("u", newUser.getUsername());
         assertEquals("p", newUser.getPassword());
         assertEquals("e", newUser.getEmail());
         assertEquals("ph", newUser.getPhoneNumber());
-        assertEquals(1, newUser.getBSN());
+        assertEquals("1", newUser.getBSN());
         assertEquals("f", newUser.getFirstName());
         assertEquals("l", newUser.getLastName());
         assertEquals(BigDecimal.ONE, newUser.getDailyLimit());

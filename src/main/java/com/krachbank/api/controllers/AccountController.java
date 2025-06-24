@@ -1,15 +1,22 @@
 package com.krachbank.api.controllers;
 
+transactionsadmin
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+// import org.springframework.web.bind.annotation.PatchMapping; // No longer needed if not using PATCH
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PostMapping; // Keep this for POST
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +48,7 @@ public class AccountController {
     private final TransactionService transactionService;
     private final AccountMapper accountMapper;
     private final TransactionMapper transactionMapper;
+
     private final UserMapper userMapper; // Assuming you have a UserMapper similar to AccountMapper
 
     public AccountController(AccountService accountService, UserService userService, AccountMapper accountMapper,
@@ -73,8 +81,24 @@ public class AccountController {
                 // accountRequest.getTransactionLimit() : BigDecimal.ZERO);
 
                 Account account = new Account();
+                account.setIban(IBANGenerator.generateIBAN());
+                account.setCreatedAt(LocalDateTime.now());
+                account.setBalance(
+                        accountRequest.getBalance() != null
+                                && accountRequest.getBalance().compareTo(java.math.BigDecimal.ZERO) != 0
+                                ? accountRequest.getBalance()
+                                : java.math.BigDecimal.ZERO);
+                account.setAbsoluteLimit(
+                        accountRequest.getAbsoluteLimit() != null
+                                && accountRequest.getAbsoluteLimit().compareTo(java.math.BigDecimal.ZERO) != 0
+                                ? accountRequest.getAbsoluteLimit()
+                                : java.math.BigDecimal.ZERO);
+                account.setTransactionLimit(
+                        accountRequest.getTransactionLimit() != null
+                                && accountRequest.getTransactionLimit().compareTo(java.math.BigDecimal.ZERO) != 0
+                                ? accountRequest.getTransactionLimit()
+                                : java.math.BigDecimal.ZERO);
                 account = accountMapper.toModel(accountRequest);
-
                 // Set account type: first is CHECKINGS, second is SAVINGS
 
                 if (i == 0) {
@@ -121,14 +145,17 @@ public class AccountController {
                 ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
-            Optional<Account> responseAccount = accountService.getAccountByIBAN(iban);
-
-            return ResponseEntity.ok(accountMapper.toResponse(responseAccount.get()));
-        } catch (Exception e) {
+            // Ensure getAccountByIBAN returns an Optional and handle it
+            return ResponseEntity.ok(accountMapper.toResponse(accountService.getAccountByIBAN(iban).orElseThrow(
+                    () -> new IllegalArgumentException("Account not found with IBAN: " + iban)
+            )));
+        } catch (IllegalArgumentException e) { // Catch specific exception for not found account
+            ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 404); // 404 for not found
+            return ResponseEntity.status(error.getCode()).body(error);
+        } catch (Exception e) { // Catch other general exceptions
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
         }
-
     }
 
     @GetMapping("/{iban}/transactions")
@@ -143,7 +170,7 @@ public class AccountController {
                 filter = new TransactionFilter();
             }
             Page<Transaction> transactionsPage = transactionService.getTransactionsByIBAN(iban, filter);
-            if (transactionsPage.getSize() < 0) {
+            if (transactionsPage.getSize() < 0) { // Should be transactionsPage.isEmpty() or transactionsPage.getTotalElements() == 0
                 ErrorDTOResponse error = new ErrorDTOResponse("No transactions found for this account", 404);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
@@ -167,7 +194,7 @@ public class AccountController {
             }
             Page<Account> accountsPage = accountService.getAccountsByFilter(filter);
 
-            if (accountsPage.getSize() < 0) {
+            if (accountsPage.getSize() < 0) { // Should be accountsPage.isEmpty() or accountsPage.getTotalElements() == 0
                 ErrorDTOResponse error = new ErrorDTOResponse("No accounts found", 404);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
@@ -180,4 +207,51 @@ public class AccountController {
         }
     }
 
+    // UPDATED to use POST mapping with a more specific endpoint
+    @PostMapping("/{iban}/transaction-limit") // Changed to @PostMapping and added specific sub-path
+    public ResponseEntity<?> updateAccountTransactionLimit(@PathVariable String iban, @RequestBody Map<String, Object> updates) {
+        try {
+            if (iban == null || iban.isEmpty()) {
+                return ResponseEntity.badRequest().body(new ErrorDTOResponse("IBAN is required for update", 400));
+            }
+
+            BigDecimal newLimit = null;
+            if (updates.containsKey("transactionLimit")) {
+                Object limitObj = updates.get("transactionLimit");
+                if (limitObj instanceof Number) {
+                    newLimit = BigDecimal.valueOf(((Number) limitObj).doubleValue());
+                } else if (limitObj instanceof String) {
+                    try {
+                        newLimit = new BigDecimal((String) limitObj);
+                    } catch (NumberFormatException e) {
+                        return ResponseEntity.badRequest().body(new ErrorDTOResponse("Invalid number format for transactionLimit", 400));
+                    }
+                } else {
+                    return ResponseEntity.badRequest().body(new ErrorDTOResponse("Invalid format for transactionLimit. Expected Number or String.", 400));
+                }
+            } else {
+                return ResponseEntity.badRequest().body(new ErrorDTOResponse("transactionLimit field is missing in the request body", 400));
+            }
+
+            Optional<Account> optionalAccount = accountService.getAccountByIBAN(iban); // Uses the path variable 'iban'
+            if (optionalAccount.isEmpty()) {
+                return ResponseEntity.status(404).body(new ErrorDTOResponse("Account not found with IBAN: " + iban, 404));
+            }
+            Account accountToUpdate = optionalAccount.get();
+            logger.debug("Controller: Account retrieved by IBAN has ID: {}", accountToUpdate.getId());
+
+            accountToUpdate.setTransactionLimit(newLimit);
+
+            Account updatedAccount = accountService.updateAccount(accountToUpdate.getId(), accountToUpdate).orElseThrow(
+                    () -> new RuntimeException("Failed to update account with IBAN: " + iban)
+            );
+
+            return ResponseEntity.ok(accountMapper.toResponse(updatedAccount));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(new ErrorDTOResponse(e.getMessage(), 400));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ErrorDTOResponse(e.getMessage(), 500));
+        }
+    }
+}
 }
