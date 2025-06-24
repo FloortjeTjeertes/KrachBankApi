@@ -95,9 +95,6 @@ public class UserServiceJpa implements UserService {
         if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
             throw new RuntimeException("User with email " + userDTO.getEmail() + " already exists!");
         }
-        if (userDTO.getUsername() != null && userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
-            throw new RuntimeException("User with username " + userDTO.getUsername() + " already exists!");
-        }
 
         // TODO: use fromModel in controller
         // --- Convert UserDTO to User entity ---
@@ -109,11 +106,7 @@ public class UserServiceJpa implements UserService {
         user.setPhoneNumber(userDTO.getPhoneNumber());
 
         // Set username from DTO or combine first and last name if not set
-        if (userDTO.getUsername() != null && !userDTO.getUsername().isEmpty()) {
-            user.setUsername(userDTO.getUsername());
-        } else {
-            user.setUsername(userDTO.getFirstName() + " " + userDTO.getLastName());
-        }
+            user.setUsername(userDTO.getEmail());
 
         // --- Encode the password ---
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));

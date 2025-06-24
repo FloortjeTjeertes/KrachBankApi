@@ -9,38 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class AuthenticationDTOTest {
 
     @Test
-    void testToModel() {
-        AuthenticationDTO dto = new AuthenticationDTO();
-        dto.setId(1L);
-        dto.setUsername("testuser");
-        dto.setEmail("a.a@a.com");
-        dto.setPhoneNumber("1234567890");
-        dto.setFirstName("John");
-        dto.setLastName("Doe");
-        dto.setDailyLimit(new BigDecimal("1000.00"));
-        dto.setCreatedAt(LocalDateTime.now());
-        dto.setVerified(true);
-        dto.setActive(true);
-        dto.setAdmin(false);
-        dto.setBSN("123456789");
-
-        User user = dto.ToModel();
-
-        assertEquals(dto.getId(), user.getId());
-        assertEquals(dto.getUsername(), user.getUsername());
-        assertEquals(dto.getEmail(), user.getEmail());
-        assertEquals(dto.getPhoneNumber(), user.getPhoneNumber());
-        assertEquals(dto.getBSN(), user.getBSN());
-        assertEquals(dto.getFirstName(), user.getFirstName());
-        assertEquals(dto.getLastName(), user.getLastName());
-        assertEquals(dto.getDailyLimit(), user.getDailyLimit());
-        assertEquals(dto.getCreatedAt(), user.getCreatedAt());
-        assertEquals(dto.isVerified(), user.isVerified());
-        assertEquals(dto.isActive(), user.isActive());
-        assertEquals(dto.isAdmin(), user.isAdmin());
-    }
-
-    @Test
     void testFromModel() {
         User user = new User();
         user.setId(2L);

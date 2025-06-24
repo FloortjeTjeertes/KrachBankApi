@@ -103,7 +103,7 @@ class JwtAuthenticationFilterTest {
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + jwt);
         when(request.getServletPath()).thenReturn("/api/resource");
-        when(jwtService.extractUsername(jwt)).thenReturn(username);
+        when(jwtService.extractEmail(jwt)).thenReturn(username);
         when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
         when(jwtService.isTokenValid(jwt, userDetails)).thenReturn(true);
         when(userDetails.getAuthorities()).thenReturn(java.util.Collections.emptyList());
@@ -125,7 +125,7 @@ class JwtAuthenticationFilterTest {
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + jwt);
         when(request.getServletPath()).thenReturn("/api/resource");
-        when(jwtService.extractUsername(jwt)).thenReturn(username);
+        when(jwtService.extractEmail(jwt)).thenReturn(username);
         when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
         when(jwtService.isTokenValid(jwt, userDetails)).thenReturn(false);
 
@@ -141,7 +141,7 @@ class JwtAuthenticationFilterTest {
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + jwt);
         when(request.getServletPath()).thenReturn("/api/resource");
-        when(jwtService.extractUsername(jwt)).thenReturn(null);
+        when(jwtService.extractEmail(jwt)).thenReturn(null);
 
         filter.doFilterInternal(request, response, filterChain);
 
@@ -159,7 +159,7 @@ class JwtAuthenticationFilterTest {
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + jwt);
         when(request.getServletPath()).thenReturn("/api/resource");
-        when(jwtService.extractUsername(jwt)).thenReturn(username);
+        when(jwtService.extractEmail(jwt)).thenReturn(username);
 
         filter.doFilterInternal(request, response, filterChain);
 

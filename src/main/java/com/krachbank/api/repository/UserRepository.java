@@ -11,7 +11,6 @@ import com.krachbank.api.models.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
-    // Custom query methods based on naming conventions:
     Optional<User> findByEmail(String email);
 
     List<User> findByFirstName(String firstName);

@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthenticationResultDTO implements DTO {
-
     private String token; // The JWT token
     private AuthenticationDTO userDetails; // The details of the authenticated user
-
-   
 }

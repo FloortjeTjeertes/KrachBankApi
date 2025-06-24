@@ -1,14 +1,24 @@
 package com.krachbank.api.mappers;
 
+import com.krachbank.api.dto.RegisterRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.krachbank.api.dto.UserDTO;
 import com.krachbank.api.models.User;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Component
 public class UserMapper extends BaseMapper<User, UserDTO, UserDTO> {
+    private final PasswordEncoder passwordEncoder;
 
-     @Override
+    public UserMapper() {
+        this.passwordEncoder = null;
+    }
+
+    @Override
     public User toModel(UserDTO dto) {
         User user = new User();
         user.setId(dto.getId());
@@ -24,7 +34,20 @@ public class UserMapper extends BaseMapper<User, UserDTO, UserDTO> {
         user.setAdmin(dto.getIsAdmin() != null ? dto.getIsAdmin() : false); // Fix here
         return user;
     }
-
+    public User fromRegisterRequest(RegisterRequest request) {
+        User user = new User();
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setBSN(request.getBSN());
+        user.setCreatedAt(LocalDateTime.now());
+        user.setVerified(false);
+        user.setActive(true);
+        user.setDailyLimit(BigDecimal.ZERO);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        return user;
+    }
     @Override
     public UserDTO toResponse(User model) {
         if (model == null) {
@@ -32,7 +55,7 @@ public class UserMapper extends BaseMapper<User, UserDTO, UserDTO> {
         }
         UserDTO dto = new UserDTO();
         dto.setId(model.getId());
-        dto.setUsername(model.getUsername());
+        dto.setUsername(model.getEmail());
         dto.setEmail(model.getEmail());
         return dto;
     }

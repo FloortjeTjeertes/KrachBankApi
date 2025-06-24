@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import com.krachbank.api.mappers.UserMapper;
 import org.springframework.mail.MailException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,21 +27,21 @@ import com.krachbank.api.repository.AuthenticationRepository;
 public class AuthenticationServiceJpa implements AuthenticationService {
 
     private final AuthenticationRepository authenticationRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
+    private final UserMapper userMapper;
 
     public AuthenticationServiceJpa(
             AuthenticationRepository authenticationRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            AuthenticationManager authenticationManager, EmailService emailService) {
+            AuthenticationManager authenticationManager, EmailService emailService, UserMapper userMapper) {
         this.authenticationRepository = authenticationRepository;
-        this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.emailService = emailService;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -49,26 +50,13 @@ public class AuthenticationServiceJpa implements AuthenticationService {
         if (authenticationRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException("User with email '" + registerRequest.getEmail() + "' already exists.");
         }
-
-        User newUser = new User();
-        newUser.setFirstName(registerRequest.getFirstName());
-        newUser.setLastName(registerRequest.getLastName());
-        newUser.setUsername(registerRequest.getFirstName() + registerRequest.getLastName());
-        newUser.setEmail(registerRequest.getEmail());
-        newUser.setPhoneNumber(registerRequest.getPhoneNumber());
-        newUser.setBSN(registerRequest.getBSN());
-        newUser.setCreatedAt(LocalDateTime.now());
-        newUser.setVerified(false);
-        newUser.setActive(true);
-        newUser.setDailyLimit(BigDecimal.valueOf(0.0));
-        newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-
+        //use the mapper to set the user
+        User newUser = userMapper.fromRegisterRequest(registerRequest);
         User savedUser = authenticationRepository.save(newUser);
+        String jwtToken = jwtService.generateToken(savedUser);
+        AuthenticationDTO dto = AuthenticationDTO.fromModel(savedUser);
 
-        String jwtToken = jwtService.generateToken((UserDetails) savedUser);
-
-        AuthenticationDTO authenticatedUserDetails = AuthenticationDTO.fromModel(savedUser);
-        return new AuthenticationResultDTO(jwtToken, authenticatedUserDetails);
+        return new AuthenticationResultDTO(jwtToken, dto);
     }
 
     @Override
@@ -92,7 +80,7 @@ public class AuthenticationServiceJpa implements AuthenticationService {
                 .orElseThrow(() -> new InvalidCredentialsException("User not found after successful authentication (this indicates a deeper issue)."));
 
         // Generate JWT token for the authenticated user
-        String jwtToken = jwtService.generateToken((UserDetails) user);
+        String jwtToken = jwtService.generateToken(user);
         try {
             String subject = "Successful Login to KrachBank";
             String text = "Dear " + user.getFirstName() + ",\n\n"
@@ -112,9 +100,6 @@ public class AuthenticationServiceJpa implements AuthenticationService {
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
-        // This method still uses findByUsername. If you intend to deprecate username lookup
-        // you might remove or refactor this method as well, or update its name.
-        // For now, it's fine as long as findByEmail is used in login.
         return authenticationRepository.findByUsername(username);
     }
 }

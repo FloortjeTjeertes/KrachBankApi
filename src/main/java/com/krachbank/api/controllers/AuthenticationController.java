@@ -19,18 +19,11 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthenticationController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
     private final UserService userService;
     private final AuthenticationService authenticationService; // Inject the service
 
 
-    public AuthenticationController(
-            AuthenticationManager authenticationManager,
-            JwtService jwtService,
-            UserService userService, AuthenticationService authenticationService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
+    public AuthenticationController(UserService userService, AuthenticationService authenticationService) {
         this.userService = userService;
         this.authenticationService = authenticationService;
     }
@@ -46,17 +39,7 @@ public class AuthenticationController {
             userDTO.setBSN(registerRequest.getBSN());
             userDTO.setPhoneNumber(registerRequest.getPhoneNumber());
             userDTO.setIsAdmin(false);
-            // userDTO.setPhoneNumber(registerRequest.getPhoneNumber()); // Uncomment if RegisterRequest has phoneNumber
-
-            // Map first name + last name to username
-            userDTO.setUsername(registerRequest.getFirstName() + registerRequest.getLastName()); // <--- MODIFIED THIS LINE
-
-            // Debugging prints (keep them temporarily as you debug)
-            System.out.println("Received registration request for email: " + registerRequest.getEmail());
-            System.out.println("Password in RegisterRequest: " + registerRequest.getPassword());
-            System.out.println("Username set in UserDTO: " + userDTO.getUsername());
-
-
+            userDTO.setUsername(registerRequest.getFirstName() + registerRequest.getLastName());
             UserDTO createdUser = userService.createUser(userDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully with email: " + createdUser.getEmail());
         } catch (RuntimeException e) {
