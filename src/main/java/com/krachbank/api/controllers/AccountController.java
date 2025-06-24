@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.krachbank.api.configuration.IBANGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.krachbank.api.configuration.IBANGenerator;
 import com.krachbank.api.dto.AccountDTORequest;
 import com.krachbank.api.dto.AccountDTOResponse;
 import com.krachbank.api.dto.ErrorDTOResponse;
@@ -67,26 +65,8 @@ public class AccountController {
             List<Account> accounts = new ArrayList<>();
             for (int i = 0; i < accountRequests.size(); i++) {
                 AccountDTORequest accountRequest = accountRequests.get(i);
-                Account account = new Account();
-                account.setIban(IBANGenerator.generateIBAN());
-                account.setCreatedAt(LocalDateTime.now());
-                account.setBalance(
-                        accountRequest.getBalance() != null
-                                && accountRequest.getBalance().compareTo(java.math.BigDecimal.ZERO) != 0
-                                ? accountRequest.getBalance()
-                                : java.math.BigDecimal.ZERO);
-                account.setAbsoluteLimit(
-                        accountRequest.getAbsoluteLimit() != null
-                                && accountRequest.getAbsoluteLimit().compareTo(java.math.BigDecimal.ZERO) != 0
-                                ? accountRequest.getAbsoluteLimit()
-                                : java.math.BigDecimal.ZERO);
-                account.setTransactionLimit(
-                        accountRequest.getTransactionLimit() != null
-                                && accountRequest.getTransactionLimit().compareTo(java.math.BigDecimal.ZERO) != 0
-                                ? accountRequest.getTransactionLimit()
-                                : java.math.BigDecimal.ZERO);
-                account = accountMapper.toModel(accountRequest);
-                // Set account type: first is CHECKINGS, second is SAVINGS
+
+                Account account = accountMapper.toModel(accountRequest);
                 if (i == 0) {
                     account.setAccountType(AccountType.CHECKING);
                 } else {
@@ -101,7 +81,6 @@ public class AccountController {
                 User user = userMapper.toModel(userDTO);
 
                 account.setUser(user);
-                // --- end set owner ---
                 accounts.add(account);
             }
             List<AccountDTOResponse> accountDTOs = new ArrayList<>();
@@ -125,8 +104,7 @@ public class AccountController {
             }
             // Ensure getAccountByIBAN returns an Optional and handle it
             return ResponseEntity.ok(accountMapper.toResponse(accountService.getAccountByIBAN(iban).orElseThrow(
-                    () -> new IllegalArgumentException("Account not found with IBAN: " + iban)
-            )));
+                    () -> new IllegalArgumentException("Account not found with IBAN: " + iban))));
         } catch (IllegalArgumentException e) { // Catch specific exception for not found account
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 404); // 404 for not found
             return ResponseEntity.status(error.getCode()).body(error);
@@ -148,7 +126,8 @@ public class AccountController {
                 filter = new TransactionFilter();
             }
             Page<Transaction> transactionsPage = transactionService.getTransactionsByIBAN(iban, filter);
-            if (transactionsPage.getSize() < 0) { // Should be transactionsPage.isEmpty() or transactionsPage.getTotalElements() == 0
+            if (transactionsPage.getSize() < 0) { // Should be transactionsPage.isEmpty() or
+                                                  // transactionsPage.getTotalElements() == 0
                 ErrorDTOResponse error = new ErrorDTOResponse("No transactions found for this account", 404);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
@@ -170,7 +149,8 @@ public class AccountController {
             }
             Page<Account> accountsPage = accountService.getAccountsByFilter(filter);
 
-            if (accountsPage.getSize() < 0) { // Should be accountsPage.isEmpty() or accountsPage.getTotalElements() == 0
+            if (accountsPage.getSize() < 0) { // Should be accountsPage.isEmpty() or accountsPage.getTotalElements() ==
+                                              // 0
                 ErrorDTOResponse error = new ErrorDTOResponse("No accounts found", 404);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
@@ -183,8 +163,10 @@ public class AccountController {
         }
     }
 
-    @PostMapping("/{iban}/transaction-limit")
-    public ResponseEntity<?> updateAccountTransactionLimit(@PathVariable String iban, @RequestBody Map<String, Object> updates) {
+    // UPDATED to use POST mapping with a more specific endpoint
+    @PostMapping("/{iban}/transaction-limit") // Changed to @PostMapping and added specific sub-path
+    public ResponseEntity<?> updateAccountTransactionLimit(@PathVariable String iban,
+            @RequestBody Map<String, Object> updates) {
         try {
             if (iban == null || iban.isEmpty()) {
                 return ResponseEntity.badRequest().body(new ErrorDTOResponse("IBAN is required for update", 400));
@@ -199,25 +181,28 @@ public class AccountController {
                     try {
                         newLimit = new BigDecimal((String) limitObj);
                     } catch (NumberFormatException e) {
-                        return ResponseEntity.badRequest().body(new ErrorDTOResponse("Invalid number format for transactionLimit", 400));
+                        return ResponseEntity.badRequest()
+                                .body(new ErrorDTOResponse("Invalid number format for transactionLimit", 400));
                     }
                 } else {
-                    return ResponseEntity.badRequest().body(new ErrorDTOResponse("Invalid format for transactionLimit. Expected Number or String.", 400));
+                    return ResponseEntity.badRequest().body(new ErrorDTOResponse(
+                            "Invalid format for transactionLimit. Expected Number or String.", 400));
                 }
             } else {
-                return ResponseEntity.badRequest().body(new ErrorDTOResponse("transactionLimit field is missing in the request body", 400));
+                return ResponseEntity.badRequest()
+                        .body(new ErrorDTOResponse("transactionLimit field is missing in the request body", 400));
             }
             Optional<Account> optionalAccount = accountService.getAccountByIBAN(iban); // Uses the path variable 'iban'
             if (optionalAccount.isEmpty()) {
-                return ResponseEntity.status(404).body(new ErrorDTOResponse("Account not found with IBAN: " + iban, 404));
+                return ResponseEntity.status(404)
+                        .body(new ErrorDTOResponse("Account not found with IBAN: " + iban, 404));
             }
             Account accountToUpdate = optionalAccount.get();
 
             accountToUpdate.setTransactionLimit(newLimit);
 
             Account updatedAccount = accountService.updateAccount(accountToUpdate.getId(), accountToUpdate).orElseThrow(
-                    () -> new RuntimeException("Failed to update account with IBAN: " + iban)
-            );
+                    () -> new RuntimeException("Failed to update account with IBAN: " + iban));
 
             return ResponseEntity.ok(accountMapper.toResponse(updatedAccount));
         } catch (IllegalArgumentException e) {
