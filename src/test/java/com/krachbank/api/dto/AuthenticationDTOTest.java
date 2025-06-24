@@ -15,7 +15,7 @@ class AuthenticationDTOTest {
                 "testuser",
                 "test@example.com",
                 "1234567890",
-                123456789,
+                "123456789",
                 "John",
                 "Doe",
                 new BigDecimal("1000.00"),
@@ -47,7 +47,7 @@ class AuthenticationDTOTest {
         user.setUsername("anotheruser");
         user.setEmail("another@example.com");
         user.setPhoneNumber("0987654321");
-        user.setBSN(987654321);
+        user.setBSN("987654321");
         user.setFirstName("Jane");
         user.setLastName("Smith");
         user.setDailyLimit(new BigDecimal("500.00"));
@@ -79,7 +79,7 @@ class AuthenticationDTOTest {
         dto.setUsername("setuser");
         dto.setEmail("set@example.com");
         dto.setPhoneNumber("1112223333");
-        dto.setBSN(111222333);
+        dto.setBSN("111222333");
         dto.setFirstName("Set");
         dto.setLastName("User");
         dto.setDailyLimit(new BigDecimal("200.00"));

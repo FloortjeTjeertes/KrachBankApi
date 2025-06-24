@@ -146,7 +146,7 @@ public class UserServiceJpaTest {
         newUserDTO.setFirstName("New");
         newUserDTO.setLastName("User");
         newUserDTO.setPhoneNumber("555-555-5555");
-        newUserDTO.setBSN(111222333);
+        newUserDTO.setBSN("111222333");
 
         when(userRepository.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.of(user1));
 
@@ -169,7 +169,7 @@ public class UserServiceJpaTest {
         newUserDTO.setFirstName("New");
         newUserDTO.setLastName("User");
         newUserDTO.setPhoneNumber("555-555-5555");
-        newUserDTO.setBSN(111222333);
+        newUserDTO.setBSN("111222333");
 
         when(userRepository.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.empty());
         when(userRepository.findByUsername(newUserDTO.getUsername())).thenReturn(Optional.of(user1));

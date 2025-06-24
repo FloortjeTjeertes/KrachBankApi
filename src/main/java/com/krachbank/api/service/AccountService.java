@@ -1,5 +1,6 @@
 package com.krachbank.api.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,4 +31,5 @@ public interface AccountService extends Service<AccountDTOResponse, Account> {
     public Page<Account> getAccountsByUserId(Long userId,AccountFilter filter);
 
 
-}
+
+    }

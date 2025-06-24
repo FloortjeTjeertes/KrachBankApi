@@ -21,7 +21,7 @@ class UserDTOTest {
                 "Doe",
                 "john.doe@example.com",
                 "1234567890",
-                123456789,
+                "123456789",
                 "password123",
                 "johndoe",
                 true);
