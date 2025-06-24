@@ -60,7 +60,7 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createAccounts(@RequestBody List<AccountDTORequest> accountRequests) {
+    public ResponseEntity<?> createAccounts(@RequestBody List<AccountDTORequest> accountRequests) throws Exception {
         try {
             List<Account> accounts = new ArrayList<>();
             for (int i = 0; i < accountRequests.size(); i++) {
@@ -83,11 +83,9 @@ public class AccountController {
                 account.setUser(user);
                 accounts.add(account);
             }
-            List<AccountDTOResponse> accountDTOs = new ArrayList<>();
             List<Account> returnAccounts = accountService.createAccounts(accounts);
-            for (Account account : returnAccounts) {
-                accountDTOs.add(accountMapper.toResponse(account));
-            }
+            List<AccountDTOResponse> accountDTOs = accountMapper.toResponseList(returnAccounts);
+
             return ResponseEntity.ok(accountDTOs);
         } catch (IllegalArgumentException e) {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
