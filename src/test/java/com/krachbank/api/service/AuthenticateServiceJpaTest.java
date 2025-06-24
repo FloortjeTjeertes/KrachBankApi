@@ -42,6 +42,7 @@ class AuthenticationServiceJpaTest {
     private PasswordEncoder passwordEncoder;
     private JwtService jwtService;
     private AuthenticationManager authenticationManager;
+    private EmailService emailService;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +51,7 @@ class AuthenticationServiceJpaTest {
         passwordEncoder = mock(PasswordEncoder.class);
         jwtService = mock(JwtService.class);
         authenticationManager = mock(AuthenticationManager.class);
+        emailService = mock(EmailService.class);
 
         // Inject mocks into the service
         authenticationService = new AuthenticationServiceJpa(
@@ -57,6 +59,7 @@ class AuthenticationServiceJpaTest {
                 passwordEncoder,
                 jwtService,
                 authenticationManager
+                , emailService
         );
     }
 
@@ -67,7 +70,7 @@ class AuthenticationServiceJpaTest {
     void register_Success() throws UserAlreadyExistsException {
         // Arrange
         RegisterRequest request = new RegisterRequest(
-                "testuser", "password123", "John", "Doe", "john.doe@example.com", "1234567890", 123456789
+                "testuser", "password123", "John", "Doe", "john.doe@example.com", "1234567890", "123456789"
         );
 
         User newUser = new User();
@@ -76,11 +79,11 @@ class AuthenticationServiceJpaTest {
         newUser.setFirstName("John");
         newUser.setLastName("Doe");
         newUser.setPhoneNumber("1234567890");
-        newUser.setBSN(123456789);
+        newUser.setBSN("123456789");
         newUser.setVerified(false);
         newUser.setActive(true);
         newUser.setDailyLimit(BigDecimal.valueOf(0.0));
-        newUser.setPassword("encodedPassword"); // Password will be encoded by service
+        newUser.setPassword("encodedPassword");
 
         // Mock repository behavior
         when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.empty());
@@ -111,7 +114,7 @@ class AuthenticationServiceJpaTest {
     void register_UsernameExists_ThrowsException() {
         // Arrange
         RegisterRequest request = new RegisterRequest(
-                "existinguser", "password123", "John", "Doe", "john.doe@example.com", "1234567890", 123456789
+                "existinguser", "password123", "John", "Doe", "john.doe@example.com", "1234567890", "123456789"
         );
         when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.of(new User()));
 
@@ -133,7 +136,7 @@ class AuthenticationServiceJpaTest {
     void register_EmailExists_ThrowsException() {
         // Arrange
         RegisterRequest request = new RegisterRequest(
-                "testuser", "password123", "John", "Doe", "existing@example.com", "1234567890", 123456789
+                "testuser", "password123", "John", "Doe", "existing@example.com", "1234567890", "123456789"
         );
         when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.empty());
         when(authenticationRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(new User()));
@@ -171,7 +174,7 @@ class AuthenticationServiceJpaTest {
                 .thenReturn(mock(Authentication.class)); // Return a dummy Authentication object
 
         // Mock repository behavior after successful authentication
-        when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.of(foundUser));
+        when(authenticationRepository.findByUsername(request.getEmail())).thenReturn(Optional.of(foundUser));
         when(jwtService.generateToken(any(UserDetails.class))).thenReturn("mockJwtToken");
 
         // Act
@@ -184,9 +187,9 @@ class AuthenticationServiceJpaTest {
 
         // Verify interactions
         verify(authenticationManager, times(1)).authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-        verify(authenticationRepository, times(1)).findByUsername(request.getUsername());
+        verify(authenticationRepository, times(1)).findByUsername(request.getEmail());
         verify(jwtService, times(1)).generateToken(foundUser); // Directly verify with 'foundUser'
     }
 
@@ -207,7 +210,7 @@ class AuthenticationServiceJpaTest {
 
         assertThat(thrown.getMessage()).isEqualTo("Invalid username or password.");
         verify(authenticationManager, times(1)).authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         verify(authenticationRepository, never()).findByUsername(anyString()); // Should not attempt to find user
         verify(jwtService, never()).generateToken(any(UserDetails.class));
@@ -224,7 +227,7 @@ class AuthenticationServiceJpaTest {
                 .thenReturn(mock(Authentication.class));
 
         // Mock repository to *not* find the user after successful authentication
-        when(authenticationRepository.findByUsername(request.getUsername())).thenReturn(Optional.empty());
+        when(authenticationRepository.findByUsername(request.getEmail())).thenReturn(Optional.empty());
 
         // Act & Assert
         InvalidCredentialsException thrown = assertThrows(InvalidCredentialsException.class, () -> {
@@ -233,9 +236,9 @@ class AuthenticationServiceJpaTest {
 
         assertThat(thrown.getMessage()).isEqualTo("User not found after successful authentication (should not happen).");
         verify(authenticationManager, times(1)).authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-        verify(authenticationRepository, times(1)).findByUsername(request.getUsername());
+        verify(authenticationRepository, times(1)).findByUsername(request.getEmail());
         verify(jwtService, never()).generateToken(any(UserDetails.class));
     }
 

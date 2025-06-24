@@ -19,7 +19,7 @@ public class AuthenticationDTO implements DTO {
     private String username;
     private String email;
     private String phoneNumber;
-    private int BSN;
+    private String BSN;
     private String firstName;
     private String lastName;
     private BigDecimal dailyLimit;

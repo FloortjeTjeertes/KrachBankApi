@@ -1,31 +1,42 @@
 package com.krachbank.api.controllers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
-import org.iban4j.Iban;
-import org.iban4j.Iban4jException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.krachbank.api.dto.ErrorDTOResponse;
+import com.krachbank.api.dto.PaginatedResponseDTO;
 import com.krachbank.api.dto.TransactionDTORequest;
 import com.krachbank.api.dto.TransactionDTOResponse;
 import com.krachbank.api.filters.TransactionFilter;
 import com.krachbank.api.mappers.TransactionMapper;
-import com.krachbank.api.models.Account;
 import com.krachbank.api.models.Transaction;
-import com.krachbank.api.models.User;
 import com.krachbank.api.service.TransactionService;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,114 +45,144 @@ public class TransactionControllerTest {
     @Mock
     private TransactionService transactionService;
 
-    // @Mock
-    // private transactionMapper transactionMapper;
-
     @Mock
     private TransactionMapper transactionMapper;
 
+    @Mock
     private Transaction fullTransaction;
+
+    @InjectMocks
     private TransactionController transactionController;
 
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    private MockedStatic<SecurityContextHolder> securityContextHolderMock;
+
     @BeforeEach
-    void setUp() {
-        transactionController = new TransactionController(transactionService, transactionMapper);
+    void setUpMockMvc() {
+        mockMvc = MockMvcBuilders.standaloneSetup(transactionController).build();
+        securityContextHolderMock = Mockito.mockStatic(SecurityContextHolder.class);
 
-        User initiator = new User();
-        initiator.setId(1L);
+    }
 
-        Account fromAccount = new Account();
-        fromAccount.setIban(Iban.valueOf("DE89370400440532013000"));
+    @AfterEach
+    void tearDownSecurityContext() {
+        if (securityContextHolderMock != null) {
+            securityContextHolderMock.close();
+        }
+    }
 
-        Account toAccount = new Account();
-        toAccount.setIban(Iban.valueOf("DE12500105170648489890"));
+    // Test for getTransactions method
+    @Test
+    void getTransactions_returnsPaginatedResponse_whenTransactionsExist() throws Exception {
+        Transaction transaction = new Transaction();
+        Page<Transaction> transactionPage = new PageImpl<>(List.of(transaction));
+        PaginatedResponseDTO<TransactionDTOResponse> paginatedResponse = new PaginatedResponseDTO<>();
 
-        fullTransaction = new Transaction();
-        fullTransaction.setAmount(BigDecimal.valueOf(100.0));
-        fullTransaction.setCreatedAt(java.time.LocalDateTime.now());
-        fullTransaction.setInitiator(initiator);
-        fullTransaction.setFromAccount(fromAccount);
-        fullTransaction.setToAccount(toAccount);
-        fullTransaction.setDescription("Test transaction");
+        when(transactionService.getTransactionsByFilter(any(TransactionFilter.class))).thenReturn(transactionPage);
+        when(transactionMapper.toPaginatedResponse(transactionPage)).thenReturn(paginatedResponse);
+
+        mockMvc.perform(get("/transactions"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(paginatedResponse)));
     }
 
     @Test
-    void testToModelWithValidDTO() {
-        TransactionDTORequest dto = new TransactionDTORequest();
-        dto.setAmount(fullTransaction.getAmount());
-        dto.setInitiator(fullTransaction.getInitiator().getId());
-        dto.setSender(fullTransaction.getFromAccount().getIban().toString());
-        dto.setReceiver(fullTransaction.getToAccount().getIban().toString());
-        dto.setDescription(fullTransaction.getDescription());
+    void getTransactions_returnsNotFound_whenNoTransactionsExist() throws Exception {
+        Page<Transaction> emptyPage = new PageImpl<>(List.of());
 
-        Transaction transaction = transactionMapper.toModel(dto);
+        when(transactionService.getTransactionsByFilter(any(TransactionFilter.class))).thenReturn(emptyPage);
 
-        assertNotNull(transaction);
-        assertEquals(fullTransaction.getAmount(), transaction.getAmount());
-        assertEquals(fullTransaction.getCreatedAt(), transaction.getCreatedAt());
-        assertEquals(fullTransaction.getDescription(), transaction.getDescription());
-        assertNotNull(transaction.getInitiator());
-        assertEquals(fullTransaction.getInitiator().getId(), transaction.getInitiator().getId());
-        assertNotNull(transaction.getFromAccount());
-        assertEquals(fullTransaction.getFromAccount().getIban(), transaction.getFromAccount().getIban());
-        assertNotNull(transaction.getToAccount());
-        assertEquals(fullTransaction.getToAccount().getIban(), transaction.getToAccount().getIban());
+        mockMvc.perform(get("/transactions"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("No transactions found"));
     }
 
     @Test
-    void testToModelWithNullFields() {
-        TransactionDTORequest dto = new TransactionDTORequest();
-        // Only set initiator from setup
-        assertThrows(Iban4jException.class, () -> transactionMapper.toModel(dto));
+    void getTransactions_returnsInternalServerError_onException() throws Exception {
+        when(transactionService.getTransactionsByFilter(any(TransactionFilter.class)))
+                .thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(get("/transactions"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().json("{\"message\":\"Database error\",\"code\":500}"));
+    }
+
+    // test createTransaction method
+
+    @Test
+    void createTransaction_returnsOk_whenTransactionCreated() throws Exception {
+        Authentication authentication = Mockito.mock(Authentication.class);
+        when(authentication.getName()).thenReturn("testuser");
+
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+
+        securityContextHolderMock.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+
+        TransactionDTORequest dtoRequest = new TransactionDTORequest();
+        Transaction transaction = new Transaction();
+        Transaction createdTransaction = new Transaction();
+        TransactionDTOResponse dtoResponse = new TransactionDTOResponse();
+
+        when(transactionMapper.toModel(any(TransactionDTORequest.class))).thenReturn(transaction);
+        when(transactionService.createTransaction(eq(transaction), eq("testuser")))
+                .thenReturn(Optional.of(createdTransaction));
+        when(transactionMapper.toResponse(createdTransaction)).thenReturn(dtoResponse);
+
+        mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dtoRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(dtoResponse)));
     }
 
     @Test
-    void testToModelWithNullDTO() {
-        assertThrows(NullPointerException.class, () -> transactionMapper.toModel(null));
+    void createTransaction_returnsInternalServerError_whenTransactionNotSaved() throws Exception {
+        Authentication authentication = Mockito.mock(Authentication.class);
+        when(authentication.getName()).thenReturn("testuser");
+
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+
+        securityContextHolderMock.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+
+        TransactionDTORequest dtoRequest = new TransactionDTORequest();
+        Transaction transaction = new Transaction();
+
+        when(transactionMapper.toModel(any(TransactionDTORequest.class))).thenReturn(transaction);
+        when(transactionService.createTransaction(eq(transaction), eq("testuser"))).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dtoRequest)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().json(
+                        objectMapper.writeValueAsString(new ErrorDTOResponse("transaction did not safe right", 500))));
     }
 
     @Test
-    void testGetTransactionsReturnsOkWithTransactions() {
-        TransactionFilter filter = new TransactionFilter();
-        Page<Transaction> transactions = new PageImpl<>(List.of(fullTransaction));
-        List<TransactionDTOResponse> transactionDTOs = List.of(new TransactionDTOResponse());
+    void createTransaction_returnsInternalServerError_onException() throws Exception {
+        Authentication authentication = Mockito.mock(Authentication.class);
+        when(authentication.getName()).thenReturn("testuser");
 
-        when(transactionService.getTransactionsByFilter(filter)).thenReturn(transactions);
-        when(transactionService.toDTO(transactions.getContent())).thenReturn(transactionDTOs);
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
 
-        ResponseEntity<?> response = transactionController.getTransactions(filter);
+        securityContextHolderMock.when(SecurityContextHolder::getContext).thenReturn(securityContext);
 
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(transactionDTOs, response.getBody());
-    }
+        TransactionDTORequest dtoRequest = new TransactionDTORequest();
+        Transaction transaction = new Transaction();
 
-    @Test
-    void testGetTransactionsReturnsNoContentWhenEmpty() {
-        TransactionFilter filter = new TransactionFilter();
-        Page<Transaction> transactions = new PageImpl<>(List.of());
+        when(transactionMapper.toModel(any(TransactionDTORequest.class))).thenReturn(transaction);
+        when(transactionService.createTransaction(eq(transaction), eq("testuser")))
+                .thenThrow(new RuntimeException("Database error"));
 
-        when(transactionService.getTransactionsByFilter(filter)).thenReturn(transactions);
-
-        ResponseEntity<?> response = transactionController.getTransactions(filter);
-
-        // Should return 204 NO CONTENT if empty
-        assertNotNull(response);
-        assertEquals(204, response.getStatusCodeValue());
-    }
-
-    @Test
-    void testGetTransactionsHandlesException() {
-        TransactionFilter filter = new TransactionFilter();
-        String errorMessage = "Database error";
-
-        when(transactionService.getTransactionsByFilter(filter))
-                .thenThrow(new RuntimeException(errorMessage));
-
-        ResponseEntity<?> response = transactionController.getTransactions(filter);
-
-        assertNotNull(response);
-        assertEquals(500, response.getStatusCodeValue());
-        assertEquals(errorMessage, response.getBody());
+        mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dtoRequest)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().json("{\"message\":\"Database error\",\"code\":500}"));
     }
 }

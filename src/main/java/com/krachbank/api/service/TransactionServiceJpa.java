@@ -48,6 +48,12 @@ public class TransactionServiceJpa implements TransactionService {
         if (user.isEmpty()) {
             throw new IllegalArgumentException("User not found");
         }
+        if (user.get().isAdmin()){
+            user = userRepository.findById(transaction.getFromAccount().getUser().getId());
+            if (user.isEmpty()) {
+                throw new IllegalArgumentException("Account owner not found");
+            }
+        }
         transaction.setInitiator(user.get());
 
         // Validate the transaction

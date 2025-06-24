@@ -26,22 +26,22 @@ class UserTest {
     @BeforeEach
     void setUp() {
         now = LocalDateTime.now();
-        user = new User(
-                1L,
-                "testuser",
-                "password123",
-                "test@example.com",
-                "1234567890",
-                123456789,
-                "John",
-                "Doe",
-                new BigDecimal("1000.00"),
-                new BigDecimal("500.00"),
-                now,
-                true,
-                true,
-                false
-        );
+
+        user = new User();
+        user.setId(1L);
+        user.setUsername("testuser");
+        user.setPassword("password123");
+        user.setEmail("test@example.com");
+        user.setPhoneNumber("1234567890");
+        user.setBSN("123456789");
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setDailyLimit(new BigDecimal("1000.00"));
+        user.setTransferLimit(new BigDecimal("500.00"));
+        user.setCreatedAt(now);
+        user.setVerified(true); 
+        user.setActive(true);
+        user.setAdmin(false); 
     }
 
     @Test
@@ -51,7 +51,7 @@ class UserTest {
         assertEquals("password123", user.getPassword());
         assertEquals("test@example.com", user.getEmail());
         assertEquals("1234567890", user.getPhoneNumber());
-        assertEquals(123456789, user.getBSN());
+        assertEquals("123456789", user.getBSN());
         assertEquals("John", user.getFirstName());
         assertEquals("Doe", user.getLastName());
         assertEquals(new BigDecimal("1000.00"), user.getDailyLimit());
@@ -69,7 +69,7 @@ class UserTest {
         user.setPassword("newpass");
         user.setEmail("another@example.com");
         user.setPhoneNumber("0987654321");
-        user.setBSN(987654321);
+        user.setBSN("987654321");
         user.setFirstName("Jane");
         user.setLastName("Smith");
         user.setDailyLimit(new BigDecimal("2000.00"));
@@ -85,7 +85,7 @@ class UserTest {
         assertEquals("newpass", user.getPassword());
         assertEquals("another@example.com", user.getEmail());
         assertEquals("0987654321", user.getPhoneNumber());
-        assertEquals(987654321, user.getBSN());
+        assertEquals("987654321", user.getBSN());
         assertEquals("Jane", user.getFirstName());
         assertEquals("Smith", user.getLastName());
         assertEquals(new BigDecimal("2000.00"), user.getDailyLimit());
@@ -138,16 +138,26 @@ class UserTest {
 
     @Test
     void testAllArgsConstructor() {
-        User newUser = new User(
-                10L, "u", "p", "e", "ph", 1, "f", "l",
-                BigDecimal.ONE, BigDecimal.TEN, now, false, false, true
-        );
-        assertEquals(10L, newUser.getId());
+        User newUser = new User();
+        newUser.setId(10L);
+        newUser.setUsername("u");
+        newUser.setPassword("p");
+        newUser.setEmail("e");
+        newUser.setPhoneNumber("ph");
+        newUser.setBSN("1");
+        newUser.setFirstName("f");
+        newUser.setLastName("l");
+        newUser.setDailyLimit(BigDecimal.ONE);
+        newUser.setTransferLimit(BigDecimal.TEN);
+        newUser.setCreatedAt(now);
+        newUser.setVerified(false);
+        newUser.setActive(false);
+        newUser.setAdmin(true);
         assertEquals("u", newUser.getUsername());
         assertEquals("p", newUser.getPassword());
         assertEquals("e", newUser.getEmail());
         assertEquals("ph", newUser.getPhoneNumber());
-        assertEquals(1, newUser.getBSN());
+        assertEquals("1", newUser.getBSN());
         assertEquals("f", newUser.getFirstName());
         assertEquals("l", newUser.getLastName());
         assertEquals(BigDecimal.ONE, newUser.getDailyLimit());
