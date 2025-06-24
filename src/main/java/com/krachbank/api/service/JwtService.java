@@ -2,6 +2,7 @@ package com.krachbank.api.service;
 
 import com.krachbank.api.models.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -49,16 +50,28 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String email = extractEmail(token);
-        return (email.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        try {
+            final String username = extractEmail(token);
+            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        } catch (ExpiredJwtException e) {
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     boolean isTokenExpired(String token) {
+        try {
         return extractExpiration(token).before(new Date());
+        } catch (Exception e) {
+            return true; // If the token is malformed or invalid, we consider it expired
+        }
     }
+
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
+
     Claims extractAllClaims(String token) {
 
         return Jwts
@@ -68,6 +81,7 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);

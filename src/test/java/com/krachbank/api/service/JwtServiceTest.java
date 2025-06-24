@@ -199,7 +199,7 @@ class JwtServiceTest {
         String token = jwtService.generateToken(user);
         Thread.sleep(5);
 
-        assertTrue(ReflectionTestUtils.invokeMethod(jwtService, "isTokenExpired", token));
+       assertTrue((Boolean) ReflectionTestUtils.invokeMethod(jwtService, "isTokenExpired", token));
         ReflectionTestUtils.setField(jwtService, "jwtExpiration", jwtExpiration);
     }
 

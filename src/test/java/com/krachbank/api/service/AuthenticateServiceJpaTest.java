@@ -23,7 +23,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.krachbank.api.dto.AuthenticationResultDTO;
@@ -75,11 +74,11 @@ class AuthenticationServiceJpaTest {
     void register_Success() throws UserAlreadyExistsException {
         // Arrange
         RegisterRequest request = new RegisterRequest(
-                "testuser", "password123", "John", "Doe", "john.doe@example.com", "1234567890", "123456789"
+                "john.doe@example.com", "password123", "John", "Doe", "john.doe@example.com", "1234567890", "123456789"
         );
 
         User newUser = new User();
-        newUser.setUsername("testuser");
+        newUser.setUsername("john.doe@example.com");
         newUser.setEmail("john.doe@example.com");
         newUser.setFirstName("John");
         newUser.setLastName("Doe");

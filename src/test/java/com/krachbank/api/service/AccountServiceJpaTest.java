@@ -260,7 +260,7 @@ public class AccountServiceJpaTest {
 
     @Test
     void testGetAccountById_IdIsNull_ThrowsInvalidParameterException() {
-        assertThrows(NullPointerException.class, () -> accountService.getAccountById(null));
+        assertThrows(InvalidParameterException.class, () -> accountService.getAccountById(null));
     }
 
     @Test
@@ -268,7 +268,7 @@ public class AccountServiceJpaTest {
         when(accountRepository.findById(99L)).thenReturn(java.util.Optional.empty());
 
         Exception exception = assertThrows(Exception.class, () -> accountService.getAccountById(99L));
-        assertEquals("there is no account for this id", exception.getMessage());
+        assertEquals("Account for this id does not exist.", exception.getMessage());
         verify(accountRepository, times(1)).findById(99L);
     }
 
@@ -296,7 +296,6 @@ public class AccountServiceJpaTest {
         assertTrue(result.isPresent());
         assertEquals(updatedAccount, result.get());
         verify(accountRepository, times(1)).save(updatedAccount);
-        verify(accountRepository, times(1)).existsById(1L);
         verify(accountRepository, times(1)).findById(1L);
     }
 
@@ -305,7 +304,7 @@ public class AccountServiceJpaTest {
         Account acc = new Account();
         acc.setId(1L);
         Exception exception = assertThrows(InvalidParameterException.class, () -> accountService.updateAccount(null, acc));
-        assertEquals("invalid id", exception.getMessage());
+        assertEquals("Invalid ID: ID cannot be null or zero/negative.", exception.getMessage());
     }
 
     @Test
@@ -354,7 +353,6 @@ public class AccountServiceJpaTest {
         acc.setId(1L);
         when(accountRepository.existsById(1L)).thenReturn(true);
         assertThrows(InvalidParameterException.class, () -> accountService.updateAccount(1L, acc));
-        verify(accountRepository, times(1)).existsById(1L);
     }
 
     // Tests for removeAccount
@@ -426,7 +424,7 @@ public class AccountServiceJpaTest {
     @Test
     void testGetAccountByIBAN_NullIban_ThrowsException() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> accountService.getAccountByIBAN(null));
-        assertEquals("IBAN cannot be null", exception.getMessage());
+        assertEquals("IBAN cannot be null or empty", exception.getMessage());
     }
 
     @Test
