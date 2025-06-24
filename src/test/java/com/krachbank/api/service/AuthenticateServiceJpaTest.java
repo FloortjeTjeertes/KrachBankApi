@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import com.krachbank.api.mappers.UserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.krachbank.api.dto.AuthenticationResultDTO;
@@ -43,6 +43,7 @@ class AuthenticationServiceJpaTest {
     private JwtService jwtService;
     private AuthenticationManager authenticationManager;
     private EmailService emailService;
+    private UserMapper userMapper;
 
     @BeforeEach
     void setUp() {
@@ -52,6 +53,7 @@ class AuthenticationServiceJpaTest {
         jwtService = mock(JwtService.class);
         authenticationManager = mock(AuthenticationManager.class);
         emailService = mock(EmailService.class);
+        userMapper = mock(UserMapper.class);
 
         // Inject mocks into the service
         authenticationService = new AuthenticationServiceJpa(
@@ -59,7 +61,9 @@ class AuthenticationServiceJpaTest {
                 passwordEncoder,
                 jwtService,
                 authenticationManager
-                , emailService
+                , emailService,
+                userMapper
+
         );
     }
 
@@ -70,11 +74,11 @@ class AuthenticationServiceJpaTest {
     void register_Success() throws UserAlreadyExistsException {
         // Arrange
         RegisterRequest request = new RegisterRequest(
-                "testuser", "password123", "John", "Doe", "john.doe@example.com", "1234567890", "123456789"
+                "john.doe@example.com", "password123", "John", "Doe", "john.doe@example.com", "1234567890", "123456789"
         );
 
         User newUser = new User();
-        newUser.setUsername("testuser");
+        newUser.setUsername("john.doe@example.com");
         newUser.setEmail("john.doe@example.com");
         newUser.setFirstName("John");
         newUser.setLastName("Doe");
@@ -90,7 +94,7 @@ class AuthenticationServiceJpaTest {
         when(authenticationRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(request.getPassword())).thenReturn("encodedPassword");
         when(authenticationRepository.save(any(User.class))).thenReturn(newUser); // Return the mock user after saving
-        when(jwtService.generateToken(any(UserDetails.class))).thenReturn("mockJwtToken");
+        when(jwtService.generateToken(any(User.class))).thenReturn("mockJwtToken");
 
         // Act
         AuthenticationResultDTO result = authenticationService.register(request);
@@ -106,7 +110,7 @@ class AuthenticationServiceJpaTest {
         verify(authenticationRepository, times(1)).findByEmail(request.getEmail());
         verify(passwordEncoder, times(1)).encode(request.getPassword());
         verify(authenticationRepository, times(1)).save(any(User.class));
-        verify(jwtService, times(1)).generateToken(any(UserDetails.class));
+        verify(jwtService, times(1)).generateToken(any(User.class));
     }
 
     @Test
@@ -128,7 +132,7 @@ class AuthenticationServiceJpaTest {
         verify(authenticationRepository, never()).findByEmail(anyString()); // Email check should not be reached
         verify(passwordEncoder, never()).encode(anyString());
         verify(authenticationRepository, never()).save(any(User.class));
-        verify(jwtService, never()).generateToken(any(UserDetails.class));
+        verify(jwtService, never()).generateToken(any(User.class));
     }
 
     @Test
@@ -151,7 +155,7 @@ class AuthenticationServiceJpaTest {
         verify(authenticationRepository, times(1)).findByEmail(request.getEmail());
         verify(passwordEncoder, never()).encode(anyString());
         verify(authenticationRepository, never()).save(any(User.class));
-        verify(jwtService, never()).generateToken(any(UserDetails.class));
+        verify(jwtService, never()).generateToken(any(User.class));
     }
 
     // --- Login Tests ---
@@ -175,7 +179,7 @@ class AuthenticationServiceJpaTest {
 
         // Mock repository behavior after successful authentication
         when(authenticationRepository.findByUsername(request.getEmail())).thenReturn(Optional.of(foundUser));
-        when(jwtService.generateToken(any(UserDetails.class))).thenReturn("mockJwtToken");
+        when(jwtService.generateToken(any(User.class))).thenReturn("mockJwtToken");
 
         // Act
         AuthenticationResultDTO result = authenticationService.login(request);
@@ -213,7 +217,7 @@ class AuthenticationServiceJpaTest {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         verify(authenticationRepository, never()).findByUsername(anyString()); // Should not attempt to find user
-        verify(jwtService, never()).generateToken(any(UserDetails.class));
+        verify(jwtService, never()).generateToken(any(User.class));
     }
 
     @Test
@@ -239,7 +243,7 @@ class AuthenticationServiceJpaTest {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         verify(authenticationRepository, times(1)).findByUsername(request.getEmail());
-        verify(jwtService, never()).generateToken(any(UserDetails.class));
+        verify(jwtService, never()).generateToken(any(User.class));
     }
 
     // --- findByUsername Test ---

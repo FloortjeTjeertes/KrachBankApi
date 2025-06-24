@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.iban4j.Iban;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,8 @@ public class TransactionRepositoryTest {
     void setUp() {
         fromAccount = new Account();
         toAccount = new Account();
+        fromAccount.setIban(Iban.valueOf("NL91ABNA0417164300"));
+        toAccount.setIban(Iban.valueOf("NL64ABNA0417164301"));
 
         fromAccount = accountRepository.save(fromAccount);
         toAccount = accountRepository.save(toAccount);
@@ -55,7 +58,7 @@ public class TransactionRepositoryTest {
     }
 
     @Test
-    void testMakeTransactionsSpecification_BySenderId() {
+    void testMakeTransactionsSpecification_BySenderIban() {
         TransactionFilter filter = new TransactionFilter();
         filter.setSenderIban(fromAccount.getIban().toString());
 
@@ -65,25 +68,25 @@ public class TransactionRepositoryTest {
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getFromAccount());
-            assertNotNull(transaction.getFromAccount().getId());
-            assertEquals(filter.getSenderIban(), transaction.getFromAccount().getId());
+            assertNotNull(transaction.getFromAccount().getIban());
+            assertEquals(filter.getSenderIban(), transaction.getFromAccount().getIban().toString());
         });
     }
 
     @Test
-    void testMakeTransactionsSpecification_SenderIdNotFound() {
+    void testMakeTransactionsSpecification_SenderIbanNotFound() {
         TransactionFilter filter = new TransactionFilter();
-        filter.setSenderIban(null); // Non-existent sender ID
+        filter.setSenderIban("NON_EXISTENT_IBAN"); // Non-existent sender IBAN
 
         List<Transaction> results = transactionRepository.findAll(
                 TransactionServiceJpa.MakeTransactionsSpecification(filter));
 
         assertNotNull(results, "Results should not be null even if no transactions are found");
-        assertEquals(0, results.size(), "Expected no transactions to be found for a non-existent sender ID");
+        assertEquals(0, results.size(), "Expected no transactions to be found for a non-existent sender IBAN");
     }
 
     @Test
-    void testMakeTransactionsSpecification_ByReceiverId() {
+    void testMakeTransactionsSpecification_ByReceiverIban() {
         TransactionFilter filter = new TransactionFilter();
         filter.setReceiverIban(toAccount.getIban().toString());
 
@@ -93,8 +96,8 @@ public class TransactionRepositoryTest {
         assertNotNull(results);
         results.forEach(transaction -> {
             assertNotNull(transaction.getToAccount());
-            assertNotNull(transaction.getToAccount().getId());
-            assertEquals(filter.getReceiverIban(), transaction.getToAccount().getId());
+            assertNotNull(transaction.getToAccount().getIban());
+            assertEquals(filter.getReceiverIban(), transaction.getToAccount().getIban().toString());
         });
     }
 
@@ -154,5 +157,4 @@ public class TransactionRepositoryTest {
         });
     }
 
-    // TODO:make the tests for when things are not found
 }

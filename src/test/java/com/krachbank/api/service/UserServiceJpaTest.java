@@ -226,14 +226,14 @@ public class UserServiceJpaTest {
         assertEquals("johnny.depp@example.com", result.getEmail());
         assertEquals("111-222-3333", result.getPhoneNumber());
         assertEquals(BigDecimal.valueOf(1500), result.getDailyLimit());
-        assertEquals(999888777, result.getBSN());
+        assertEquals("999888777", result.getBSN());
         assertFalse(result.isVerified());
         assertFalse(result.isActive());
-        assertEquals("johnny.depp", result.getUsername());
+        assertEquals("johnny.depp@example.com", result.getUsername());
 
         // Verify that the existing user object was updated
         assertEquals("Johnny", user1.getFirstName()); // user1 should be modified in this test
-        assertEquals("johnny.depp", user1.getUsername());
+        assertEquals("johnny.depp@example.com", user1.getUsername());
 
         verify(userRepository, times(1)).findById(user1.getId());
         verify(userRepository, times(1)).save(user1); // Verify save was called with the modified user1
@@ -586,8 +586,8 @@ public class UserServiceJpaTest {
         assertNotNull(updated);
         assertEquals("New", updated.getFirstName());
         assertEquals("new@example.com", updated.getEmail());
-        assertEquals(222, updated.getBSN());
-        assertEquals("newuser", updated.getUsername());
+        assertEquals("222", updated.getBSN());
+        assertEquals("new@example.com", updated.getUsername());
     }
 
     @Test
@@ -913,10 +913,10 @@ public class UserServiceJpaTest {
         assertEquals("new@example.com", updated.getEmail());
         assertEquals("999", updated.getPhoneNumber());
         assertEquals(BigDecimal.valueOf(500), updated.getDailyLimit());
-        assertEquals(222, updated.getBSN());
+        assertEquals("222" , updated.getBSN());
         assertTrue(updated.isVerified());
         assertFalse(updated.isActive());
-        assertEquals("newuser", updated.getUsername());
+        assertEquals("new@example.com", updated.getUsername());
     }
 
     @Test
@@ -981,7 +981,7 @@ public class UserServiceJpaTest {
         assertEquals("bob@builder.com", created.getEmail());
         assertEquals("111222333", created.getBSN());
         assertEquals("0612345678", created.getPhoneNumber());
-        assertEquals("bobthebuilder", created.getUsername());
+        assertEquals("bob@builder.com", created.getUsername());
         assertEquals(99L, created.getId());
     }
 

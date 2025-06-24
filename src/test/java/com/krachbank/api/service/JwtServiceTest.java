@@ -1,5 +1,6 @@
 package com.krachbank.api.service;
 
+import com.krachbank.api.models.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Base64;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.jsonwebtoken.Claims;
 
 class JwtServiceTest {
@@ -44,14 +48,14 @@ class JwtServiceTest {
                         SignatureAlgorithm.HS256)
                 .compact();
 
-        String extractedUsername = jwtService.extractUsername(token);
+        String extractedUsername = jwtService.extractEmail(token);
         assertEquals(username, extractedUsername);
     }
 
     @Test
     void extractUsername_shouldThrowExceptionForInvalidToken() {
         String invalidToken = "invalid.token.value";
-        assertThrows(Exception.class, () -> jwtService.extractUsername(invalidToken));
+        assertThrows(Exception.class, () -> jwtService.extractEmail(invalidToken));
     }
 
     // Test generateToken method
@@ -59,28 +63,28 @@ class JwtServiceTest {
     void generateToken_shouldReturnValidToken() {
         // Arrange
         String username = "testuser";
-        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
-        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
+        User user = mock(User.class);
+        when(user.getUsername()).thenReturn(username);
 
         // Act
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(user);
 
         // Assert
         assertNotNull(token);
-        String extractedUsername = jwtService.extractUsername(token);
+        String extractedUsername = jwtService.extractEmail(token);
         assertEquals(username, extractedUsername);
-        assertTrue(jwtService.isTokenValid(token, userDetails));
+        assertTrue(jwtService.isTokenValid(token, user));
     }
 
     @Test
     void generateToken_shouldContainCorrectExpiration() {
         // Arrange
         String username = "testuser";
-        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
-        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
+        User user = mock(User.class);
+        when(user.getUsername()).thenReturn(username);
 
         // Act
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(user);
 
         // Assert
         Date expiration = ReflectionTestUtils.invokeMethod(jwtService, "extractExpiration", token);
@@ -94,42 +98,47 @@ class JwtServiceTest {
     @Test
     void isTokenValid_shouldReturnTrueForValidTokenAndMatchingUser() {
         String username = "validuser";
-        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
-        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
+        User user = mock(User.class);
+        when(user.getUsername()).thenReturn(username);
 
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(user);
 
-        assertTrue(jwtService.isTokenValid(token, userDetails));
+        assertTrue(jwtService.isTokenValid(token, user));
     }
 
     @Test
-    void isTokenValid_shouldReturnFalseForTokenWithDifferentUsername() {
-        String username = "user1";
-        String otherUsername = "user2";
-        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
-        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(otherUsername);
+    void isTokenValid_shouldReturnFalseForTokenWithDifferentEmail() {
+        String email = "user1@example.com";
+        String otherEmail = "user2@example.com";
 
-        // Token is generated for username "user1"
-        String token = jwtService.generateToken(new HashMap<>(),
-                new org.springframework.security.core.userdetails.User(username, "", new java.util.ArrayList<>()));
+        User userMock = mock(User.class);
+        when(userMock.getEmail()).thenReturn(otherEmail);
 
-        assertFalse(jwtService.isTokenValid(token, userDetails));
+        // Create a user for token generation with email = user1@example.com
+        User tokenUser = new User();
+        tokenUser.setEmail(email);
+
+        // Generate token with email as subject
+        String token = jwtService.generateToken(tokenUser);
+
+        // Assert token is invalid when checked against a user with a different email
+        assertFalse(jwtService.isTokenValid(token, userMock));
     }
 
     @Test
     void isTokenValid_shouldReturnFalseForExpiredToken() throws InterruptedException {
         String username = "expireduser";
-        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
-        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
+        User user = mock(User.class);
+        when(user.getUsername()).thenReturn(username);
 
         // Set a very short expiration for this test
         ReflectionTestUtils.setField(jwtService, "jwtExpiration", 1L); // 1 ms
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(user);
 
         // Wait to ensure the token is expired
         Thread.sleep(5);
 
-        assertFalse(jwtService.isTokenValid(token, userDetails));
+        assertFalse(jwtService.isTokenValid(token, user));
 
         // Restore expiration for other tests
         ReflectionTestUtils.setField(jwtService, "jwtExpiration", jwtExpiration);
@@ -138,8 +147,8 @@ class JwtServiceTest {
     @Test
     void isTokenValid_shouldThrowExceptionForMalformedToken() {
         String malformedToken = "malformed.token.value";
-        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
-        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn("anyuser");
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetails.getUsername()).thenReturn("anyuser");
 
         assertThrows(Exception.class, () -> jwtService.isTokenValid(malformedToken, userDetails));
     }
@@ -169,28 +178,28 @@ class JwtServiceTest {
         String username = "extraclaimsuser";
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("department", "finance");
-        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
-        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
+        User user = mock(User.class);
+        when(user.getUsername()).thenReturn(username);
 
-        String token = jwtService.generateToken(extraClaims, userDetails);
+        String token = jwtService.generateToken(extraClaims, user);
 
         String department = jwtService.extractClaim(token, c -> c.get("department", String.class));
         assertEquals("finance", department);
-        assertEquals(username, jwtService.extractUsername(token));
+        assertEquals(username, jwtService.extractEmail(token));
     }
 
     // Test isTokenExpired method
     @Test
     void isTokenExpired_shouldReturnTrueForExpiredToken() throws InterruptedException {
         String username = "expired";
-        UserDetails userDetails = org.mockito.Mockito.mock(UserDetails.class);
-        org.mockito.Mockito.when(userDetails.getUsername()).thenReturn(username);
+        User user = mock(User.class);
+        when(user.getUsername()).thenReturn(username);
 
         ReflectionTestUtils.setField(jwtService, "jwtExpiration", 1L); // 1 ms
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(user);
         Thread.sleep(5);
 
-        assertTrue(ReflectionTestUtils.invokeMethod(jwtService, "isTokenExpired", token));
+       assertTrue((Boolean) ReflectionTestUtils.invokeMethod(jwtService, "isTokenExpired", token));
         ReflectionTestUtils.setField(jwtService, "jwtExpiration", jwtExpiration);
     }
 

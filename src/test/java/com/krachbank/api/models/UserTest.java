@@ -47,7 +47,7 @@ class UserTest {
     @Test
     void testGettersAndSetters() {
         assertEquals(1L, user.getId());
-        assertEquals("testuser", user.getUsername());
+        assertEquals("test@example.com", user.getUsername());
         assertEquals("password123", user.getPassword());
         assertEquals("test@example.com", user.getEmail());
         assertEquals("1234567890", user.getPhoneNumber());
@@ -81,7 +81,7 @@ class UserTest {
         user.setAdmin(true);
 
         assertEquals(2L, user.getId());
-        assertEquals("anotheruser", user.getUsername());
+        assertEquals("another@example.com", user.getUsername());
         assertEquals("newpass", user.getPassword());
         assertEquals("another@example.com", user.getEmail());
         assertEquals("0987654321", user.getPhoneNumber());
@@ -153,7 +153,7 @@ class UserTest {
         newUser.setVerified(false);
         newUser.setActive(false);
         newUser.setAdmin(true);
-        assertEquals("u", newUser.getUsername());
+        assertEquals("e", newUser.getUsername());
         assertEquals("p", newUser.getPassword());
         assertEquals("e", newUser.getEmail());
         assertEquals("ph", newUser.getPhoneNumber());

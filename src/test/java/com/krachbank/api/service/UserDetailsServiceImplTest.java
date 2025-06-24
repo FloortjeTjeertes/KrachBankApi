@@ -39,9 +39,9 @@ class UserDetailsServiceImplTest {
     @DisplayName("loadUserByUsername - Should return UserDetails when user exists")
     void loadUserByUsername_UserExists_ReturnsUserDetails() {
         // Arrange
-        String username = "testuser";
+        String emailString = "testuser@example.com";
         User mockUser = new User();
-        mockUser.setUsername(username);
+        mockUser.setUsername(emailString);
         mockUser.setPassword("encodedPassword"); // Password is required for UserDetails
         // Set other necessary UserDetails properties for a minimal valid user
         mockUser.setId(1L);
@@ -49,15 +49,13 @@ class UserDetailsServiceImplTest {
         mockUser.setActive(true);
         mockUser.setVerified(true);
 
-
-        when(authenticationRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
-
+        when(authenticationRepository.findByEmail(emailString)).thenReturn(Optional.of(mockUser));
         // Act
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(emailString);
 
         // Assert
         assertNotNull(userDetails);
-        assertThat(userDetails.getUsername()).isEqualTo(username);
+        assertThat(userDetails.getUsername()).isEqualTo(emailString);
         assertThat(userDetails.getPassword()).isEqualTo("encodedPassword");
         assertThat(userDetails.isEnabled()).isTrue(); // Assuming 'isActive' maps to enabled
         assertThat(userDetails.isAccountNonLocked()).isTrue(); // Assuming accounts are not locked by default
@@ -65,24 +63,24 @@ class UserDetailsServiceImplTest {
         assertThat(userDetails.isAccountNonExpired()).isTrue(); // Assuming accounts don't expire by default
 
         // Verify that the repository method was called
-        verify(authenticationRepository, times(1)).findByUsername(username);
+        verify(authenticationRepository, times(1)).findByEmail(emailString);
     }
 
     @Test
     @DisplayName("loadUserByUsername - Should throw UsernameNotFoundException when user does not exist")
     void loadUserByUsername_UserDoesNotExist_ThrowsException() {
         // Arrange
-        String username = "nonexistentuser";
-        when(authenticationRepository.findByUsername(username)).thenReturn(Optional.empty());
+        String emailString = "nonexistentuser@example.com";
+        when(authenticationRepository.findByEmail(emailString)).thenReturn(Optional.empty());
 
         // Act & Assert
         UsernameNotFoundException thrown = assertThrows(UsernameNotFoundException.class, () -> {
-            userDetailsService.loadUserByUsername(username);
+            userDetailsService.loadUserByUsername(emailString);
         });
 
-        assertThat(thrown.getMessage()).isEqualTo("User not found with username: " + username);
+        assertThat(thrown.getMessage()).isEqualTo("User not found with email: " + emailString);
 
         // Verify that the repository method was called
-        verify(authenticationRepository, times(1)).findByUsername(username);
+        verify(authenticationRepository, times(1)).findByEmail(emailString);
     }
 }

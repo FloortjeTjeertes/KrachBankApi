@@ -22,7 +22,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService; // Your UserDetailsServiceImpl
+    private final UserDetailsService userDetailsService;
 
     public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
         this.jwtService = jwtService;
@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
-    ) throws ServletException, IOException { // <--- The correct throws clause is essential
+    ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
@@ -46,8 +46,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        jwt = authHeader.substring(7); // Extract the JWT token (after "Bearer ")
-        username = jwtService.extractUsername(jwt); // Extract username from token
+        jwt = authHeader.substring(7); // Extract the JWT token
+        username = jwtService.extractEmail(jwt); // Extract username from token
 
         // If username is found and no authentication is currently set in the SecurityContext
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

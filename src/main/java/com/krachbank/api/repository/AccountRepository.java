@@ -16,7 +16,4 @@ import com.krachbank.api.models.Account;
 public interface AccountRepository extends JpaRepository<Account, Long> , JpaSpecificationExecutor<Account> {
     Optional<Account> findByIban(Iban iban);
     Page<Account> findByUserId(Pageable pageable,Specification<Account> specification);
-    
-
-    
 } 

@@ -25,6 +25,8 @@ class AuthenticationRepositoryTest {
 
     private User user1;
     private User user2;
+    @Autowired
+    private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
@@ -71,11 +73,12 @@ class AuthenticationRepositoryTest {
     @DisplayName("findByUsername - Should find a user by their username")
     void findByUsername_ShouldReturnUserWhenFound() {
         // Act
-        Optional<User> foundUser = authenticationRepository.findByUsername("alice_smith");
+        Optional<User> foundUser = userRepository.findByUsername("alice.smith@example.com");
+        
 
         // Assert
         assertThat(foundUser).isPresent();
-        assertThat(foundUser.get().getUsername()).isEqualTo("alice_smith");
+        assertThat(foundUser.get().getUsername()).isEqualTo("alice.smith@example.com");
         assertThat(foundUser.get().getEmail()).isEqualTo("alice.smith@example.com");
     }
 
@@ -83,7 +86,7 @@ class AuthenticationRepositoryTest {
     @DisplayName("findByUsername - Should return empty optional when username not found")
     void findByUsername_ShouldReturnEmptyOptionalWhenNotFound() {
         // Act
-        Optional<User> foundUser = authenticationRepository.findByUsername("nonexistent_user");
+        Optional<User> foundUser = userRepository.findByUsername("nonexistent_user");
 
         // Assert
         assertThat(foundUser).isNotPresent();
