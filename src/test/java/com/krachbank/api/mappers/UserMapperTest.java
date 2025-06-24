@@ -31,7 +31,7 @@ class UserMapperTest {
         dto.setLastName("Doe");
         dto.setEmail("john@example.com");
         dto.setPhoneNumber("1234567890");
-        dto.setBSN(123456789);
+        dto.setBSN("123456789");
         dto.setIsAdmin(true);
 
         User user = userMapper.toModel(dto);

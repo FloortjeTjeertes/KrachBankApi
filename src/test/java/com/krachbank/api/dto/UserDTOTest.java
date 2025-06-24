@@ -10,21 +10,21 @@ class UserDTOTest {
 
     @Test
     void testToModel_AllFieldsSet() {
-        UserDTO dto = new UserDTO(
-                1L,
-                new BigDecimal("100.00"),
-                new BigDecimal("200.00"),
-                LocalDateTime.now(),
-                true,
-                true,
-                "John",
-                "Doe",
-                "john.doe@example.com",
-                "1234567890",
-                123456789,
-                "password123",
-                "johndoe",
-                true);
+        UserDTO dto = new UserDTO();
+        dto.setId(1L);
+        dto.setDailyLimit(new BigDecimal("1000.00"));
+        dto.setTransferLimit(new BigDecimal("500.00"));
+        dto.setCreatedAt(LocalDateTime.now());
+        dto.setVerified(true);
+        dto.setActive(true);
+        dto.setFirstName("John");
+        dto.setLastName("Doe");
+        dto.setEmail("john.doe@example.com");
+        dto.setPhoneNumber("1234567890");
+        dto.setBSN("123456789");
+        dto.setPassword("password123");
+        dto.setUsername("johndoe");
+        dto.setIsAdmin(true);
 
         User user = dto.ToModel();
 

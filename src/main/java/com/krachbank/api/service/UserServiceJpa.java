@@ -61,7 +61,7 @@ public class UserServiceJpa implements UserService {
         if (bsn == null || bsn.isEmpty()) {
             throw new IllegalArgumentException("BSN is required");
         }
-        if (bsn .length() != 9 || !bsn.matches("\\d+")) {
+        if (bsn.length() != 9 || !bsn.matches("\\d+")) {
             throw new IllegalArgumentException("BSN must be a 9-digit number");
         }
         user.setVerified(true);
@@ -88,7 +88,7 @@ public class UserServiceJpa implements UserService {
         if (bsn == null || bsn.isEmpty()) {
             throw new IllegalArgumentException("BSN is required");
         }
-        if (bsn .length() != 9 || !bsn.matches("\\d+")) {
+        if (bsn.length() != 9 || !bsn.matches("\\d+")) {
             throw new IllegalArgumentException("BSN must be a 9-digit number");
         }
         // --- Validation for existing user (based on email and username) ---
@@ -120,7 +120,7 @@ public class UserServiceJpa implements UserService {
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
         user.setVerified(userDTO.isVerified());
-        user.setAdmin(userDTO.getIsAdmin() != null ? userDTO.getIsAdmin() : false); 
+        user.setAdmin(userDTO.getIsAdmin() != null ? userDTO.getIsAdmin() : false);
 
         // Set dailyLimit and transferLimit from DTO if present, else default to 0.0
         if (userDTO.getDailyLimit() != null) {

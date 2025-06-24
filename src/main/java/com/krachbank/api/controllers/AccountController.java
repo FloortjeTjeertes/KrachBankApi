@@ -3,6 +3,7 @@ package com.krachbank.api.controllers;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -117,13 +118,13 @@ public class AccountController {
     @GetMapping("/{iban}")
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
-            if (iban == null || iban.isEmpty()) {
+            if (iban.isBlank()|| iban.isEmpty()) {
                 ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
-            accountService.getAccountByIBAN(iban);
+           Optional<Account> responseAccount = accountService.getAccountByIBAN(iban);
 
-            return ResponseEntity.ok(accountMapper.toResponse(accountService.getAccountByIBAN(iban).get()));
+            return ResponseEntity.ok(accountMapper.toResponse(responseAccount.get()));
         } catch (Exception e) {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
             return ResponseEntity.status(error.getCode()).body(error);
@@ -134,7 +135,7 @@ public class AccountController {
     @GetMapping("/{iban}/transactions")
     public ResponseEntity<?> getTransactionsForAccount(@PathVariable String iban,@ModelAttribute TransactionFilter filter) {
         try {
-            if (iban == null || iban.isEmpty()) {
+            if ( iban.isEmpty() || iban.isBlank()) {
                 ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
