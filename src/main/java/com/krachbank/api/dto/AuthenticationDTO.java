@@ -27,25 +27,7 @@ public class AuthenticationDTO implements DTO {
     private boolean isVerified;
     private boolean isActive;
     private boolean isAdmin;
-
-    public User ToModel() {
-        User user = new User();
-        user.setId(this.id);
-        user.setUsername(this.username);
-        user.setEmail(this.email);
-        user.setPhoneNumber(this.phoneNumber);
-        user.setBSN(this.BSN);
-        user.setFirstName(this.firstName);
-        user.setLastName(this.lastName);
-        user.setDailyLimit(this.dailyLimit);
-        user.setCreatedAt(this.createdAt);
-        user.setVerified(this.isVerified);
-        user.setActive(this.isActive);
-        user.setAdmin(this.isAdmin);
-        // Password is NOT set here. Handled by service.
-        return user;
-    }
-
+    //static because it's a factory style constructor, and it does not depend on any existing dto
     public static AuthenticationDTO fromModel(User user) {
         AuthenticationDTO dto = new AuthenticationDTO();
         dto.setId(user.getId());

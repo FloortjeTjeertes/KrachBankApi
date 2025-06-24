@@ -67,19 +67,6 @@ public class AccountController {
             List<Account> accounts = new ArrayList<>();
             for (int i = 0; i < accountRequests.size(); i++) {
                 AccountDTORequest accountRequest = accountRequests.get(i);
-                // Account account = new Account();
-                // account.setIban(IBANGenerator.generateIBAN());
-                // account.setCreatedAt(LocalDateTime.now());
-                // account.setBalance(accountRequest.getBalance() != null &&
-                // accountRequest.getBalance().compareTo(BigDecimal.ZERO) != 0 ?
-                // accountRequest.getBalance() : BigDecimal.ZERO);
-                // account.setAbsoluteLimit(accountRequest.getAbsoluteLimit() != null &&
-                // accountRequest.getAbsoluteLimit().compareTo(BigDecimal.ZERO) != 0 ?
-                // accountRequest.getAbsoluteLimit() : BigDecimal.ZERO);
-                // account.setTransactionLimit(accountRequest.getTransactionLimit() != null &&
-                // accountRequest.getTransactionLimit().compareTo(BigDecimal.ZERO) != 0 ?
-                // accountRequest.getTransactionLimit() : BigDecimal.ZERO);
-
                 Account account = new Account();
                 account.setIban(IBANGenerator.generateIBAN());
                 account.setCreatedAt(LocalDateTime.now());
@@ -100,7 +87,6 @@ public class AccountController {
                                 : java.math.BigDecimal.ZERO);
                 account = accountMapper.toModel(accountRequest);
                 // Set account type: first is CHECKINGS, second is SAVINGS
-
                 if (i == 0) {
                     account.setAccountType(AccountType.CHECKING);
                 } else {
@@ -112,14 +98,6 @@ public class AccountController {
                 }
                 // // Fetch the user entity by userId (expects Long)
                 UserDTO userDTO = userService.getUserById(accountRequest.getUserId());
-                // // set userdto to User
-                // User user = new User();
-                // user.setId(userDTO.getId());
-                // user.setEmail(userDTO.getEmail());
-                // user.setFirstName(userDTO.getFirstName());
-                // user.setLastName(userDTO.getLastName());
-                // user.setBSN(userDTO.getBSN());
-                // user.setPhoneNumber(userDTO.getPhoneNumber());
                 User user = userMapper.toModel(userDTO);
 
                 account.setUser(user);
@@ -141,7 +119,7 @@ public class AccountController {
     @GetMapping("/{iban}")
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
-            if (iban.isBlank() || iban.isEmpty()) {
+            if (iban.isBlank()) {
                 ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
@@ -162,7 +140,7 @@ public class AccountController {
     public ResponseEntity<?> getTransactionsForAccount(@PathVariable String iban,
             @ModelAttribute TransactionFilter filter) {
         try {
-            if (iban.isEmpty() || iban.isBlank()) {
+            if (iban.isBlank()) {
                 ErrorDTOResponse error = new ErrorDTOResponse("IBAN is required", 400);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
@@ -174,10 +152,8 @@ public class AccountController {
                 ErrorDTOResponse error = new ErrorDTOResponse("No transactions found for this account", 404);
                 return ResponseEntity.status(error.getCode()).body(error);
             }
-
             PaginatedResponseDTO<TransactionDTOResponse> paginatedResponse = transactionMapper
                     .toPaginatedResponse(transactionsPage);
-
             return ResponseEntity.ok(paginatedResponse);
         } catch (Exception e) {
             ErrorDTOResponse error = new ErrorDTOResponse(e.getMessage(), 500);
@@ -207,14 +183,13 @@ public class AccountController {
         }
     }
 
-    // UPDATED to use POST mapping with a more specific endpoint
-    @PostMapping("/{iban}/transaction-limit") // Changed to @PostMapping and added specific sub-path
+    @PostMapping("/{iban}/transaction-limit")
     public ResponseEntity<?> updateAccountTransactionLimit(@PathVariable String iban, @RequestBody Map<String, Object> updates) {
         try {
             if (iban == null || iban.isEmpty()) {
                 return ResponseEntity.badRequest().body(new ErrorDTOResponse("IBAN is required for update", 400));
             }
-
+            //get the new limit
             BigDecimal newLimit = null;
             if (updates.containsKey("transactionLimit")) {
                 Object limitObj = updates.get("transactionLimit");
@@ -232,7 +207,6 @@ public class AccountController {
             } else {
                 return ResponseEntity.badRequest().body(new ErrorDTOResponse("transactionLimit field is missing in the request body", 400));
             }
-
             Optional<Account> optionalAccount = accountService.getAccountByIBAN(iban); // Uses the path variable 'iban'
             if (optionalAccount.isEmpty()) {
                 return ResponseEntity.status(404).body(new ErrorDTOResponse("Account not found with IBAN: " + iban, 404));

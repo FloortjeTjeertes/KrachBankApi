@@ -11,13 +11,13 @@ import lombok.NoArgsConstructor;
 
 @Data // Lombok annotation to generate getters, setters, equals, hashCode, and
       // toString
-@AllArgsConstructor // Lombok annotation to generate a constructor with all fields
-@NoArgsConstructor // Lombok annotation to generate a no-argument constructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserDTO implements DTO {
 
     private Long id;
-    private BigDecimal dailyLimit; // Assuming this is used for some purpose, otherwise can be removed
-    private BigDecimal transferLimit; // Assuming this is used for some purpose, otherwise can be removed
+    private BigDecimal dailyLimit;
+    private BigDecimal transferLimit;
     private LocalDateTime createdAt;
     private boolean isVerified;
     private boolean isActive;
@@ -26,7 +26,7 @@ public class UserDTO implements DTO {
     private String email;
     private String phoneNumber;
     private String BSN;
-    private String password; // Added for registration input
+    private String password;
     private String username;
     private Boolean isAdmin;
 
@@ -45,7 +45,6 @@ public class UserDTO implements DTO {
         user.setEmail(this.email);
         user.setPhoneNumber(this.phoneNumber);
         user.setBSN(this.BSN);
-        user.setUsername(this.username);
         user.setAdmin(this.isAdmin);
         return user;
     }
